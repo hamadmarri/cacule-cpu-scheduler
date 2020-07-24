@@ -49,4 +49,70 @@ to prevent starvation since it strives the waiting time for processes,
 and also it increases the response time.
     
 ## Tests and Benchmarks
-TBA
+
+### stress-ng test with perf stat
+The below results are the best results of both Cachy and CFS out of 20 runs.
+Sometimes CFS is faster but usually Cachy is faster in this test.
+
+#### Cachy
+```
+uname -a
+Linux suse 5.7.6-cachy-1-default #1 SMP Fri Jul 24 18:00:47 AEST 2020 x86_64 x86_64 x86_64 GNU/Linux
+
+sudo perf stat -e context-switches,cycles,instructions,L1-dcache-loads,L1-dcache-load-misses,LLC-loads,LLC-load-misses,branches,branch-misses -a -B stress-ng --cpu 4 -t 2m --cpu-method all --metrics-brief
+
+stress-ng: info:  [12260] dispatching hogs: 4 cpu
+stress-ng: info:  [12260] successful run completed in 120.06s (2 mins, 0.06 secs)
+stress-ng: info:  [12260] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [12260]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [12260] cpu               87526    120.03    478.67      0.02       729.23       182.84
+
+ Performance counter stats for 'system wide':
+
+            36,459      context-switches                                            
+ 1,248,551,472,864      cycles                                                        (62.50%)
+ 1,337,471,008,174      instructions              #    1.07  insn per cycle           (75.00%)
+   133,423,744,677      L1-dcache-loads                                               (65.93%)
+    12,176,291,467      L1-dcache-load-misses     #    9.13% of all L1-dcache hits    (53.11%)
+     2,969,067,073      LLC-loads                                                     (34.21%)
+         8,452,809      LLC-load-misses           #    0.28% of all LL-cache hits     (37.50%)
+   194,805,161,497      branches                                                      (49.99%)
+     1,546,718,372      branch-misses             #    0.79% of all branches          (50.00%)
+
+     120.060440580 seconds time elapsed
+
+```
+
+#### CFS
+```
+uname -a
+Linux suse 5.7.6-cachy-1-default #1 SMP Fri Jul 24 18:00:47 AEST 2020 x86_64 x86_64 x86_64 GNU/Linux
+
+sudo perf stat -e context-switches,cycles,instructions,L1-dcache-loads,L1-dcache-load-misses,LLC-loads,LLC-load-misses,branches,branch-misses -a -B stress-ng --cpu 4 -t 2m --cpu-method all --metrics-brief
+
+stress-ng: info:  [2862] dispatching hogs: 4 cpu
+stress-ng: info:  [2862] successful run completed in 120.08s (2 mins, 0.08 secs)
+stress-ng: info:  [2862] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [2862]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [2862] cpu               86378    120.04    478.73      0.01       719.58       180.43
+
+ Performance counter stats for 'system wide':
+
+            31,631      context-switches                                            
+ 1,234,757,563,294      cycles                                                        (62.50%)
+ 1,320,229,149,505      instructions              #    1.07  insn per cycle           (75.00%)
+   131,542,661,029      L1-dcache-loads                                               (62.32%)
+    12,147,505,410      L1-dcache-load-misses     #    9.23% of all L1-dcache hits    (56.44%)
+     4,326,450,020      LLC-loads                                                     (40.23%)
+        14,863,894      LLC-load-misses           #    0.34% of all LL-cache hits     (37.50%)
+   191,987,804,607      branches                                                      (49.99%)
+     1,514,131,111      branch-misses             #    0.79% of all branches          (50.00%)
+
+     120.132072691 seconds time elapsed
+```
+
+
+
+
+
+
