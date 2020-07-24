@@ -38,8 +38,8 @@ is usually less than the CFS's since no tree balancing nor tasks balancing are r
 again for desktop and mobile usage.
 
 ## Highest Response Ratio Next (HRRN) policy
-Cachy is based in Highest Response Ratio Next (HRRN) policy.
-HRRN is a non-preemptive scheduling policy in which the process
+Cachy is based in Highest Response Ratio Next (HRRN) policy with some modifications.
+HRRN is a scheduling policy in which the process
 that has the highest response ratio will run next. Each process
 has a response ratio value `R = (w_t + s_t) / s_t` where `w_t` is
 the process waiting time, and `s_t` is the process running
