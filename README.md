@@ -7,10 +7,11 @@ and it is based on Highest Response Ratio Next (HRRN) policy.
 * All balancing code is removed. There is no periodic balancing nor idle CPU balancing. Once a task is
 assigned to a CPU, it sticks with it until it exits. The reason is to utilize the CPU cache of tasks.
 * No grouping for tasks, `FAIR_GROUP_SCHED` must be disabled.
-* No support for `NUMA`.
+* No support for `NUMA`, `NUMA` must be disabled.
 * Each CPU has its own runqueue.
 * NORMAL runqueue is a linked list of sched_entities (instead of RB-Tree).
-* A task gets preempted in every tick. If the clock ticks 250HZ (i.e. `CONFIG_HZ_250=y`) then a task
+* RT and other runqueues are just the same as the CFS's.
+* A task gets preempted in every tick. If the clock ticks in 250HZ (i.e. `CONFIG_HZ_250=y`) then a task
 runs for 4 milliseconds and then got preempted if there are other tasks in the runqueue.
 * Wake up tasks preempt currently running tasks.
 * This scheduler is designed for desktop and mobile usage since it is about responsiveness. It may be not bad for servers.
@@ -25,8 +26,15 @@ runs for 4 milliseconds and then got preempted if there are other tasks in the r
 * To build the kernel you need to follow linux build kernel tutorials.
 
 ## Complexity
-* Enqueue and Dequeue a task is `O(1)`.
-* Pick the next task is `O(n)`, where `n` is the number of tasks in the runqueue (each CPU has its own runqueue). 
+* The complexity of Enqueue and Dequeue a task is `O(1)`.
+* The complexity of pick the next task is in `O(n)`, where 
+`n` is the number of tasks in a runqueue (each CPU has its own runqueue).
+
+Note: `O(n)` sounds scary, but usually for a machine with 4 CPUS where it is used for
+desktop or mobile jobs, the maximum number of runnable tasks might
+not exceed 10 - the idle tasks are excluded since they are dequeued when sleeping 
+and enqueued when they wake up. The Cachy scheduler latency for high number of CPU (4+)
+is usually less than the CFS's - again for desktop and mobile usage.
 
 ## Highest Response Ratio Next (HRRN) policy
 Cachy is based in Highest Response Ratio Next (HRRN) policy.
