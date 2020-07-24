@@ -86,7 +86,7 @@ stress-ng: info:  [12260] cpu               87526    120.03    478.67      0.02 
 #### CFS
 ```
 uname -a
-Linux suse 5.7.6-cachy-1-default #1 SMP Fri Jul 24 18:00:47 AEST 2020 x86_64 x86_64 x86_64 GNU/Linux
+Linux suse 5.7.7-1-default #1 SMP Wed Jul 1 19:03:27 UTC 2020 (cba119b) x86_64 x86_64 x86_64 GNU/Linux
 
 sudo perf stat -e context-switches,cycles,instructions,L1-dcache-loads,L1-dcache-load-misses,LLC-loads,LLC-load-misses,branches,branch-misses -a -B stress-ng --cpu 4 -t 2m --cpu-method all --metrics-brief
 
