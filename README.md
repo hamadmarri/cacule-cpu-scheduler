@@ -50,6 +50,9 @@ and also it increases the response time.
     
 ## Tests and Benchmarks
 
+### Phoronix Test Suite
+[Cachy vs CFS](https://openbenchmarking.org/result/2007245-NI-CACHYVSCF85)
+
 ### stress-ng test with perf stat
 The below results are the best results of both Cachy and CFS out of 20 runs.
 Sometimes CFS is faster but usually Cachy is faster in this test.
