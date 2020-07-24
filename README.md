@@ -32,19 +32,21 @@ runs for 4 milliseconds and then got preempted if there are other tasks in the r
 
 Note: `O(n)` sounds scary, but usually for a machine with 4 CPUS where it is used for
 desktop or mobile jobs, the maximum number of runnable tasks might
-not exceed 10 - the idle tasks are excluded since they are dequeued when sleeping 
-and enqueued when they wake up. The Cachy scheduler latency for high number of CPU (4+)
-is usually less than the CFS's - again for desktop and mobile usage.
+not exceeds 10 (at the pick next run time) - the idle tasks are excluded since they are dequeued when sleeping 
+and enqueued when they wake up. The Cachy scheduler latency for a high number of CPUs (4+)
+is usually less than the CFS's since no tree balancing nor tasks balancing are required - 
+again for desktop and mobile usage.
 
 ## Highest Response Ratio Next (HRRN) policy
 Cachy is based in Highest Response Ratio Next (HRRN) policy.
 HRRN is a non-preemptive scheduling policy in which the process
 that has the highest response ratio will run next. Each process
-has a response ratio value R = (w_t + s_t) / s_t where w_t is
-the process waiting time, and s_t is the process estimated running
-time. If two process has similar estimated running times, the
+has a response ratio value `R = (w_t + s_t) / s_t` where `w_t` is
+the process waiting time, and `s_t` is the process running
+time. If two process has similar running times, the
 process that has been waiting longer will run first. HRRN aims
-to prevent starvation since it strives the waiting time for processes.
+to prevent starvation since it strives the waiting time for processes,
+and also it increases the response time.
     
 ## Tests and Benchmarks
 TBA
