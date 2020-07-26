@@ -4,8 +4,9 @@ Cachy-sched is a linux scheduler that utilizes CPU cache
 and it is based on Highest Response Ratio Next (HRRN) policy.
 
 ## About Cachy Scheduler
-* All balancing code is removed. There is no periodic balancing nor idle CPU balancing. Once a task is
-assigned to a CPU, it sticks with it until it exits. The reason is to utilize the CPU cache of tasks.
+* All balancing code is removed. There is no periodic balancing, only idle CPU balancing is applied. Once a task is
+assigned to a CPU, it sticks with it until another CPUS got idle then this task might get pulled to new cpu.
+The reason of disabling periodic balancing is to utilize the CPU cache of tasks.
 * No grouping for tasks, `FAIR_GROUP_SCHED` must be disabled.
 * No support for `NUMA`, `NUMA` must be disabled.
 * Each CPU has its own runqueue.
@@ -13,17 +14,21 @@ assigned to a CPU, it sticks with it until it exits. The reason is to utilize th
 * RT and other runqueues are just the same as the CFS's.
 * A task gets preempted in every tick. If the clock ticks in 250HZ (i.e. `CONFIG_HZ_250=y`) then a task
 runs for 4 milliseconds and then got preempted if there are other tasks in the runqueue.
-* Wake up tasks preempt currently running tasks.
-* This scheduler is designed for desktop and mobile usage since it is about responsiveness. It may be not bad for servers.
+* Wake up tasks preempt currently running tasks if its HRRN value is higher.
+* This scheduler is designed for desktop usage since it is about responsiveness. It may be not bad for servers.
+* Cachy might be good for mobiles or Android since it has high responsiveness. Cachy need to be integrated to
+Android, I don't think the current version it is ready to go without some tweeking and adapting to Android hacks.
 
 ## How to apply the patch
-* Download the linux kernel (https://www.kernel.org/) that is same version as the patch (i.e if patch file name is cachy-5.7.6.patch, then download https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.7.6.tar.xz)
-* Unzip linux kernel
-* Download cachy patch file and place it inside the just unzipped linux kernel folder
-* cd linux-(version)
-* patch -p1 < cachy-5.7.6.patch
-* **`make menuconfig` make sure to disable `FAIR_GROUP_SCHED` and `NUMA`**
-* To build the kernel you need to follow linux build kernel tutorials.
+1. Install the folder linux-(version)-cachy which is the good to go patched linux kernel.
+2. Or patch it yourself
+    * Download the linux kernel (https://www.kernel.org/) that is same version as the patch (i.e if patch file name is cachy-5.7.6.patch, then download https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.7.6.tar.xz)
+    * Unzip linux kernel
+    * Download cachy patch file and place it inside the just unzipped linux kernel folder
+    * cd linux-(version)
+    * patch -p1 < cachy-5.7.6.patch
+    * **`make menuconfig` make sure to disable `FAIR_GROUP_SCHED` and `NUMA`**
+    * To build the kernel you need to follow linux build kernel tutorials.
 
 ## Complexity
 * The complexity of Enqueue and Dequeue a task is `O(1)`.
