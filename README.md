@@ -4,7 +4,7 @@ Cachy-sched is a linux scheduler that utilizes CPU cache
 and it is based on Highest Response Ratio Next (HRRN) policy.
 
 ## About Cachy Scheduler
-* All balancing code is removed. There is no periodic balancing, only idle CPU balancing is applied. Once a task is
+* All balancing code is removed except for idle CPU balancing. There is no periodic balancing, only idle CPU balancing is applied. Once a task is
 assigned to a CPU, it sticks with it until another CPUS got idle then this task might get pulled to new cpu.
 The reason of disabling periodic balancing is to utilize the CPU cache of tasks.
 * No grouping for tasks, `FAIR_GROUP_SCHED` must be disabled.
@@ -20,7 +20,8 @@ runs for 4 milliseconds and then got preempted if there are other tasks in the r
 Android, I don't think the current version it is ready to go without some tweeking and adapting to Android hacks.
 
 ## How to apply the patch
-1. Install the folder linux-(version)-cachy which is the good to go patched linux kernel.
+1. Select the branch of kernel version and install the folder linux-(version)-cachy which is the good to go patched linux kernel.
+    * **`make menuconfig` make sure to disable `FAIR_GROUP_SCHED` and `NUMA`**
 2. Or patch it yourself
     * Download the linux kernel (https://www.kernel.org/) that is same version as the patch (i.e if patch file name is cachy-5.7.6.patch, then download https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.7.6.tar.xz)
     * Unzip linux kernel
