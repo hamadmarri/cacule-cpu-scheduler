@@ -53,7 +53,56 @@ time. If two process has similar running times, the
 process that has been waiting longer will run first. HRRN aims
 to prevent starvation since it strives the waiting time for processes,
 and also it increases the response time.
-    
+
+
+If two processes have the same `R` after integer rounding, the division remainder is compared. See below the full
+calculation for `R` value:
+
+```
+u64 r_curr, r_se, w_curr, w_se;
+struct task_struct *t_curr = task_of(curr);
+struct task_struct *t_se = task_of(se);
+u64 vr_curr 	= curr->sum_exec_runtime + 1;
+u64 vr_se 	= se->sum_exec_runtime   + 1;
+s64 diff;
+
+w_curr	= (now - t_curr->start_boottime);
+w_se	= (now - t_se->start_boottime);
+
+// adjusting for priorities
+w_curr	*= (140 - t_curr->prio);
+w_se	*= (140 - t_se->prio);
+
+r_curr	= w_curr / vr_curr;
+r_se	= w_se / vr_se;
+diff	= (s64)(r_se) - (s64)(r_curr);
+
+// take the remainder if equal
+if (diff == 0)
+{
+	r_curr	= w_curr % vr_curr;
+	r_se	= w_se % vr_se;
+	diff	= (s64)(r_se) - (s64)(r_curr);
+}
+
+if (diff > 0)
+	return 1;
+
+return -1;
+
+```
+
+## Priorities
+The priorities are applied as the followings:
+* The wait time is calculated and then multiplied by `(140 - t_curr->prio)` where `t_curr` is the task.
+* Highest priority in NORMAL policy is `100` so the wait is multiplied by `140 - 100 = 40`.
+* Normal priority in NORMAL policy is `120` so the wait is multiplied by `140 - 120 = 20`.
+* Lowest priority is `139` so the wait is multiplied by `140 - 139 = 1`.
+* This calculation is applied for all task in NORMAL policy where they range from `100 - 139`.
+* After the multiplication, wait is divided by `s_t` (the `sum_exec_runtime + 1`).
+
+
+
 ## Tests and Benchmarks
 
 ### Phoronix Test Suite
