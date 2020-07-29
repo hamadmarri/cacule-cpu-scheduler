@@ -1,6 +1,6 @@
 diff --color -rubN linux-5.7.10/include/linux/sched.h ../linux-5.7.10-cachy/include/linux/sched.h
---- linux-5.7.10/include/linux/sched.h	2020-07-22 17:34:29.000000000 +1000
-+++ ../linux-5.7.10-cachy/include/linux/sched.h	2020-07-28 19:29:18.381892202 +1000
+--- linux-5.7.10/include/linux/sched.h	2020-07-29 22:10:45.708976182 +1000
++++ ../linux-5.7.10-cachy/include/linux/sched.h	2020-07-29 22:06:48.305404044 +1000
 @@ -452,6 +452,7 @@
  	/* For load-balancing: */
  	struct load_weight		load;
@@ -10,8 +10,8 @@ diff --color -rubN linux-5.7.10/include/linux/sched.h ../linux-5.7.10-cachy/incl
  	unsigned int			on_rq;
  
 diff --color -rubN linux-5.7.10/kernel/sched/core.c ../linux-5.7.10-cachy/kernel/sched/core.c
---- linux-5.7.10/kernel/sched/core.c	2020-07-22 17:34:29.000000000 +1000
-+++ ../linux-5.7.10-cachy/kernel/sched/core.c	2020-07-28 19:31:05.569149155 +1000
+--- linux-5.7.10/kernel/sched/core.c	2020-07-29 22:10:45.712976157 +1000
++++ ../linux-5.7.10-cachy/kernel/sched/core.c	2020-07-29 22:07:25.546277135 +1000
 @@ -3248,31 +3248,9 @@
  
  #ifdef CONFIG_SMP
@@ -52,9 +52,18 @@ diff --color -rubN linux-5.7.10/kernel/sched/core.c ../linux-5.7.10-cachy/kernel
  #endif
  }
  
+@@ -6575,6 +6552,8 @@
+ 	unsigned long ptr = 0;
+ 	int i;
+ 
++	printk(KERN_INFO "Cachy CPU scheduler v5.7.10 by Hamad Al Marri. Thanks to my wife Sarah for her patience.");
++	
+ 	wait_bit_init();
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
 diff --color -rubN linux-5.7.10/kernel/sched/fair.c ../linux-5.7.10-cachy/kernel/sched/fair.c
---- linux-5.7.10/kernel/sched/fair.c	2020-07-22 17:34:29.000000000 +1000
-+++ ../linux-5.7.10-cachy/kernel/sched/fair.c	2020-07-28 19:31:58.856804938 +1000
+--- linux-5.7.10/kernel/sched/fair.c	2020-07-29 22:10:45.716976131 +1000
++++ ../linux-5.7.10-cachy/kernel/sched/fair.c	2020-07-29 22:07:17.675688429 +1000
 @@ -86,6 +86,9 @@
  
  const_debug unsigned int sysctl_sched_migration_cost	= 500000UL;
@@ -1798,8 +1807,8 @@ diff --color -rubN linux-5.7.10/kernel/sched/fair.c ../linux-5.7.10-cachy/kernel
  #ifdef CONFIG_NO_HZ_COMMON
  	nohz.next_balance = jiffies;
 diff --color -rubN linux-5.7.10/kernel/sched/sched.h ../linux-5.7.10-cachy/kernel/sched/sched.h
---- linux-5.7.10/kernel/sched/sched.h	2020-07-22 17:34:29.000000000 +1000
-+++ ../linux-5.7.10-cachy/kernel/sched/sched.h	2020-07-28 19:30:07.246625129 +1000
+--- linux-5.7.10/kernel/sched/sched.h	2020-07-29 22:10:45.716976131 +1000
++++ ../linux-5.7.10-cachy/kernel/sched/sched.h	2020-07-29 22:07:06.329286899 +1000
 @@ -516,6 +516,7 @@
  	 * 'curr' points to currently running entity on this cfs_rq.
  	 * It is set to NULL otherwise (i.e when none are currently running).
@@ -1810,7 +1819,7 @@ diff --color -rubN linux-5.7.10/kernel/sched/sched.h ../linux-5.7.10-cachy/kerne
  	struct sched_entity	*last;
 diff --color -rubN linux-5.7.10/Makefile ../linux-5.7.10-cachy/Makefile
 --- linux-5.7.10/Makefile	2020-07-22 17:34:29.000000000 +1000
-+++ ../linux-5.7.10-cachy/Makefile	2020-07-28 19:35:35.940926198 +1000
++++ ../linux-5.7.10-cachy/Makefile	2020-07-29 22:11:27.432705007 +1000
 @@ -2,8 +2,8 @@
  VERSION = 5
  PATCHLEVEL = 7

@@ -6552,6 +6552,8 @@ void __init sched_init(void)
 	unsigned long ptr = 0;
 	int i;
 
+	printk(KERN_INFO "Cachy CPU scheduler v5.7.10 by Hamad Al Marri. Thanks to my wife Sarah for her patience.");
+	
 	wait_bit_init();
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
