@@ -31,6 +31,15 @@ Android, I don't think the current version it is ready to go without some tweeki
     * **`make menuconfig` make sure to disable `FAIR_GROUP_SCHED` and `NUMA`**
     * To build the kernel you need to follow linux build kernel tutorials.
 
+
+To confirm that Cachy is currently running:
+```
+
+dmesg | grep -i "cachy cpu"
+[    0.059697] Cachy CPU scheduler v5.7.10 by Hamad Al Marri. Thanks to my wife Sarah for her patience.
+
+```
+    
 ## Complexity
 * The complexity of Enqueue and Dequeue a task is `O(1)`.
 * The complexity of pick the next task is in `O(n)`, where 
