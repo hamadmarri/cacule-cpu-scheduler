@@ -122,7 +122,8 @@ The priorities are applied as the followings:
 
 
 ### Phoronix Test Suite
-[Cachy vs CFS](https://openbenchmarking.org/result/2007245-NI-CACHYVSCF85)
+https://openbenchmarking.org/result/2007301-NI-CACHYVSCF60
+
 
 ### stress-ng test with perf stat
 The below results are the best results of both Cachy and CFS out of 20 runs.
