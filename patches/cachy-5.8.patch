@@ -1,5 +1,17 @@
+diff --color -rubN linux-5.8/arch/x86/Kconfig ../linux-5.8-cachy/arch/x86/Kconfig
+--- linux-5.8/arch/x86/Kconfig	2020-08-04 00:25:37.546006929 +1000
++++ ../linux-5.8-cachy/arch/x86/Kconfig	2020-08-04 01:01:45.940567003 +1000
+@@ -1544,7 +1544,7 @@
+ 	bool "NUMA Memory Allocation and Scheduler Support"
+ 	depends on SMP
+ 	depends on X86_64 || (X86_32 && HIGHMEM64G && X86_BIGSMP)
+-	default y if X86_BIGSMP
++	default n
+ 	help
+ 	  Enable NUMA (Non-Uniform Memory Access) support.
+ 
 diff --color -rubN linux-5.8/include/linux/sched.h ../linux-5.8-cachy/include/linux/sched.h
---- linux-5.8/include/linux/sched.h	2020-08-03 07:21:45.000000000 +1000
+--- linux-5.8/include/linux/sched.h	2020-08-04 01:04:51.323366248 +1000
 +++ ../linux-5.8-cachy/include/linux/sched.h	2020-08-04 00:14:30.342484169 +1000
 @@ -449,6 +449,8 @@
  	/* For load-balancing: */
@@ -10,8 +22,20 @@ diff --color -rubN linux-5.8/include/linux/sched.h ../linux-5.8-cachy/include/li
  	struct list_head		group_node;
  	unsigned int			on_rq;
  
+diff --color -rubN linux-5.8/init/Kconfig ../linux-5.8-cachy/init/Kconfig
+--- linux-5.8/init/Kconfig	2020-08-04 00:26:06.365820259 +1000
++++ ../linux-5.8-cachy/init/Kconfig	2020-08-04 01:01:52.828522391 +1000
+@@ -920,7 +920,7 @@
+ config FAIR_GROUP_SCHED
+ 	bool "Group scheduling for SCHED_OTHER"
+ 	depends on CGROUP_SCHED
+-	default CGROUP_SCHED
++	default n
+ 
+ config CFS_BANDWIDTH
+ 	bool "CPU bandwidth provisioning for FAIR_GROUP_SCHED"
 diff --color -rubN linux-5.8/kernel/sched/core.c ../linux-5.8-cachy/kernel/sched/core.c
---- linux-5.8/kernel/sched/core.c	2020-08-03 07:21:45.000000000 +1000
+--- linux-5.8/kernel/sched/core.c	2020-08-04 01:04:51.323366248 +1000
 +++ ../linux-5.8-cachy/kernel/sched/core.c	2020-08-04 00:14:54.014330864 +1000
 @@ -3337,31 +3337,8 @@
  
@@ -63,7 +87,7 @@ diff --color -rubN linux-5.8/kernel/sched/core.c ../linux-5.8-cachy/kernel/sched
  
  #ifdef CONFIG_FAIR_GROUP_SCHED
 diff --color -rubN linux-5.8/kernel/sched/fair.c ../linux-5.8-cachy/kernel/sched/fair.c
---- linux-5.8/kernel/sched/fair.c	2020-08-03 07:21:45.000000000 +1000
+--- linux-5.8/kernel/sched/fair.c	2020-08-04 01:04:51.327366223 +1000
 +++ ../linux-5.8-cachy/kernel/sched/fair.c	2020-08-04 00:15:04.830260801 +1000
 @@ -539,105 +539,62 @@
  	return (s64)(a->vruntime - b->vruntime) < 0;
@@ -1715,7 +1739,7 @@ diff --color -rubN linux-5.8/kernel/sched/fair.c ../linux-5.8-cachy/kernel/sched
  #ifdef CONFIG_NO_HZ_COMMON
  	nohz.next_balance = jiffies;
 diff --color -rubN linux-5.8/kernel/sched/sched.h ../linux-5.8-cachy/kernel/sched/sched.h
---- linux-5.8/kernel/sched/sched.h	2020-08-03 07:21:45.000000000 +1000
+--- linux-5.8/kernel/sched/sched.h	2020-08-04 01:04:51.327366223 +1000
 +++ ../linux-5.8-cachy/kernel/sched/sched.h	2020-08-04 00:15:22.102148927 +1000
 @@ -515,6 +515,7 @@
  	 * 'curr' points to currently running entity on this cfs_rq.
@@ -1726,7 +1750,7 @@ diff --color -rubN linux-5.8/kernel/sched/sched.h ../linux-5.8-cachy/kernel/sche
  	struct sched_entity	*next;
  	struct sched_entity	*last;
 diff --color -rubN linux-5.8/Makefile ../linux-5.8-cachy/Makefile
---- linux-5.8/Makefile	2020-08-03 07:21:45.000000000 +1000
+--- linux-5.8/Makefile	2020-08-04 01:04:51.327366223 +1000
 +++ ../linux-5.8-cachy/Makefile	2020-08-04 00:13:59.710682597 +1000
 @@ -2,8 +2,8 @@
  VERSION = 5

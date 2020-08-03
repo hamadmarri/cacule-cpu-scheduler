@@ -1544,7 +1544,7 @@ config NUMA
 	bool "NUMA Memory Allocation and Scheduler Support"
 	depends on SMP
 	depends on X86_64 || (X86_32 && HIGHMEM64G && X86_BIGSMP)
-	default y if X86_BIGSMP
+	default n
 	help
 	  Enable NUMA (Non-Uniform Memory Access) support.
 
