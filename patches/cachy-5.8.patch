@@ -1,0 +1,1741 @@
+diff --color -rubN linux-5.8/include/linux/sched.h ../linux-5.8-cachy/include/linux/sched.h
+--- linux-5.8/include/linux/sched.h	2020-08-03 07:21:45.000000000 +1000
++++ ../linux-5.8-cachy/include/linux/sched.h	2020-08-04 00:14:30.342484169 +1000
+@@ -449,6 +449,8 @@
+ 	/* For load-balancing: */
+ 	struct load_weight		load;
+ 	struct rb_node			run_node;
++	struct sched_entity* 		next;
++	struct sched_entity* 		prev;
+ 	struct list_head		group_node;
+ 	unsigned int			on_rq;
+ 
+diff --color -rubN linux-5.8/kernel/sched/core.c ../linux-5.8-cachy/kernel/sched/core.c
+--- linux-5.8/kernel/sched/core.c	2020-08-03 07:21:45.000000000 +1000
++++ ../linux-5.8-cachy/kernel/sched/core.c	2020-08-04 00:14:54.014330864 +1000
+@@ -3337,31 +3337,8 @@
+ 
+ #ifdef CONFIG_SMP
+ 
+-/* rq->lock is NOT held, but preemption is disabled */
+-static void __balance_callback(struct rq *rq)
+-{
+-	struct callback_head *head, *next;
+-	void (*func)(struct rq *rq);
+-	unsigned long flags;
+-
+-	raw_spin_lock_irqsave(&rq->lock, flags);
+-	head = rq->balance_callback;
+-	rq->balance_callback = NULL;
+-	while (head) {
+-		func = (void (*)(struct rq *))head->func;
+-		next = head->next;
+-		head->next = NULL;
+-		head = next;
+-
+-		func(rq);
+-	}
+-	raw_spin_unlock_irqrestore(&rq->lock, flags);
+-}
+-
+ static inline void balance_callback(struct rq *rq)
+ {
+-	if (unlikely(rq->balance_callback))
+-		__balance_callback(rq);
+ }
+ 
+ #else
+@@ -3697,7 +3674,6 @@
+ 
+ #ifdef CONFIG_SMP
+ 	rq->idle_balance = idle_cpu(cpu);
+-	trigger_load_balance(rq);
+ #endif
+ }
+ 
+@@ -6710,6 +6686,8 @@
+ 	unsigned long ptr = 0;
+ 	int i;
+ 
++	printk(KERN_INFO "Cachy CPU scheduler v5.8 by Hamad Al Marri. Thanks to my wife Sarah for her patience.");
++
+ 	wait_bit_init();
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+diff --color -rubN linux-5.8/kernel/sched/fair.c ../linux-5.8-cachy/kernel/sched/fair.c
+--- linux-5.8/kernel/sched/fair.c	2020-08-03 07:21:45.000000000 +1000
++++ ../linux-5.8-cachy/kernel/sched/fair.c	2020-08-04 00:15:04.830260801 +1000
+@@ -539,105 +539,62 @@
+ 	return (s64)(a->vruntime - b->vruntime) < 0;
+ }
+ 
+-static void update_min_vruntime(struct cfs_rq *cfs_rq)
+-{
+-	struct sched_entity *curr = cfs_rq->curr;
+-	struct rb_node *leftmost = rb_first_cached(&cfs_rq->tasks_timeline);
+-
+-	u64 vruntime = cfs_rq->min_vruntime;
+-
+-	if (curr) {
+-		if (curr->on_rq)
+-			vruntime = curr->vruntime;
+-		else
+-			curr = NULL;
+-	}
+-
+-	if (leftmost) { /* non-empty tree */
+-		struct sched_entity *se;
+-		se = rb_entry(leftmost, struct sched_entity, run_node);
+-
+-		if (!curr)
+-			vruntime = se->vruntime;
+-		else
+-			vruntime = min_vruntime(vruntime, se->vruntime);
+-	}
+-
+-	/* ensure we never gain time by being placed backwards. */
+-	cfs_rq->min_vruntime = max_vruntime(cfs_rq->min_vruntime, vruntime);
+-#ifndef CONFIG_64BIT
+-	smp_wmb();
+-	cfs_rq->min_vruntime_copy = cfs_rq->min_vruntime;
+-#endif
+-}
+-
+ /*
+- * Enqueue an entity into the rb-tree:
++ * Enqueue an entity
+  */
+ static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ {
+-	struct rb_node **link = &cfs_rq->tasks_timeline.rb_root.rb_node;
+-	struct rb_node *parent = NULL;
+-	struct sched_entity *entry;
+-	bool leftmost = true;
++	se->next = NULL;
++	se->prev = NULL;
+ 
+-	/*
+-	 * Find the right place in the rbtree:
+-	 */
+-	while (*link) {
+-		parent = *link;
+-		entry = rb_entry(parent, struct sched_entity, run_node);
+-		/*
+-		 * We dont care about collisions. Nodes with
+-		 * the same key stay together.
+-		 */
+-		if (entity_before(se, entry)) {
+-			link = &parent->rb_left;
+-		} else {
+-			link = &parent->rb_right;
+-			leftmost = false;
+-		}
++	if (likely(cfs_rq->head))
++	{
++		se->next		= cfs_rq->head;
++		cfs_rq->head->prev	= se;
++
++		// lastly reset the head
++		cfs_rq->head = se;
++
++		return;
+ 	}
+ 
+-	rb_link_node(&se->run_node, parent, link);
+-	rb_insert_color_cached(&se->run_node,
+-			       &cfs_rq->tasks_timeline, leftmost);
++	// if empty rq
++	cfs_rq->head = se;
+ }
+ 
+ static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ {
+-	rb_erase_cached(&se->run_node, &cfs_rq->tasks_timeline);
+-}
+-
+-struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq)
+-{
+-	struct rb_node *left = rb_first_cached(&cfs_rq->tasks_timeline);
++	// if only one se in rq
++	if (cfs_rq->head->next == NULL)
++		cfs_rq->head = NULL;
++	else if (se == cfs_rq->head)
++	{
++		// if it is the head
++		cfs_rq->head		= cfs_rq->head->next;
++		cfs_rq->head->prev	= NULL;
++	}
++	else
++	{
++		// if in the middle
++		struct sched_entity *prev = se->prev;
++		struct sched_entity *next = se->next;
+ 
+-	if (!left)
+-		return NULL;
++		prev->next = next;
+ 
+-	return rb_entry(left, struct sched_entity, run_node);
++		if (next)
++			next->prev = prev;
++	}
+ }
+ 
+-static struct sched_entity *__pick_next_entity(struct sched_entity *se)
++struct sched_entity *__pick_first_entity(struct cfs_rq *cfs_rq)
+ {
+-	struct rb_node *next = rb_next(&se->run_node);
+-
+-	if (!next)
+-		return NULL;
+-
+-	return rb_entry(next, struct sched_entity, run_node);
++	return cfs_rq->head;
+ }
+ 
+ #ifdef CONFIG_SCHED_DEBUG
+ struct sched_entity *__pick_last_entity(struct cfs_rq *cfs_rq)
+ {
+-	struct rb_node *last = rb_last(&cfs_rq->tasks_timeline.rb_root);
+-
+-	if (!last)
+-		return NULL;
+-
+-	return rb_entry(last, struct sched_entity, run_node);
++	return cfs_rq->head;
+ }
+ 
+ /**************************************************************
+@@ -722,16 +679,6 @@
+ 	return slice;
+ }
+ 
+-/*
+- * We calculate the vruntime slice of a to-be-inserted task.
+- *
+- * vs = s/w
+- */
+-static u64 sched_vslice(struct cfs_rq *cfs_rq, struct sched_entity *se)
+-{
+-	return calc_delta_fair(sched_slice(cfs_rq, se), se);
+-}
+-
+ #include "pelt.h"
+ #ifdef CONFIG_SMP
+ 
+@@ -863,12 +810,10 @@
+ 	schedstat_add(cfs_rq->exec_clock, delta_exec);
+ 
+ 	curr->vruntime += calc_delta_fair(delta_exec, curr);
+-	update_min_vruntime(cfs_rq);
+ 
+ 	if (entity_is_task(curr)) {
+ 		struct task_struct *curtask = task_of(curr);
+ 
+-		trace_sched_stat_runtime(curtask, delta_exec, curr->vruntime);
+ 		cgroup_account_cputime(curtask, delta_exec);
+ 		account_group_exec_runtime(curtask, delta_exec);
+ 	}
+@@ -2896,39 +2841,6 @@
+ 	}
+ }
+ 
+-/*
+- * Drive the periodic memory faults..
+- */
+-static void task_tick_numa(struct rq *rq, struct task_struct *curr)
+-{
+-	struct callback_head *work = &curr->numa_work;
+-	u64 period, now;
+-
+-	/*
+-	 * We don't care about NUMA placement if we don't have memory.
+-	 */
+-	if ((curr->flags & (PF_EXITING | PF_KTHREAD)) || work->next != work)
+-		return;
+-
+-	/*
+-	 * Using runtime rather than walltime has the dual advantage that
+-	 * we (mostly) drive the selection from busy threads and that the
+-	 * task needs to have done some actual work before we bother with
+-	 * NUMA placement.
+-	 */
+-	now = curr->se.sum_exec_runtime;
+-	period = (u64)curr->numa_scan_period * NSEC_PER_MSEC;
+-
+-	if (now > curr->node_stamp + period) {
+-		if (!curr->node_stamp)
+-			curr->numa_scan_period = task_scan_start(curr);
+-		curr->node_stamp += period;
+-
+-		if (!time_before(jiffies, curr->mm->numa_next_scan))
+-			task_work_add(curr, work, true);
+-	}
+-}
+-
+ static void update_scan_period(struct task_struct *p, int new_cpu)
+ {
+ 	int src_nid = cpu_to_node(task_cpu(p));
+@@ -2964,9 +2876,6 @@
+ }
+ 
+ #else
+-static void task_tick_numa(struct rq *rq, struct task_struct *curr)
+-{
+-}
+ 
+ static inline void account_numa_enqueue(struct rq *rq, struct task_struct *p)
+ {
+@@ -4092,40 +4001,6 @@
+ #endif
+ }
+ 
+-static void
+-place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
+-{
+-	u64 vruntime = cfs_rq->min_vruntime;
+-
+-	/*
+-	 * The 'current' period is already promised to the current tasks,
+-	 * however the extra weight of the new task will slow them down a
+-	 * little, place the new task so that it fits in the slot that
+-	 * stays open at the end.
+-	 */
+-	if (initial && sched_feat(START_DEBIT))
+-		vruntime += sched_vslice(cfs_rq, se);
+-
+-	/* sleeps up to a single latency don't count. */
+-	if (!initial) {
+-		unsigned long thresh = sysctl_sched_latency;
+-
+-		/*
+-		 * Halve their sleep time's effect, to allow
+-		 * for a gentler effect of sleepers:
+-		 */
+-		if (sched_feat(GENTLE_FAIR_SLEEPERS))
+-			thresh >>= 1;
+-
+-		vruntime -= thresh;
+-	}
+-
+-	/* ensure we never gain time by being placed backwards. */
+-	se->vruntime = max_vruntime(se->vruntime, vruntime);
+-}
+-
+-static void check_enqueue_throttle(struct cfs_rq *cfs_rq);
+-
+ static inline void check_schedstat_required(void)
+ {
+ #ifdef CONFIG_SCHEDSTATS
+@@ -4181,28 +4056,11 @@
+ static void
+ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
+ {
+-	bool renorm = !(flags & ENQUEUE_WAKEUP) || (flags & ENQUEUE_MIGRATED);
+ 	bool curr = cfs_rq->curr == se;
+ 
+-	/*
+-	 * If we're the current task, we must renormalise before calling
+-	 * update_curr().
+-	 */
+-	if (renorm && curr)
+-		se->vruntime += cfs_rq->min_vruntime;
+-
+ 	update_curr(cfs_rq);
+ 
+ 	/*
+-	 * Otherwise, renormalise after, such that we're placed at the current
+-	 * moment in time, instead of some random moment in the past. Being
+-	 * placed in the past could significantly boost this task to the
+-	 * fairness detriment of existing tasks.
+-	 */
+-	if (renorm && !curr)
+-		se->vruntime += cfs_rq->min_vruntime;
+-
+-	/*
+ 	 * When enqueuing a sched_entity, we must:
+ 	 *   - Update loads to have both entity and cfs_rq synced with now.
+ 	 *   - Add its load to cfs_rq->runnable_avg
+@@ -4215,71 +4073,12 @@
+ 	update_cfs_group(se);
+ 	account_entity_enqueue(cfs_rq, se);
+ 
+-	if (flags & ENQUEUE_WAKEUP)
+-		place_entity(cfs_rq, se, 0);
+-
+ 	check_schedstat_required();
+ 	update_stats_enqueue(cfs_rq, se, flags);
+ 	check_spread(cfs_rq, se);
+ 	if (!curr)
+ 		__enqueue_entity(cfs_rq, se);
+ 	se->on_rq = 1;
+-
+-	/*
+-	 * When bandwidth control is enabled, cfs might have been removed
+-	 * because of a parent been throttled but cfs->nr_running > 1. Try to
+-	 * add it unconditionnally.
+-	 */
+-	if (cfs_rq->nr_running == 1 || cfs_bandwidth_used())
+-		list_add_leaf_cfs_rq(cfs_rq);
+-
+-	if (cfs_rq->nr_running == 1)
+-		check_enqueue_throttle(cfs_rq);
+-}
+-
+-static void __clear_buddies_last(struct sched_entity *se)
+-{
+-	for_each_sched_entity(se) {
+-		struct cfs_rq *cfs_rq = cfs_rq_of(se);
+-		if (cfs_rq->last != se)
+-			break;
+-
+-		cfs_rq->last = NULL;
+-	}
+-}
+-
+-static void __clear_buddies_next(struct sched_entity *se)
+-{
+-	for_each_sched_entity(se) {
+-		struct cfs_rq *cfs_rq = cfs_rq_of(se);
+-		if (cfs_rq->next != se)
+-			break;
+-
+-		cfs_rq->next = NULL;
+-	}
+-}
+-
+-static void __clear_buddies_skip(struct sched_entity *se)
+-{
+-	for_each_sched_entity(se) {
+-		struct cfs_rq *cfs_rq = cfs_rq_of(se);
+-		if (cfs_rq->skip != se)
+-			break;
+-
+-		cfs_rq->skip = NULL;
+-	}
+-}
+-
+-static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
+-{
+-	if (cfs_rq->last == se)
+-		__clear_buddies_last(se);
+-
+-	if (cfs_rq->next == se)
+-		__clear_buddies_next(se);
+-
+-	if (cfs_rq->skip == se)
+-		__clear_buddies_skip(se);
+ }
+ 
+ static __always_inline void return_cfs_rq_runtime(struct cfs_rq *cfs_rq);
+@@ -4305,35 +4104,14 @@
+ 
+ 	update_stats_dequeue(cfs_rq, se, flags);
+ 
+-	clear_buddies(cfs_rq, se);
+-
+-	if (se != cfs_rq->curr)
+ 		__dequeue_entity(cfs_rq, se);
+ 	se->on_rq = 0;
+ 	account_entity_dequeue(cfs_rq, se);
+ 
+-	/*
+-	 * Normalize after update_curr(); which will also have moved
+-	 * min_vruntime if @se is the one holding it back. But before doing
+-	 * update_min_vruntime() again, which will discount @se's position and
+-	 * can move min_vruntime forward still more.
+-	 */
+-	if (!(flags & DEQUEUE_SLEEP))
+-		se->vruntime -= cfs_rq->min_vruntime;
+-
+ 	/* return excess runtime on last dequeue */
+ 	return_cfs_rq_runtime(cfs_rq);
+ 
+ 	update_cfs_group(se);
+-
+-	/*
+-	 * Now advance min_vruntime if @se was the entity holding it back,
+-	 * except when: DEQUEUE_SAVE && !DEQUEUE_MOVE, in this case we'll be
+-	 * put back on, and if we advance min_vruntime, we'll be placed back
+-	 * further than we started -- ie. we'll be penalized.
+-	 */
+-	if ((flags & (DEQUEUE_SAVE | DEQUEUE_MOVE)) != DEQUEUE_SAVE)
+-		update_min_vruntime(cfs_rq);
+ }
+ 
+ /*
+@@ -4342,135 +4120,20 @@
+ static void
+ check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
+ {
+-	unsigned long ideal_runtime, delta_exec;
+-	struct sched_entity *se;
+-	s64 delta;
+-
+-	ideal_runtime = sched_slice(cfs_rq, curr);
+-	delta_exec = curr->sum_exec_runtime - curr->prev_sum_exec_runtime;
+-	if (delta_exec > ideal_runtime) {
+-		resched_curr(rq_of(cfs_rq));
+-		/*
+-		 * The current task ran long enough, ensure it doesn't get
+-		 * re-elected due to buddy favours.
+-		 */
+-		clear_buddies(cfs_rq, curr);
+-		return;
+-	}
+-
+-	/*
+-	 * Ensure that a task that missed wakeup preemption by a
+-	 * narrow margin doesn't have to wait for a full slice.
+-	 * This also mitigates buddy induced latencies under load.
+-	 */
+-	if (delta_exec < sysctl_sched_min_granularity)
+-		return;
+-
+-	se = __pick_first_entity(cfs_rq);
+-	delta = curr->vruntime - se->vruntime;
+-
+-	if (delta < 0)
+-		return;
+-
+-	if (delta > ideal_runtime)
+ 		resched_curr(rq_of(cfs_rq));
+ }
+ 
+ static void
+ set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ {
+-	/* 'current' is not kept within the tree. */
+-	if (se->on_rq) {
+-		/*
+-		 * Any task has to be enqueued before it get to execute on
+-		 * a CPU. So account for the time it spent waiting on the
+-		 * runqueue.
+-		 */
+-		update_stats_wait_end(cfs_rq, se);
+-		__dequeue_entity(cfs_rq, se);
+-		update_load_avg(cfs_rq, se, UPDATE_TG);
+-	}
+-
+ 	update_stats_curr_start(cfs_rq, se);
+ 	cfs_rq->curr = se;
+ 
+-	/*
+-	 * Track our maximum slice length, if the CPU's load is at
+-	 * least twice that of our own weight (i.e. dont track it
+-	 * when there are only lesser-weight tasks around):
+-	 */
+-	if (schedstat_enabled() &&
+-	    rq_of(cfs_rq)->cfs.load.weight >= 2*se->load.weight) {
+-		schedstat_set(se->statistics.slice_max,
+-			max((u64)schedstat_val(se->statistics.slice_max),
+-			    se->sum_exec_runtime - se->prev_sum_exec_runtime));
+-	}
+-
+ 	se->prev_sum_exec_runtime = se->sum_exec_runtime;
+ }
+ 
+ static int
+-wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se);
+-
+-/*
+- * Pick the next process, keeping these things in mind, in this order:
+- * 1) keep things fair between processes/task groups
+- * 2) pick the "next" process, since someone really wants that to run
+- * 3) pick the "last" process, for cache locality
+- * 4) do not run the "skip" process, if something else is available
+- */
+-static struct sched_entity *
+-pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr)
+-{
+-	struct sched_entity *left = __pick_first_entity(cfs_rq);
+-	struct sched_entity *se;
+-
+-	/*
+-	 * If curr is set we have to see if its left of the leftmost entity
+-	 * still in the tree, provided there was anything in the tree at all.
+-	 */
+-	if (!left || (curr && entity_before(curr, left)))
+-		left = curr;
+-
+-	se = left; /* ideally we run the leftmost entity */
+-
+-	/*
+-	 * Avoid running the skip buddy, if running something else can
+-	 * be done without getting too unfair.
+-	 */
+-	if (cfs_rq->skip == se) {
+-		struct sched_entity *second;
+-
+-		if (se == curr) {
+-			second = __pick_first_entity(cfs_rq);
+-		} else {
+-			second = __pick_next_entity(se);
+-			if (!second || (curr && entity_before(curr, second)))
+-				second = curr;
+-		}
+-
+-		if (second && wakeup_preempt_entity(second, left) < 1)
+-			se = second;
+-	}
+-
+-	/*
+-	 * Prefer last buddy, try to return the CPU to a preempted task.
+-	 */
+-	if (cfs_rq->last && wakeup_preempt_entity(cfs_rq->last, left) < 1)
+-		se = cfs_rq->last;
+-
+-	/*
+-	 * Someone really wants this to run. If it's not unfair, run it.
+-	 */
+-	if (cfs_rq->next && wakeup_preempt_entity(cfs_rq->next, left) < 1)
+-		se = cfs_rq->next;
+-
+-	clear_buddies(cfs_rq, se);
+-
+-	return se;
+-}
+-
+-static bool check_cfs_rq_runtime(struct cfs_rq *cfs_rq);
++wakeup_preempt_entity(u64 now, struct sched_entity *curr, struct sched_entity *se);
+ 
+ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
+ {
+@@ -4481,15 +4144,8 @@
+ 	if (prev->on_rq)
+ 		update_curr(cfs_rq);
+ 
+-	/* throttle cfs_rqs exceeding runtime */
+-	check_cfs_rq_runtime(cfs_rq);
+-
+-	check_spread(cfs_rq, prev);
+-
+ 	if (prev->on_rq) {
+ 		update_stats_wait_start(cfs_rq, prev);
+-		/* Put 'current' back into the tree. */
+-		__enqueue_entity(cfs_rq, prev);
+ 		/* in !on_rq case, update occurred at dequeue */
+ 		update_load_avg(cfs_rq, prev, 0);
+ 	}
+@@ -5098,30 +4754,6 @@
+ 	raw_spin_unlock_irqrestore(&cfs_b->lock, flags);
+ }
+ 
+-/*
+- * When a group wakes up we want to make sure that its quota is not already
+- * expired/exceeded, otherwise it may be allowed to steal additional ticks of
+- * runtime as update_curr() throttling can not not trigger until it's on-rq.
+- */
+-static void check_enqueue_throttle(struct cfs_rq *cfs_rq)
+-{
+-	if (!cfs_bandwidth_used())
+-		return;
+-
+-	/* an active group must be handled by the update_curr()->put() path */
+-	if (!cfs_rq->runtime_enabled || cfs_rq->curr)
+-		return;
+-
+-	/* ensure the group is not already throttled */
+-	if (cfs_rq_throttled(cfs_rq))
+-		return;
+-
+-	/* update runtime allocation */
+-	account_cfs_rq_runtime(cfs_rq, 0);
+-	if (cfs_rq->runtime_remaining <= 0)
+-		throttle_cfs_rq(cfs_rq);
+-}
+-
+ static void sync_throttle(struct task_group *tg, int cpu)
+ {
+ 	struct cfs_rq *pcfs_rq, *cfs_rq;
+@@ -5139,25 +4771,6 @@
+ 	cfs_rq->throttled_clock_task = rq_clock_task(cpu_rq(cpu));
+ }
+ 
+-/* conditionally throttle active cfs_rq's from put_prev_entity() */
+-static bool check_cfs_rq_runtime(struct cfs_rq *cfs_rq)
+-{
+-	if (!cfs_bandwidth_used())
+-		return false;
+-
+-	if (likely(!cfs_rq->runtime_enabled || cfs_rq->runtime_remaining > 0))
+-		return false;
+-
+-	/*
+-	 * it's possible for a throttled entity to be forced into a running
+-	 * state (e.g. set_curr_task), in this case we're finished.
+-	 */
+-	if (cfs_rq_throttled(cfs_rq))
+-		return true;
+-
+-	return throttle_cfs_rq(cfs_rq);
+-}
+-
+ static enum hrtimer_restart sched_cfs_slack_timer(struct hrtimer *timer)
+ {
+ 	struct cfs_bandwidth *cfs_b =
+@@ -5332,8 +4945,6 @@
+ }
+ 
+ static void account_cfs_rq_runtime(struct cfs_rq *cfs_rq, u64 delta_exec) {}
+-static bool check_cfs_rq_runtime(struct cfs_rq *cfs_rq) { return false; }
+-static void check_enqueue_throttle(struct cfs_rq *cfs_rq) {}
+ static inline void sync_throttle(struct task_group *tg, int cpu) {}
+ static __always_inline void return_cfs_rq_runtime(struct cfs_rq *cfs_rq) {}
+ 
+@@ -5561,8 +5172,6 @@
+ 	hrtick_update(rq);
+ }
+ 
+-static void set_next_buddy(struct sched_entity *se);
+-
+ /*
+  * The dequeue_task method is called before nr_running is
+  * decreased. We remove the task from the rbtree and
+@@ -5591,12 +5200,6 @@
+ 		if (cfs_rq->load.weight) {
+ 			/* Avoid re-evaluating load for this entity: */
+ 			se = parent_entity(se);
+-			/*
+-			 * Bias pick_next to pick a task from this cfs_rq, as
+-			 * p is sleeping when it is within its sched_slice.
+-			 */
+-			if (task_sleep && se && !throttled_hierarchy(cfs_rq))
+-				set_next_buddy(se);
+ 			break;
+ 		}
+ 		flags |= DEQUEUE_SLEEP;
+@@ -5712,53 +5315,6 @@
+ 	return cpu_rq(cpu)->cpu_capacity;
+ }
+ 
+-static void record_wakee(struct task_struct *p)
+-{
+-	/*
+-	 * Only decay a single time; tasks that have less then 1 wakeup per
+-	 * jiffy will not have built up many flips.
+-	 */
+-	if (time_after(jiffies, current->wakee_flip_decay_ts + HZ)) {
+-		current->wakee_flips >>= 1;
+-		current->wakee_flip_decay_ts = jiffies;
+-	}
+-
+-	if (current->last_wakee != p) {
+-		current->last_wakee = p;
+-		current->wakee_flips++;
+-	}
+-}
+-
+-/*
+- * Detect M:N waker/wakee relationships via a switching-frequency heuristic.
+- *
+- * A waker of many should wake a different task than the one last awakened
+- * at a frequency roughly N times higher than one of its wakees.
+- *
+- * In order to determine whether we should let the load spread vs consolidating
+- * to shared cache, we look for a minimum 'flip' frequency of llc_size in one
+- * partner, and a factor of lls_size higher frequency in the other.
+- *
+- * With both conditions met, we can be relatively sure that the relationship is
+- * non-monogamous, with partner count exceeding socket size.
+- *
+- * Waker/wakee being client/server, worker/dispatcher, interrupt source or
+- * whatever is irrelevant, spread criteria is apparent partner count exceeds
+- * socket size.
+- */
+-static int wake_wide(struct task_struct *p)
+-{
+-	unsigned int master = current->wakee_flips;
+-	unsigned int slave = p->wakee_flips;
+-	int factor = __this_cpu_read(sd_llc_size);
+-
+-	if (master < slave)
+-		swap(master, slave);
+-	if (slave < factor || master < slave * factor)
+-		return 0;
+-	return 1;
+-}
+-
+ /*
+  * The purpose of wake_affine() is to quickly determine on which CPU we can run
+  * soonest. For the purpose of speed we only consider the waking and previous
+@@ -6415,239 +5971,6 @@
+ }
+ 
+ /*
+- * Predicts what cpu_util(@cpu) would return if @p was migrated (and enqueued)
+- * to @dst_cpu.
+- */
+-static unsigned long cpu_util_next(int cpu, struct task_struct *p, int dst_cpu)
+-{
+-	struct cfs_rq *cfs_rq = &cpu_rq(cpu)->cfs;
+-	unsigned long util_est, util = READ_ONCE(cfs_rq->avg.util_avg);
+-
+-	/*
+-	 * If @p migrates from @cpu to another, remove its contribution. Or,
+-	 * if @p migrates from another CPU to @cpu, add its contribution. In
+-	 * the other cases, @cpu is not impacted by the migration, so the
+-	 * util_avg should already be correct.
+-	 */
+-	if (task_cpu(p) == cpu && dst_cpu != cpu)
+-		sub_positive(&util, task_util(p));
+-	else if (task_cpu(p) != cpu && dst_cpu == cpu)
+-		util += task_util(p);
+-
+-	if (sched_feat(UTIL_EST)) {
+-		util_est = READ_ONCE(cfs_rq->avg.util_est.enqueued);
+-
+-		/*
+-		 * During wake-up, the task isn't enqueued yet and doesn't
+-		 * appear in the cfs_rq->avg.util_est.enqueued of any rq,
+-		 * so just add it (if needed) to "simulate" what will be
+-		 * cpu_util() after the task has been enqueued.
+-		 */
+-		if (dst_cpu == cpu)
+-			util_est += _task_util_est(p);
+-
+-		util = max(util, util_est);
+-	}
+-
+-	return min(util, capacity_orig_of(cpu));
+-}
+-
+-/*
+- * compute_energy(): Estimates the energy that @pd would consume if @p was
+- * migrated to @dst_cpu. compute_energy() predicts what will be the utilization
+- * landscape of @pd's CPUs after the task migration, and uses the Energy Model
+- * to compute what would be the energy if we decided to actually migrate that
+- * task.
+- */
+-static long
+-compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
+-{
+-	struct cpumask *pd_mask = perf_domain_span(pd);
+-	unsigned long cpu_cap = arch_scale_cpu_capacity(cpumask_first(pd_mask));
+-	unsigned long max_util = 0, sum_util = 0;
+-	int cpu;
+-
+-	/*
+-	 * The capacity state of CPUs of the current rd can be driven by CPUs
+-	 * of another rd if they belong to the same pd. So, account for the
+-	 * utilization of these CPUs too by masking pd with cpu_online_mask
+-	 * instead of the rd span.
+-	 *
+-	 * If an entire pd is outside of the current rd, it will not appear in
+-	 * its pd list and will not be accounted by compute_energy().
+-	 */
+-	for_each_cpu_and(cpu, pd_mask, cpu_online_mask) {
+-		unsigned long cpu_util, util_cfs = cpu_util_next(cpu, p, dst_cpu);
+-		struct task_struct *tsk = cpu == dst_cpu ? p : NULL;
+-
+-		/*
+-		 * Busy time computation: utilization clamping is not
+-		 * required since the ratio (sum_util / cpu_capacity)
+-		 * is already enough to scale the EM reported power
+-		 * consumption at the (eventually clamped) cpu_capacity.
+-		 */
+-		sum_util += schedutil_cpu_util(cpu, util_cfs, cpu_cap,
+-					       ENERGY_UTIL, NULL);
+-
+-		/*
+-		 * Performance domain frequency: utilization clamping
+-		 * must be considered since it affects the selection
+-		 * of the performance domain frequency.
+-		 * NOTE: in case RT tasks are running, by default the
+-		 * FREQUENCY_UTIL's utilization can be max OPP.
+-		 */
+-		cpu_util = schedutil_cpu_util(cpu, util_cfs, cpu_cap,
+-					      FREQUENCY_UTIL, tsk);
+-		max_util = max(max_util, cpu_util);
+-	}
+-
+-	return em_pd_energy(pd->em_pd, max_util, sum_util);
+-}
+-
+-/*
+- * find_energy_efficient_cpu(): Find most energy-efficient target CPU for the
+- * waking task. find_energy_efficient_cpu() looks for the CPU with maximum
+- * spare capacity in each performance domain and uses it as a potential
+- * candidate to execute the task. Then, it uses the Energy Model to figure
+- * out which of the CPU candidates is the most energy-efficient.
+- *
+- * The rationale for this heuristic is as follows. In a performance domain,
+- * all the most energy efficient CPU candidates (according to the Energy
+- * Model) are those for which we'll request a low frequency. When there are
+- * several CPUs for which the frequency request will be the same, we don't
+- * have enough data to break the tie between them, because the Energy Model
+- * only includes active power costs. With this model, if we assume that
+- * frequency requests follow utilization (e.g. using schedutil), the CPU with
+- * the maximum spare capacity in a performance domain is guaranteed to be among
+- * the best candidates of the performance domain.
+- *
+- * In practice, it could be preferable from an energy standpoint to pack
+- * small tasks on a CPU in order to let other CPUs go in deeper idle states,
+- * but that could also hurt our chances to go cluster idle, and we have no
+- * ways to tell with the current Energy Model if this is actually a good
+- * idea or not. So, find_energy_efficient_cpu() basically favors
+- * cluster-packing, and spreading inside a cluster. That should at least be
+- * a good thing for latency, and this is consistent with the idea that most
+- * of the energy savings of EAS come from the asymmetry of the system, and
+- * not so much from breaking the tie between identical CPUs. That's also the
+- * reason why EAS is enabled in the topology code only for systems where
+- * SD_ASYM_CPUCAPACITY is set.
+- *
+- * NOTE: Forkees are not accepted in the energy-aware wake-up path because
+- * they don't have any useful utilization data yet and it's not possible to
+- * forecast their impact on energy consumption. Consequently, they will be
+- * placed by find_idlest_cpu() on the least loaded CPU, which might turn out
+- * to be energy-inefficient in some use-cases. The alternative would be to
+- * bias new tasks towards specific types of CPUs first, or to try to infer
+- * their util_avg from the parent task, but those heuristics could hurt
+- * other use-cases too. So, until someone finds a better way to solve this,
+- * let's keep things simple by re-using the existing slow path.
+- */
+-static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
+-{
+-	unsigned long prev_delta = ULONG_MAX, best_delta = ULONG_MAX;
+-	struct root_domain *rd = cpu_rq(smp_processor_id())->rd;
+-	unsigned long cpu_cap, util, base_energy = 0;
+-	int cpu, best_energy_cpu = prev_cpu;
+-	struct sched_domain *sd;
+-	struct perf_domain *pd;
+-
+-	rcu_read_lock();
+-	pd = rcu_dereference(rd->pd);
+-	if (!pd || READ_ONCE(rd->overutilized))
+-		goto fail;
+-
+-	/*
+-	 * Energy-aware wake-up happens on the lowest sched_domain starting
+-	 * from sd_asym_cpucapacity spanning over this_cpu and prev_cpu.
+-	 */
+-	sd = rcu_dereference(*this_cpu_ptr(&sd_asym_cpucapacity));
+-	while (sd && !cpumask_test_cpu(prev_cpu, sched_domain_span(sd)))
+-		sd = sd->parent;
+-	if (!sd)
+-		goto fail;
+-
+-	sync_entity_load_avg(&p->se);
+-	if (!task_util_est(p))
+-		goto unlock;
+-
+-	for (; pd; pd = pd->next) {
+-		unsigned long cur_delta, spare_cap, max_spare_cap = 0;
+-		unsigned long base_energy_pd;
+-		int max_spare_cap_cpu = -1;
+-
+-		/* Compute the 'base' energy of the pd, without @p */
+-		base_energy_pd = compute_energy(p, -1, pd);
+-		base_energy += base_energy_pd;
+-
+-		for_each_cpu_and(cpu, perf_domain_span(pd), sched_domain_span(sd)) {
+-			if (!cpumask_test_cpu(cpu, p->cpus_ptr))
+-				continue;
+-
+-			util = cpu_util_next(cpu, p, cpu);
+-			cpu_cap = capacity_of(cpu);
+-			spare_cap = cpu_cap - util;
+-
+-			/*
+-			 * Skip CPUs that cannot satisfy the capacity request.
+-			 * IOW, placing the task there would make the CPU
+-			 * overutilized. Take uclamp into account to see how
+-			 * much capacity we can get out of the CPU; this is
+-			 * aligned with schedutil_cpu_util().
+-			 */
+-			util = uclamp_rq_util_with(cpu_rq(cpu), util, p);
+-			if (!fits_capacity(util, cpu_cap))
+-				continue;
+-
+-			/* Always use prev_cpu as a candidate. */
+-			if (cpu == prev_cpu) {
+-				prev_delta = compute_energy(p, prev_cpu, pd);
+-				prev_delta -= base_energy_pd;
+-				best_delta = min(best_delta, prev_delta);
+-			}
+-
+-			/*
+-			 * Find the CPU with the maximum spare capacity in
+-			 * the performance domain
+-			 */
+-			if (spare_cap > max_spare_cap) {
+-				max_spare_cap = spare_cap;
+-				max_spare_cap_cpu = cpu;
+-			}
+-		}
+-
+-		/* Evaluate the energy impact of using this CPU. */
+-		if (max_spare_cap_cpu >= 0 && max_spare_cap_cpu != prev_cpu) {
+-			cur_delta = compute_energy(p, max_spare_cap_cpu, pd);
+-			cur_delta -= base_energy_pd;
+-			if (cur_delta < best_delta) {
+-				best_delta = cur_delta;
+-				best_energy_cpu = max_spare_cap_cpu;
+-			}
+-		}
+-	}
+-unlock:
+-	rcu_read_unlock();
+-
+-	/*
+-	 * Pick the best CPU if prev_cpu cannot be used, or if it saves at
+-	 * least 6% of the energy used by prev_cpu.
+-	 */
+-	if (prev_delta == ULONG_MAX)
+-		return best_energy_cpu;
+-
+-	if ((prev_delta - best_delta) > ((prev_delta + base_energy) >> 4))
+-		return best_energy_cpu;
+-
+-	return prev_cpu;
+-
+-fail:
+-	rcu_read_unlock();
+-
+-	return -1;
+-}
+-
+-/*
+  * select_task_rq_fair: Select target runqueue for the waking task in domains
+  * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
+  * SD_BALANCE_FORK, or SD_BALANCE_EXEC.
+@@ -6668,19 +5991,6 @@
+ 	int want_affine = 0;
+ 	int sync = (wake_flags & WF_SYNC) && !(current->flags & PF_EXITING);
+ 
+-	if (sd_flag & SD_BALANCE_WAKE) {
+-		record_wakee(p);
+-
+-		if (sched_energy_enabled()) {
+-			new_cpu = find_energy_efficient_cpu(p, prev_cpu);
+-			if (new_cpu >= 0)
+-				return new_cpu;
+-			new_cpu = prev_cpu;
+-		}
+-
+-		want_affine = !wake_wide(p) && cpumask_test_cpu(cpu, p->cpus_ptr);
+-	}
+-
+ 	rcu_read_lock();
+ 	for_each_domain(cpu, tmp) {
+ 		/*
+@@ -6727,59 +6037,6 @@
+  */
+ static void migrate_task_rq_fair(struct task_struct *p, int new_cpu)
+ {
+-	/*
+-	 * As blocked tasks retain absolute vruntime the migration needs to
+-	 * deal with this by subtracting the old and adding the new
+-	 * min_vruntime -- the latter is done by enqueue_entity() when placing
+-	 * the task on the new runqueue.
+-	 */
+-	if (p->state == TASK_WAKING) {
+-		struct sched_entity *se = &p->se;
+-		struct cfs_rq *cfs_rq = cfs_rq_of(se);
+-		u64 min_vruntime;
+-
+-#ifndef CONFIG_64BIT
+-		u64 min_vruntime_copy;
+-
+-		do {
+-			min_vruntime_copy = cfs_rq->min_vruntime_copy;
+-			smp_rmb();
+-			min_vruntime = cfs_rq->min_vruntime;
+-		} while (min_vruntime != min_vruntime_copy);
+-#else
+-		min_vruntime = cfs_rq->min_vruntime;
+-#endif
+-
+-		se->vruntime -= min_vruntime;
+-	}
+-
+-	if (p->on_rq == TASK_ON_RQ_MIGRATING) {
+-		/*
+-		 * In case of TASK_ON_RQ_MIGRATING we in fact hold the 'old'
+-		 * rq->lock and can modify state directly.
+-		 */
+-		lockdep_assert_held(&task_rq(p)->lock);
+-		detach_entity_cfs_rq(&p->se);
+-
+-	} else {
+-		/*
+-		 * We are supposed to update the task to "current" time, then
+-		 * its up to date and ready to go to new CPU/cfs_rq. But we
+-		 * have difficulty in getting what current time is, so simply
+-		 * throw away the out-of-date time. This will result in the
+-		 * wakee task is less decayed, but giving the wakee more load
+-		 * sounds not bad.
+-		 */
+-		remove_entity_load_avg(&p->se);
+-	}
+-
+-	/* Tell new CPU we are migrated */
+-	p->se.avg.last_update_time = 0;
+-
+-	/* We have migrated, no longer consider this task hot */
+-	p->se.exec_start = 0;
+-
+-	update_scan_period(p, new_cpu);
+ }
+ 
+ static void task_dead_fair(struct task_struct *p)
+@@ -6790,33 +6047,10 @@
+ static int
+ balance_fair(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
+ {
+-	if (rq->nr_running)
+ 		return 1;
+-
+-	return newidle_balance(rq, rf) != 0;
+ }
+ #endif /* CONFIG_SMP */
+ 
+-static unsigned long wakeup_gran(struct sched_entity *se)
+-{
+-	unsigned long gran = sysctl_sched_wakeup_granularity;
+-
+-	/*
+-	 * Since its curr running now, convert the gran from real-time
+-	 * to virtual-time in his units.
+-	 *
+-	 * By using 'se' instead of 'curr' we penalize light tasks, so
+-	 * they get preempted easier. That is, if 'se' < 'curr' then
+-	 * the resulting gran will be larger, therefore penalizing the
+-	 * lighter, if otoh 'se' > 'curr' then the resulting gran will
+-	 * be smaller, again penalizing the lighter task.
+-	 *
+-	 * This is especially important for buddies when the leftmost
+-	 * task is higher priority than the buddy.
+-	 */
+-	return calc_delta_fair(gran, se);
+-}
+-
+ /*
+  * Should 'se' preempt 'curr'.
+  *
+@@ -6832,48 +6066,38 @@
+  *
+  */
+ static int
+-wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
+-{
+-	s64 gran, vdiff = curr->vruntime - se->vruntime;
+-
+-	if (vdiff <= 0)
+-		return -1;
+-
+-	gran = wakeup_gran(se);
+-	if (vdiff > gran)
+-		return 1;
+-
+-	return 0;
+-}
+-
+-static void set_last_buddy(struct sched_entity *se)
++wakeup_preempt_entity(u64 now, struct sched_entity *curr, struct sched_entity *se)
+ {
+-	if (entity_is_task(se) && unlikely(task_has_idle_policy(task_of(se))))
+-		return;
++	u64 r_curr, r_se, w_curr, w_se;
++	struct task_struct *t_curr = task_of(curr);
++	struct task_struct *t_se = task_of(se);
++	u64 vr_curr 	= curr->sum_exec_runtime + 1;
++	u64 vr_se 	= se->sum_exec_runtime   + 1;
++	s64 diff;
++
++	w_curr	= (now - t_curr->start_boottime);
++	w_se	= (now - t_se->start_boottime);
++
++	// adjusting for priorities
++	w_curr	*= (140 - t_curr->prio);
++	w_se	*= (140 - t_se->prio);
++
++	r_curr	= w_curr / vr_curr;
++	r_se	= w_se / vr_se;
++	diff	= (s64)(r_se) - (s64)(r_curr);
+ 
+-	for_each_sched_entity(se) {
+-		if (SCHED_WARN_ON(!se->on_rq))
+-			return;
+-		cfs_rq_of(se)->last = se;
++	// take the remainder if equal
++	if (diff == 0)
++	{
++		r_curr	= w_curr % vr_curr;
++		r_se	= w_se % vr_se;
++		diff	= (s64)(r_se) - (s64)(r_curr);
+ 	}
+-}
+ 
+-static void set_next_buddy(struct sched_entity *se)
+-{
+-	if (entity_is_task(se) && unlikely(task_has_idle_policy(task_of(se))))
+-		return;
+-
+-	for_each_sched_entity(se) {
+-		if (SCHED_WARN_ON(!se->on_rq))
+-			return;
+-		cfs_rq_of(se)->next = se;
+-	}
+-}
++	if (diff > 0)
++		return 1;
+ 
+-static void set_skip_buddy(struct sched_entity *se)
+-{
+-	for_each_sched_entity(se)
+-		cfs_rq_of(se)->skip = se;
++	return -1;
+ }
+ 
+ /*
+@@ -6883,28 +6107,12 @@
+ {
+ 	struct task_struct *curr = rq->curr;
+ 	struct sched_entity *se = &curr->se, *pse = &p->se;
+-	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
+-	int scale = cfs_rq->nr_running >= sched_nr_latency;
+-	int next_buddy_marked = 0;
++	u64 now = rq_clock_task(rq);
+ 
+ 	if (unlikely(se == pse))
+ 		return;
+ 
+ 	/*
+-	 * This is possible from callers such as attach_tasks(), in which we
+-	 * unconditionally check_prempt_curr() after an enqueue (which may have
+-	 * lead to a throttle).  This both saves work and prevents false
+-	 * next-buddy nomination below.
+-	 */
+-	if (unlikely(throttled_hierarchy(cfs_rq_of(pse))))
+-		return;
+-
+-	if (sched_feat(NEXT_BUDDY) && scale && !(wake_flags & WF_FORK)) {
+-		set_next_buddy(pse);
+-		next_buddy_marked = 1;
+-	}
+-
+-	/*
+ 	 * We can come here with TIF_NEED_RESCHED already set from new task
+ 	 * wake up path.
+ 	 *
+@@ -6932,13 +6140,7 @@
+ 	find_matching_se(&se, &pse);
+ 	update_curr(cfs_rq_of(se));
+ 	BUG_ON(!pse);
+-	if (wakeup_preempt_entity(se, pse) == 1) {
+-		/*
+-		 * Bias pick_next to pick the sched entity that is
+-		 * triggering this preemption.
+-		 */
+-		if (!next_buddy_marked)
+-			set_next_buddy(pse);
++	if (wakeup_preempt_entity(now, se, pse) == 1) {
+ 		goto preempt;
+ 	}
+ 
+@@ -6946,28 +6148,15 @@
+ 
+ preempt:
+ 	resched_curr(rq);
+-	/*
+-	 * Only set the backward buddy when the current task is still
+-	 * on the rq. This can happen when a wakeup gets interleaved
+-	 * with schedule on the ->pre_schedule() or idle_balance()
+-	 * point, either of which can * drop the rq lock.
+-	 *
+-	 * Also, during early boot the idle thread is in the fair class,
+-	 * for obvious reasons its a bad idea to schedule back to it.
+-	 */
+-	if (unlikely(!se->on_rq || curr == rq->idle))
+-		return;
+-
+-	if (sched_feat(LAST_BUDDY) && scale && entity_is_task(se))
+-		set_last_buddy(se);
+ }
+ 
+ struct task_struct *
+ pick_next_task_fair(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
+ {
+ 	struct cfs_rq *cfs_rq = &rq->cfs;
+-	struct sched_entity *se;
++	struct sched_entity *se, *next;
+ 	struct task_struct *p;
++	u64 now = rq_clock_task(rq);
+ 	int new_tasks;
+ 
+ again:
+@@ -7052,15 +6241,18 @@
+ 	goto done;
+ simple:
+ #endif
+-	if (prev)
+-		put_prev_task(rq, prev);
++	se = cfs_rq->head;
++	next = se->next;
+ 
+-	do {
+-		se = pick_next_entity(cfs_rq, NULL);
+-		set_next_entity(cfs_rq, se);
+-		cfs_rq = group_cfs_rq(se);
+-	} while (cfs_rq);
++	while (next)
++	{
++		if (wakeup_preempt_entity(now, se, next) == 1)
++			se = next;
+ 
++		next = next->next;
++	}
++	
++	set_next_entity(cfs_rq, se);
+ 	p = task_of(se);
+ 
+ done: __maybe_unused;
+@@ -7134,7 +6326,6 @@
+ {
+ 	struct task_struct *curr = rq->curr;
+ 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
+-	struct sched_entity *se = &curr->se;
+ 
+ 	/*
+ 	 * Are we the only task in the tree?
+@@ -7142,8 +6333,6 @@
+ 	if (unlikely(rq->nr_running == 1))
+ 		return;
+ 
+-	clear_buddies(cfs_rq, se);
+-
+ 	if (curr->policy != SCHED_BATCH) {
+ 		update_rq_clock(rq);
+ 		/*
+@@ -7157,8 +6346,6 @@
+ 		 */
+ 		rq_clock_skip_update(rq);
+ 	}
+-
+-	set_skip_buddy(se);
+ }
+ 
+ static bool yield_to_task_fair(struct rq *rq, struct task_struct *p, bool preempt)
+@@ -7169,9 +6356,6 @@
+ 	if (!se->on_rq || throttled_hierarchy(cfs_rq_of(se)))
+ 		return false;
+ 
+-	/* Tell the scheduler that we'd really like pse to run next. */
+-	set_next_buddy(se);
+-
+ 	yield_task_fair(rq);
+ 
+ 	return true;
+@@ -10050,165 +9234,8 @@
+ 	smp_call_function_single_async(ilb_cpu, &cpu_rq(ilb_cpu)->nohz_csd);
+ }
+ 
+-/*
+- * Current decision point for kicking the idle load balancer in the presence
+- * of idle CPUs in the system.
+- */
+-static void nohz_balancer_kick(struct rq *rq)
+-{
+-	unsigned long now = jiffies;
+-	struct sched_domain_shared *sds;
+-	struct sched_domain *sd;
+-	int nr_busy, i, cpu = rq->cpu;
+-	unsigned int flags = 0;
+-
+-	if (unlikely(rq->idle_balance))
+-		return;
+-
+-	/*
+-	 * We may be recently in ticked or tickless idle mode. At the first
+-	 * busy tick after returning from idle, we will update the busy stats.
+-	 */
+-	nohz_balance_exit_idle(rq);
+-
+-	/*
+-	 * None are in tickless mode and hence no need for NOHZ idle load
+-	 * balancing.
+-	 */
+-	if (likely(!atomic_read(&nohz.nr_cpus)))
+-		return;
+-
+-	if (READ_ONCE(nohz.has_blocked) &&
+-	    time_after(now, READ_ONCE(nohz.next_blocked)))
+-		flags = NOHZ_STATS_KICK;
+-
+-	if (time_before(now, nohz.next_balance))
+-		goto out;
+-
+-	if (rq->nr_running >= 2) {
+-		flags = NOHZ_KICK_MASK;
+-		goto out;
+-	}
+-
+-	rcu_read_lock();
+-
+-	sd = rcu_dereference(rq->sd);
+-	if (sd) {
+-		/*
+-		 * If there's a CFS task and the current CPU has reduced
+-		 * capacity; kick the ILB to see if there's a better CPU to run
+-		 * on.
+-		 */
+-		if (rq->cfs.h_nr_running >= 1 && check_cpu_capacity(rq, sd)) {
+-			flags = NOHZ_KICK_MASK;
+-			goto unlock;
+-		}
+-	}
+-
+-	sd = rcu_dereference(per_cpu(sd_asym_packing, cpu));
+-	if (sd) {
+-		/*
+-		 * When ASYM_PACKING; see if there's a more preferred CPU
+-		 * currently idle; in which case, kick the ILB to move tasks
+-		 * around.
+-		 */
+-		for_each_cpu_and(i, sched_domain_span(sd), nohz.idle_cpus_mask) {
+-			if (sched_asym_prefer(i, cpu)) {
+-				flags = NOHZ_KICK_MASK;
+-				goto unlock;
+-			}
+-		}
+-	}
+-
+-	sd = rcu_dereference(per_cpu(sd_asym_cpucapacity, cpu));
+-	if (sd) {
+-		/*
+-		 * When ASYM_CPUCAPACITY; see if there's a higher capacity CPU
+-		 * to run the misfit task on.
+-		 */
+-		if (check_misfit_status(rq, sd)) {
+-			flags = NOHZ_KICK_MASK;
+-			goto unlock;
+-		}
+-
+-		/*
+-		 * For asymmetric systems, we do not want to nicely balance
+-		 * cache use, instead we want to embrace asymmetry and only
+-		 * ensure tasks have enough CPU capacity.
+-		 *
+-		 * Skip the LLC logic because it's not relevant in that case.
+-		 */
+-		goto unlock;
+-	}
+-
+-	sds = rcu_dereference(per_cpu(sd_llc_shared, cpu));
+-	if (sds) {
+-		/*
+-		 * If there is an imbalance between LLC domains (IOW we could
+-		 * increase the overall cache use), we need some less-loaded LLC
+-		 * domain to pull some load. Likewise, we may need to spread
+-		 * load within the current LLC domain (e.g. packed SMT cores but
+-		 * other CPUs are idle). We can't really know from here how busy
+-		 * the others are - so just get a nohz balance going if it looks
+-		 * like this LLC domain has tasks we could move.
+-		 */
+-		nr_busy = atomic_read(&sds->nr_busy_cpus);
+-		if (nr_busy > 1) {
+-			flags = NOHZ_KICK_MASK;
+-			goto unlock;
+-		}
+-	}
+-unlock:
+-	rcu_read_unlock();
+-out:
+-	if (flags)
+-		kick_ilb(flags);
+-}
+-
+-static void set_cpu_sd_state_busy(int cpu)
+-{
+-	struct sched_domain *sd;
+-
+-	rcu_read_lock();
+-	sd = rcu_dereference(per_cpu(sd_llc, cpu));
+-
+-	if (!sd || !sd->nohz_idle)
+-		goto unlock;
+-	sd->nohz_idle = 0;
+-
+-	atomic_inc(&sd->shared->nr_busy_cpus);
+-unlock:
+-	rcu_read_unlock();
+-}
+-
+ void nohz_balance_exit_idle(struct rq *rq)
+ {
+-	SCHED_WARN_ON(rq != this_rq());
+-
+-	if (likely(!rq->nohz_tick_stopped))
+-		return;
+-
+-	rq->nohz_tick_stopped = 0;
+-	cpumask_clear_cpu(rq->cpu, nohz.idle_cpus_mask);
+-	atomic_dec(&nohz.nr_cpus);
+-
+-	set_cpu_sd_state_busy(rq->cpu);
+-}
+-
+-static void set_cpu_sd_state_idle(int cpu)
+-{
+-	struct sched_domain *sd;
+-
+-	rcu_read_lock();
+-	sd = rcu_dereference(per_cpu(sd_llc, cpu));
+-
+-	if (!sd || sd->nohz_idle)
+-		goto unlock;
+-	sd->nohz_idle = 1;
+-
+-	atomic_dec(&sd->shared->nr_busy_cpus);
+-unlock:
+-	rcu_read_unlock();
+ }
+ 
+ /*
+@@ -10217,58 +9244,6 @@
+  */
+ void nohz_balance_enter_idle(int cpu)
+ {
+-	struct rq *rq = cpu_rq(cpu);
+-
+-	SCHED_WARN_ON(cpu != smp_processor_id());
+-
+-	/* If this CPU is going down, then nothing needs to be done: */
+-	if (!cpu_active(cpu))
+-		return;
+-
+-	/* Spare idle load balancing on CPUs that don't want to be disturbed: */
+-	if (!housekeeping_cpu(cpu, HK_FLAG_SCHED))
+-		return;
+-
+-	/*
+-	 * Can be set safely without rq->lock held
+-	 * If a clear happens, it will have evaluated last additions because
+-	 * rq->lock is held during the check and the clear
+-	 */
+-	rq->has_blocked_load = 1;
+-
+-	/*
+-	 * The tick is still stopped but load could have been added in the
+-	 * meantime. We set the nohz.has_blocked flag to trig a check of the
+-	 * *_avg. The CPU is already part of nohz.idle_cpus_mask so the clear
+-	 * of nohz.has_blocked can only happen after checking the new load
+-	 */
+-	if (rq->nohz_tick_stopped)
+-		goto out;
+-
+-	/* If we're a completely isolated CPU, we don't play: */
+-	if (on_null_domain(rq))
+-		return;
+-
+-	rq->nohz_tick_stopped = 1;
+-
+-	cpumask_set_cpu(cpu, nohz.idle_cpus_mask);
+-	atomic_inc(&nohz.nr_cpus);
+-
+-	/*
+-	 * Ensures that if nohz_idle_balance() fails to observe our
+-	 * @idle_cpus_mask store, it must observe the @has_blocked
+-	 * store.
+-	 */
+-	smp_mb__after_atomic();
+-
+-	set_cpu_sd_state_idle(cpu);
+-
+-out:
+-	/*
+-	 * Each time a cpu enter idle, we assume that it has blocked load and
+-	 * enable the periodic update of the load of idle cpus
+-	 */
+-	WRITE_ONCE(nohz.has_blocked, 1);
+ }
+ 
+ /*
+@@ -10379,27 +9354,6 @@
+ 	return ret;
+ }
+ 
+-/*
+- * In CONFIG_NO_HZ_COMMON case, the idle balance kickee will do the
+- * rebalancing for all the cpus for whom scheduler ticks are stopped.
+- */
+-static bool nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle)
+-{
+-	unsigned int flags = this_rq->nohz_idle_balance;
+-
+-	if (!flags)
+-		return false;
+-
+-	this_rq->nohz_idle_balance = 0;
+-
+-	if (idle != CPU_IDLE)
+-		return false;
+-
+-	_nohz_idle_balance(this_rq, flags, idle);
+-
+-	return true;
+-}
+-
+ static void nohz_newidle_balance(struct rq *this_rq)
+ {
+ 	int this_cpu = this_rq->cpu;
+@@ -10563,47 +9517,6 @@
+ 	return pulled_task;
+ }
+ 
+-/*
+- * run_rebalance_domains is triggered when needed from the scheduler tick.
+- * Also triggered for nohz idle balancing (with nohz_balancing_kick set).
+- */
+-static __latent_entropy void run_rebalance_domains(struct softirq_action *h)
+-{
+-	struct rq *this_rq = this_rq();
+-	enum cpu_idle_type idle = this_rq->idle_balance ?
+-						CPU_IDLE : CPU_NOT_IDLE;
+-
+-	/*
+-	 * If this CPU has a pending nohz_balance_kick, then do the
+-	 * balancing on behalf of the other idle CPUs whose ticks are
+-	 * stopped. Do nohz_idle_balance *before* rebalance_domains to
+-	 * give the idle CPUs a chance to load balance. Else we may
+-	 * load balance only within the local sched_domain hierarchy
+-	 * and abort nohz_idle_balance altogether if we pull some load.
+-	 */
+-	if (nohz_idle_balance(this_rq, idle))
+-		return;
+-
+-	/* normal load balance */
+-	update_blocked_averages(this_rq->cpu);
+-	rebalance_domains(this_rq, idle);
+-}
+-
+-/*
+- * Trigger the SCHED_SOFTIRQ if it is time to do periodic load balancing.
+- */
+-void trigger_load_balance(struct rq *rq)
+-{
+-	/* Don't need to rebalance while attached to NULL domain */
+-	if (unlikely(on_null_domain(rq)))
+-		return;
+-
+-	if (time_after_eq(jiffies, rq->next_balance))
+-		raise_softirq(SCHED_SOFTIRQ);
+-
+-	nohz_balancer_kick(rq);
+-}
+-
+ static void rq_online_fair(struct rq *rq)
+ {
+ 	update_sysctl();
+@@ -10639,9 +9552,6 @@
+ 		entity_tick(cfs_rq, se, queued);
+ 	}
+ 
+-	if (static_branch_unlikely(&sched_numa_balancing))
+-		task_tick_numa(rq, curr);
+-
+ 	update_misfit_status(curr, rq);
+ 	update_overutilized_status(task_rq(curr));
+ }
+@@ -10654,7 +9564,7 @@
+ static void task_fork_fair(struct task_struct *p)
+ {
+ 	struct cfs_rq *cfs_rq;
+-	struct sched_entity *se = &p->se, *curr;
++	struct sched_entity *curr;
+ 	struct rq *rq = this_rq();
+ 	struct rq_flags rf;
+ 
+@@ -10665,20 +9575,8 @@
+ 	curr = cfs_rq->curr;
+ 	if (curr) {
+ 		update_curr(cfs_rq);
+-		se->vruntime = curr->vruntime;
+ 	}
+-	place_entity(cfs_rq, se, 1);
+ 
+-	if (sysctl_sched_child_runs_first && curr && entity_before(curr, se)) {
+-		/*
+-		 * Upon rescheduling, sched_class::put_prev_task() will place
+-		 * 'current' within the tree based on its new key value.
+-		 */
+-		swap(curr->vruntime, se->vruntime);
+-		resched_curr(rq);
+-	}
+-
+-	se->vruntime -= cfs_rq->min_vruntime;
+ 	rq_unlock(rq, &rf);
+ }
+ 
+@@ -10793,16 +9691,6 @@
+ static void detach_task_cfs_rq(struct task_struct *p)
+ {
+ 	struct sched_entity *se = &p->se;
+-	struct cfs_rq *cfs_rq = cfs_rq_of(se);
+-
+-	if (!vruntime_normalized(p)) {
+-		/*
+-		 * Fix up our vruntime so that the current sleep doesn't
+-		 * cause 'unlimited' sleep bonus.
+-		 */
+-		place_entity(cfs_rq, se, 0);
+-		se->vruntime -= cfs_rq->min_vruntime;
+-	}
+ 
+ 	detach_entity_cfs_rq(se);
+ }
+@@ -10810,12 +9698,8 @@
+ static void attach_task_cfs_rq(struct task_struct *p)
+ {
+ 	struct sched_entity *se = &p->se;
+-	struct cfs_rq *cfs_rq = cfs_rq_of(se);
+ 
+ 	attach_entity_cfs_rq(se);
+-
+-	if (!vruntime_normalized(p))
+-		se->vruntime += cfs_rq->min_vruntime;
+ }
+ 
+ static void switched_from_fair(struct rq *rq, struct task_struct *p)
+@@ -10878,6 +9762,7 @@
+ #ifdef CONFIG_SMP
+ 	raw_spin_lock_init(&cfs_rq->removed.lock);
+ #endif
++	cfs_rq->head            = NULL;
+ }
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+@@ -11202,7 +10087,6 @@
+ __init void init_sched_fair_class(void)
+ {
+ #ifdef CONFIG_SMP
+-	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
+ 
+ #ifdef CONFIG_NO_HZ_COMMON
+ 	nohz.next_balance = jiffies;
+diff --color -rubN linux-5.8/kernel/sched/sched.h ../linux-5.8-cachy/kernel/sched/sched.h
+--- linux-5.8/kernel/sched/sched.h	2020-08-03 07:21:45.000000000 +1000
++++ ../linux-5.8-cachy/kernel/sched/sched.h	2020-08-04 00:15:22.102148927 +1000
+@@ -515,6 +515,7 @@
+ 	 * 'curr' points to currently running entity on this cfs_rq.
+ 	 * It is set to NULL otherwise (i.e when none are currently running).
+ 	 */
++	 struct sched_entity	*head;
+ 	struct sched_entity	*curr;
+ 	struct sched_entity	*next;
+ 	struct sched_entity	*last;
+diff --color -rubN linux-5.8/Makefile ../linux-5.8-cachy/Makefile
+--- linux-5.8/Makefile	2020-08-03 07:21:45.000000000 +1000
++++ ../linux-5.8-cachy/Makefile	2020-08-04 00:13:59.710682597 +1000
+@@ -2,8 +2,8 @@
+ VERSION = 5
+ PATCHLEVEL = 8
+ SUBLEVEL = 0
+-EXTRAVERSION =
+-NAME = Kleptomaniac Octopus
++EXTRAVERSION = -cachy
++NAME = Cachy
+ 
+ # *DOCUMENTATION*
+ # To see a list of typical targets execute "make help"
