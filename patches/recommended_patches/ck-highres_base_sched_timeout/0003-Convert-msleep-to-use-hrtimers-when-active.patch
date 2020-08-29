@@ -1,0 +1,54 @@
+From 96aab14575c49251568efe49286ab62a29626c21 Mon Sep 17 00:00:00 2001
+From: Con Kolivas <kernel@kolivas.org>
+Date: Fri, 4 Nov 2016 09:25:54 +1100
+Subject: [PATCH 06/16] timer: Convert msleep to use hrtimers when active.
+
+---
+ kernel/time/timer.c | 24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/time/timer.c b/kernel/time/timer.c
+index d2ef89c53e0c..88f31e92ee3a 100644
+--- a/kernel/time/timer.c
++++ b/kernel/time/timer.c
+@@ -2060,7 +2060,19 @@ void __init init_timers(void)
+  */
+ void msleep(unsigned int msecs)
+ {
+-	unsigned long timeout = msecs_to_jiffies(msecs) + 1;
++	int jiffs = msecs_to_jiffies(msecs);
++	unsigned long timeout;
++
++	/*
++	 * Use high resolution timers where the resolution of tick based
++	 * timers is inadequate.
++	 */
++	if (jiffs < 5 && hrtimer_resolution < NSEC_PER_SEC / HZ) {
++		while (msecs)
++			msecs = schedule_msec_hrtimeout_uninterruptible(msecs);
++		return;
++	}
++	timeout = msecs_to_jiffies(msecs) + 1;
+ 
+ 	while (timeout)
+ 		timeout = schedule_timeout_uninterruptible(timeout);
+@@ -2074,7 +2086,15 @@ EXPORT_SYMBOL(msleep);
+  */
+ unsigned long msleep_interruptible(unsigned int msecs)
+ {
+-	unsigned long timeout = msecs_to_jiffies(msecs) + 1;
++	int jiffs = msecs_to_jiffies(msecs);
++	unsigned long timeout;
++
++	if (jiffs < 5 && hrtimer_resolution < NSEC_PER_SEC / HZ) {
++		while (msecs && !signal_pending(current))
++			msecs = schedule_msec_hrtimeout_interruptible(msecs);
++		return msecs;
++	}
++	timeout = msecs_to_jiffies(msecs) + 1;
+ 
+ 	while (timeout && !signal_pending(current))
+ 		timeout = schedule_timeout_interruptible(timeout);
+-- 
+2.25.1
+

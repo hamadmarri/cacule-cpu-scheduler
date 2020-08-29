@@ -1,0 +1,311 @@
+From 8812c29108719f9f030cdd5544ff3555a515e58a Mon Sep 17 00:00:00 2001
+From: Con Kolivas <kernel@kolivas.org>
+Date: Mon, 20 Feb 2017 13:30:07 +1100
+Subject: [PATCH 08/16] hrtimer: Replace all calls to schedule_timeout_interruptible of
+ potentially under 50ms to use schedule_msec_hrtimeout_interruptible.
+
+---
+ drivers/hwmon/fam15h_power.c        |  2 +-
+ drivers/iio/light/tsl2563.c         |  6 +-----
+ drivers/media/i2c/msp3400-driver.c  |  4 ++--
+ drivers/media/pci/ivtv/ivtv-gpio.c  |  6 +++---
+ drivers/media/radio/radio-mr800.c   |  2 +-
+ drivers/media/radio/radio-tea5777.c |  2 +-
+ drivers/media/radio/tea575x.c       |  2 +-
+ drivers/parport/ieee1284.c          |  2 +-
+ drivers/parport/ieee1284_ops.c      |  2 +-
+ drivers/platform/x86/intel_ips.c    |  8 ++++----
+ net/core/pktgen.c                   |  2 +-
+ sound/soc/codecs/wm8350.c           | 12 ++++++------
+ sound/soc/codecs/wm8900.c           |  2 +-
+ sound/soc/codecs/wm9713.c           |  4 ++--
+ 14 files changed, 26 insertions(+), 30 deletions(-)
+
+diff --git a/drivers/hwmon/fam15h_power.c b/drivers/hwmon/fam15h_power.c
+index 267eac00a3fb..352af68c6cd7 100644
+--- a/drivers/hwmon/fam15h_power.c
++++ b/drivers/hwmon/fam15h_power.c
+@@ -225,7 +225,7 @@ static ssize_t power1_average_show(struct device *dev,
+ 		prev_ptsc[cu] = data->cpu_sw_pwr_ptsc[cu];
+ 	}
+ 
+-	leftover = schedule_timeout_interruptible(msecs_to_jiffies(data->power_period));
++	leftover = schedule_msec_hrtimeout_interruptible((data->power_period));
+ 	if (leftover)
+ 		return 0;
+ 
+diff --git a/drivers/iio/light/tsl2563.c b/drivers/iio/light/tsl2563.c
+index d8c40a83097d..8332baf4961c 100644
+--- a/drivers/iio/light/tsl2563.c
++++ b/drivers/iio/light/tsl2563.c
+@@ -269,11 +269,7 @@ static void tsl2563_wait_adc(struct tsl2563_chip *chip)
+ 	default:
+ 		delay = 402;
+ 	}
+-	/*
+-	 * TODO: Make sure that we wait at least required delay but why we
+-	 * have to extend it one tick more?
+-	 */
+-	schedule_timeout_interruptible(msecs_to_jiffies(delay) + 2);
++	schedule_msec_hrtimeout_interruptible(delay + 1);
+ }
+ 
+ static int tsl2563_adjust_gainlevel(struct tsl2563_chip *chip, u16 adc)
+diff --git a/drivers/media/i2c/msp3400-driver.c b/drivers/media/i2c/msp3400-driver.c
+index 39530d43590e..a7caf2eb5771 100644
+--- a/drivers/media/i2c/msp3400-driver.c
++++ b/drivers/media/i2c/msp3400-driver.c
+@@ -170,7 +170,7 @@ static int msp_read(struct i2c_client *client, int dev, int addr)
+ 			break;
+ 		dev_warn(&client->dev, "I/O error #%d (read 0x%02x/0x%02x)\n", err,
+ 		       dev, addr);
+-		schedule_timeout_interruptible(msecs_to_jiffies(10));
++		schedule_msec_hrtimeout_interruptible((10));
+ 	}
+ 	if (err == 3) {
+ 		dev_warn(&client->dev, "resetting chip, sound will go off.\n");
+@@ -211,7 +211,7 @@ static int msp_write(struct i2c_client *client, int dev, int addr, int val)
+ 			break;
+ 		dev_warn(&client->dev, "I/O error #%d (write 0x%02x/0x%02x)\n", err,
+ 		       dev, addr);
+-		schedule_timeout_interruptible(msecs_to_jiffies(10));
++		schedule_msec_hrtimeout_interruptible((10));
+ 	}
+ 	if (err == 3) {
+ 		dev_warn(&client->dev, "resetting chip, sound will go off.\n");
+diff --git a/drivers/media/pci/ivtv/ivtv-gpio.c b/drivers/media/pci/ivtv/ivtv-gpio.c
+index 856e7ab7f33e..766a26251337 100644
+--- a/drivers/media/pci/ivtv/ivtv-gpio.c
++++ b/drivers/media/pci/ivtv/ivtv-gpio.c
+@@ -105,7 +105,7 @@ void ivtv_reset_ir_gpio(struct ivtv *itv)
+ 	curout = (curout & ~0xF) | 1;
+ 	write_reg(curout, IVTV_REG_GPIO_OUT);
+ 	/* We could use something else for smaller time */
+-	schedule_timeout_interruptible(msecs_to_jiffies(1));
++	schedule_msec_hrtimeout_interruptible((1));
+ 	curout |= 2;
+ 	write_reg(curout, IVTV_REG_GPIO_OUT);
+ 	curdir &= ~0x80;
+@@ -125,11 +125,11 @@ int ivtv_reset_tuner_gpio(void *dev, int component, int cmd, int value)
+ 	curout = read_reg(IVTV_REG_GPIO_OUT);
+ 	curout &= ~(1 << itv->card->xceive_pin);
+ 	write_reg(curout, IVTV_REG_GPIO_OUT);
+-	schedule_timeout_interruptible(msecs_to_jiffies(1));
++	schedule_msec_hrtimeout_interruptible((1));
+ 
+ 	curout |= 1 << itv->card->xceive_pin;
+ 	write_reg(curout, IVTV_REG_GPIO_OUT);
+-	schedule_timeout_interruptible(msecs_to_jiffies(1));
++	schedule_msec_hrtimeout_interruptible((1));
+ 	return 0;
+ }
+ 
+diff --git a/drivers/media/radio/radio-mr800.c b/drivers/media/radio/radio-mr800.c
+index cb0437b4c331..163fffc0e1d4 100644
+--- a/drivers/media/radio/radio-mr800.c
++++ b/drivers/media/radio/radio-mr800.c
+@@ -366,7 +366,7 @@ static int vidioc_s_hw_freq_seek(struct file *file, void *priv,
+ 			retval = -ENODATA;
+ 			break;
+ 		}
+-		if (schedule_timeout_interruptible(msecs_to_jiffies(10))) {
++		if (schedule_msec_hrtimeout_interruptible((10))) {
+ 			retval = -ERESTARTSYS;
+ 			break;
+ 		}
+diff --git a/drivers/media/radio/radio-tea5777.c b/drivers/media/radio/radio-tea5777.c
+index fb9de7bbcd19..e53cf45e7f3f 100644
+--- a/drivers/media/radio/radio-tea5777.c
++++ b/drivers/media/radio/radio-tea5777.c
+@@ -235,7 +235,7 @@ static int radio_tea5777_update_read_reg(struct radio_tea5777 *tea, int wait)
+ 	}
+ 
+ 	if (wait) {
+-		if (schedule_timeout_interruptible(msecs_to_jiffies(wait)))
++		if (schedule_msec_hrtimeout_interruptible((wait)))
+ 			return -ERESTARTSYS;
+ 	}
+ 
+diff --git a/drivers/media/radio/tea575x.c b/drivers/media/radio/tea575x.c
+index b0303cf00387..0925b5065147 100644
+--- a/drivers/media/radio/tea575x.c
++++ b/drivers/media/radio/tea575x.c
+@@ -401,7 +401,7 @@ int snd_tea575x_s_hw_freq_seek(struct file *file, struct snd_tea575x *tea,
+ 	for (;;) {
+ 		if (time_after(jiffies, timeout))
+ 			break;
+-		if (schedule_timeout_interruptible(msecs_to_jiffies(10))) {
++		if (schedule_msec_hrtimeout_interruptible((10))) {
+ 			/* some signal arrived, stop search */
+ 			tea->val &= ~TEA575X_BIT_SEARCH;
+ 			snd_tea575x_set_freq(tea);
+diff --git a/drivers/parport/ieee1284.c b/drivers/parport/ieee1284.c
+index 90fb73575495..c94048b048a5 100644
+--- a/drivers/parport/ieee1284.c
++++ b/drivers/parport/ieee1284.c
+@@ -208,7 +208,7 @@ int parport_wait_peripheral(struct parport *port,
+ 			/* parport_wait_event didn't time out, but the
+ 			 * peripheral wasn't actually ready either.
+ 			 * Wait for another 10ms. */
+-			schedule_timeout_interruptible(msecs_to_jiffies(10));
++			schedule_msec_hrtimeout_interruptible((10));
+ 		}
+ 	}
+ 
+diff --git a/drivers/parport/ieee1284_ops.c b/drivers/parport/ieee1284_ops.c
+index 5d41dda6da4e..34705f6b423f 100644
+--- a/drivers/parport/ieee1284_ops.c
++++ b/drivers/parport/ieee1284_ops.c
+@@ -537,7 +537,7 @@ size_t parport_ieee1284_ecp_read_data (struct parport *port,
+ 			/* Yield the port for a while. */
+ 			if (count && dev->port->irq != PARPORT_IRQ_NONE) {
+ 				parport_release (dev);
+-				schedule_timeout_interruptible(msecs_to_jiffies(40));
++				schedule_msec_hrtimeout_interruptible((40));
+ 				parport_claim_or_block (dev);
+ 			}
+ 			else
+diff --git a/drivers/platform/x86/intel_ips.c b/drivers/platform/x86/intel_ips.c
+index bffe548187ee..c2918ee3e100 100644
+--- a/drivers/platform/x86/intel_ips.c
++++ b/drivers/platform/x86/intel_ips.c
+@@ -798,7 +798,7 @@ static int ips_adjust(void *data)
+ 			ips_gpu_lower(ips);
+ 
+ sleep:
+-		schedule_timeout_interruptible(msecs_to_jiffies(IPS_ADJUST_PERIOD));
++		schedule_msec_hrtimeout_interruptible((IPS_ADJUST_PERIOD));
+ 	} while (!kthread_should_stop());
+ 
+ 	dev_dbg(ips->dev, "ips-adjust thread stopped\n");
+@@ -974,7 +974,7 @@ static int ips_monitor(void *data)
+ 	seqno_timestamp = get_jiffies_64();
+ 
+ 	old_cpu_power = thm_readl(THM_CEC);
+-	schedule_timeout_interruptible(msecs_to_jiffies(IPS_SAMPLE_PERIOD));
++	schedule_msec_hrtimeout_interruptible((IPS_SAMPLE_PERIOD));
+ 
+ 	/* Collect an initial average */
+ 	for (i = 0; i < IPS_SAMPLE_COUNT; i++) {
+@@ -1001,7 +1001,7 @@ static int ips_monitor(void *data)
+ 			mchp_samples[i] = mchp;
+ 		}
+ 
+-		schedule_timeout_interruptible(msecs_to_jiffies(IPS_SAMPLE_PERIOD));
++		schedule_msec_hrtimeout_interruptible((IPS_SAMPLE_PERIOD));
+ 		if (kthread_should_stop())
+ 			break;
+ 	}
+@@ -1028,7 +1028,7 @@ static int ips_monitor(void *data)
+ 	 * us to reduce the sample frequency if the CPU and GPU are idle.
+ 	 */
+ 	old_cpu_power = thm_readl(THM_CEC);
+-	schedule_timeout_interruptible(msecs_to_jiffies(IPS_SAMPLE_PERIOD));
++	schedule_msec_hrtimeout_interruptible((IPS_SAMPLE_PERIOD));
+ 	last_sample_period = IPS_SAMPLE_PERIOD;
+ 
+ 	timer_setup(&ips->timer, monitor_timeout, TIMER_DEFERRABLE);
+diff --git a/net/core/pktgen.c b/net/core/pktgen.c
+index 08e2811b5274..955fcfdd3c3c 100644
+--- a/net/core/pktgen.c
++++ b/net/core/pktgen.c
+@@ -1894,7 +1894,7 @@ static void pktgen_mark_device(const struct pktgen_net *pn, const char *ifname)
+ 		mutex_unlock(&pktgen_thread_lock);
+ 		pr_debug("%s: waiting for %s to disappear....\n",
+ 			 __func__, ifname);
+-		schedule_timeout_interruptible(msecs_to_jiffies(msec_per_try));
++		schedule_msec_hrtimeout_interruptible((msec_per_try));
+ 		mutex_lock(&pktgen_thread_lock);
+ 
+ 		if (++i >= max_tries) {
+diff --git a/sound/soc/codecs/wm8350.c b/sound/soc/codecs/wm8350.c
+index fe99584c917f..f1344d532a13 100644
+--- a/sound/soc/codecs/wm8350.c
++++ b/sound/soc/codecs/wm8350.c
+@@ -233,10 +233,10 @@ static void wm8350_pga_work(struct work_struct *work)
+ 		    out2->ramp == WM8350_RAMP_UP) {
+ 			/* delay is longer over 0dB as increases are larger */
+ 			if (i >= WM8350_OUTn_0dB)
+-				schedule_timeout_interruptible(msecs_to_jiffies
++				schedule_msec_hrtimeout_interruptible(
+ 							       (2));
+ 			else
+-				schedule_timeout_interruptible(msecs_to_jiffies
++				schedule_msec_hrtimeout_interruptible(
+ 							       (1));
+ 		} else
+ 			udelay(50);	/* doesn't matter if we delay longer */
+@@ -1120,7 +1120,7 @@ static int wm8350_set_bias_level(struct snd_soc_component *component,
+ 					 (platform->dis_out4 << 6));
+ 
+ 			/* wait for discharge */
+-			schedule_timeout_interruptible(msecs_to_jiffies
++			schedule_msec_hrtimeout_interruptible(
+ 						       (platform->
+ 							cap_discharge_msecs));
+ 
+@@ -1136,7 +1136,7 @@ static int wm8350_set_bias_level(struct snd_soc_component *component,
+ 					 WM8350_VBUFEN);
+ 
+ 			/* wait for vmid */
+-			schedule_timeout_interruptible(msecs_to_jiffies
++			schedule_msec_hrtimeout_interruptible(
+ 						       (platform->
+ 							vmid_charge_msecs));
+ 
+@@ -1187,7 +1187,7 @@ static int wm8350_set_bias_level(struct snd_soc_component *component,
+ 		wm8350_reg_write(wm8350, WM8350_POWER_MGMT_1, pm1);
+ 
+ 		/* wait */
+-		schedule_timeout_interruptible(msecs_to_jiffies
++		schedule_msec_hrtimeout_interruptible(
+ 					       (platform->
+ 						vmid_discharge_msecs));
+ 
+@@ -1205,7 +1205,7 @@ static int wm8350_set_bias_level(struct snd_soc_component *component,
+ 				 pm1 | WM8350_OUTPUT_DRAIN_EN);
+ 
+ 		/* wait */
+-		schedule_timeout_interruptible(msecs_to_jiffies
++		schedule_msec_hrtimeout_interruptible(
+ 					       (platform->drain_msecs));
+ 
+ 		pm1 &= ~WM8350_BIASEN;
+diff --git a/sound/soc/codecs/wm8900.c b/sound/soc/codecs/wm8900.c
+index 271235a69c01..3ec90e1b1eb4 100644
+--- a/sound/soc/codecs/wm8900.c
++++ b/sound/soc/codecs/wm8900.c
+@@ -1109,7 +1109,7 @@ static int wm8900_set_bias_level(struct snd_soc_component *component,
+ 		/* Need to let things settle before stopping the clock
+ 		 * to ensure that restart works, see "Stopping the
+ 		 * master clock" in the datasheet. */
+-		schedule_timeout_interruptible(msecs_to_jiffies(1));
++		schedule_msec_hrtimeout_interruptible(1);
+ 		snd_soc_component_write(component, WM8900_REG_POWER2,
+ 			     WM8900_REG_POWER2_SYSCLK_ENA);
+ 		break;
+diff --git a/sound/soc/codecs/wm9713.c b/sound/soc/codecs/wm9713.c
+index 6497c1ea6228..08fefeca9d82 100644
+--- a/sound/soc/codecs/wm9713.c
++++ b/sound/soc/codecs/wm9713.c
+@@ -199,7 +199,7 @@ static int wm9713_voice_shutdown(struct snd_soc_dapm_widget *w,
+ 
+ 	/* Gracefully shut down the voice interface. */
+ 	snd_soc_component_update_bits(component, AC97_HANDSET_RATE, 0x0f00, 0x0200);
+-	schedule_timeout_interruptible(msecs_to_jiffies(1));
++	schedule_msec_hrtimeout_interruptible(1);
+ 	snd_soc_component_update_bits(component, AC97_HANDSET_RATE, 0x0f00, 0x0f00);
+ 	snd_soc_component_update_bits(component, AC97_EXTENDED_MID, 0x1000, 0x1000);
+ 
+@@ -868,7 +868,7 @@ static int wm9713_set_pll(struct snd_soc_component *component,
+ 	wm9713->pll_in = freq_in;
+ 
+ 	/* wait 10ms AC97 link frames for the link to stabilise */
+-	schedule_timeout_interruptible(msecs_to_jiffies(10));
++	schedule_msec_hrtimeout_interruptible((10));
+ 	return 0;
+ }
+ 
+-- 
+2.25.1
+
