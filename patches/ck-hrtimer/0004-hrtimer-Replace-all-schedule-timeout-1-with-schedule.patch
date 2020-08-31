@@ -1,0 +1,185 @@
+From cf4b2415082eeb349ad13cd573ade13c205b01f9 Mon Sep 17 00:00:00 2001
+From: Con Kolivas <kernel@kolivas.org>
+Date: Mon, 31 Aug 2020 02:52:12 +0000
+Subject: [PATCH 4/8] hrtimer: Replace all schedule timeout(1) with
+ schedule_min_hrtimeout()
+
+Signed-off-by: Alexandre Frade <kernel@xanmod.org>
+---
+ drivers/block/swim.c                 | 6 +++---
+ drivers/char/ipmi/ipmi_msghandler.c  | 2 +-
+ drivers/char/ipmi/ipmi_ssif.c        | 2 +-
+ drivers/gpu/drm/vmwgfx/vmwgfx_fifo.c | 2 +-
+ drivers/gpu/drm/vmwgfx/vmwgfx_irq.c  | 2 +-
+ drivers/mfd/ucb1x00-core.c           | 2 +-
+ drivers/misc/sgi-xp/xpc_channel.c    | 2 +-
+ drivers/net/caif/caif_hsi.c          | 2 +-
+ fs/btrfs/delalloc-space.c            | 2 +-
+ fs/btrfs/inode-map.c                 | 2 +-
+ sound/usb/line6/pcm.c                | 2 +-
+ 11 files changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/block/swim.c b/drivers/block/swim.c
+index dd34504382e5..2a56176a51f1 100644
+--- a/drivers/block/swim.c
++++ b/drivers/block/swim.c
+@@ -328,7 +328,7 @@ static inline void swim_motor(struct swim __iomem *base,
+ 			if (swim_readbit(base, MOTOR_ON))
+ 				break;
+ 			set_current_state(TASK_INTERRUPTIBLE);
+-			schedule_timeout(1);
++			schedule_min_hrtimeout();
+ 		}
+ 	} else if (action == OFF) {
+ 		swim_action(base, MOTOR_OFF);
+@@ -347,7 +347,7 @@ static inline void swim_eject(struct swim __iomem *base)
+ 		if (!swim_readbit(base, DISK_IN))
+ 			break;
+ 		set_current_state(TASK_INTERRUPTIBLE);
+-		schedule_timeout(1);
++		schedule_min_hrtimeout();
+ 	}
+ 	swim_select(base, RELAX);
+ }
+@@ -371,7 +371,7 @@ static inline int swim_step(struct swim __iomem *base)
+ 	for (wait = 0; wait < HZ; wait++) {
+ 
+ 		set_current_state(TASK_INTERRUPTIBLE);
+-		schedule_timeout(1);
++		schedule_min_hrtimeout();
+ 
+ 		swim_select(base, RELAX);
+ 		if (!swim_readbit(base, STEP))
+diff --git a/drivers/char/ipmi/ipmi_msghandler.c b/drivers/char/ipmi/ipmi_msghandler.c
+index 737c0b6b24ea..a3db1f42bb3b 100644
+--- a/drivers/char/ipmi/ipmi_msghandler.c
++++ b/drivers/char/ipmi/ipmi_msghandler.c
+@@ -3542,7 +3542,7 @@ static void cleanup_smi_msgs(struct ipmi_smi *intf)
+ 	/* Current message first, to preserve order */
+ 	while (intf->curr_msg && !list_empty(&intf->waiting_rcv_msgs)) {
+ 		/* Wait for the message to clear out. */
+-		schedule_timeout(1);
++		schedule_min_hrtimeout();
+ 	}
+ 
+ 	/* No need for locks, the interface is down. */
+diff --git a/drivers/char/ipmi/ipmi_ssif.c b/drivers/char/ipmi/ipmi_ssif.c
+index 0416b9c9d410..9ce5fae0f1cf 100644
+--- a/drivers/char/ipmi/ipmi_ssif.c
++++ b/drivers/char/ipmi/ipmi_ssif.c
+@@ -1288,7 +1288,7 @@ static void shutdown_ssif(void *send_info)
+ 
+ 	/* make sure the driver is not looking for flags any more. */
+ 	while (ssif_info->ssif_state != SSIF_NORMAL)
+-		schedule_timeout(1);
++		schedule_min_hrtimeout();
+ 
+ 	ssif_info->stopping = true;
+ 	del_timer_sync(&ssif_info->watch_timer);
+diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_fifo.c b/drivers/gpu/drm/vmwgfx/vmwgfx_fifo.c
+index a95156fc5db7..8f07c8900184 100644
+--- a/drivers/gpu/drm/vmwgfx/vmwgfx_fifo.c
++++ b/drivers/gpu/drm/vmwgfx/vmwgfx_fifo.c
+@@ -235,7 +235,7 @@ static int vmw_fifo_wait_noirq(struct vmw_private *dev_priv,
+ 			DRM_ERROR("SVGA device lockup.\n");
+ 			break;
+ 		}
+-		schedule_timeout(1);
++		schedule_min_hrtimeout();
+ 		if (interruptible && signal_pending(current)) {
+ 			ret = -ERESTARTSYS;
+ 			break;
+diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_irq.c b/drivers/gpu/drm/vmwgfx/vmwgfx_irq.c
+index 75f3efee21a4..09b1932ce85b 100644
+--- a/drivers/gpu/drm/vmwgfx/vmwgfx_irq.c
++++ b/drivers/gpu/drm/vmwgfx/vmwgfx_irq.c
+@@ -203,7 +203,7 @@ int vmw_fallback_wait(struct vmw_private *dev_priv,
+ 			break;
+ 		}
+ 		if (lazy)
+-			schedule_timeout(1);
++			schedule_min_hrtimeout();
+ 		else if ((++count & 0x0F) == 0) {
+ 			/**
+ 			 * FIXME: Use schedule_hr_timeout here for
+diff --git a/drivers/mfd/ucb1x00-core.c b/drivers/mfd/ucb1x00-core.c
+index b690796d24d4..448b13da62b4 100644
+--- a/drivers/mfd/ucb1x00-core.c
++++ b/drivers/mfd/ucb1x00-core.c
+@@ -250,7 +250,7 @@ unsigned int ucb1x00_adc_read(struct ucb1x00 *ucb, int adc_channel, int sync)
+ 			break;
+ 		/* yield to other processes */
+ 		set_current_state(TASK_INTERRUPTIBLE);
+-		schedule_timeout(1);
++		schedule_min_hrtimeout();
+ 	}
+ 
+ 	return UCB_ADC_DAT(val);
+diff --git a/drivers/misc/sgi-xp/xpc_channel.c b/drivers/misc/sgi-xp/xpc_channel.c
+index 8e6607fc8a67..b9ab770bbdb5 100644
+--- a/drivers/misc/sgi-xp/xpc_channel.c
++++ b/drivers/misc/sgi-xp/xpc_channel.c
+@@ -834,7 +834,7 @@ xpc_allocate_msg_wait(struct xpc_channel *ch)
+ 
+ 	atomic_inc(&ch->n_on_msg_allocate_wq);
+ 	prepare_to_wait(&ch->msg_allocate_wq, &wait, TASK_INTERRUPTIBLE);
+-	ret = schedule_timeout(1);
++	ret = schedule_min_hrtimeout();
+ 	finish_wait(&ch->msg_allocate_wq, &wait);
+ 	atomic_dec(&ch->n_on_msg_allocate_wq);
+ 
+diff --git a/drivers/net/caif/caif_hsi.c b/drivers/net/caif/caif_hsi.c
+index 4a33ec4fc089..da85f847ebb4 100644
+--- a/drivers/net/caif/caif_hsi.c
++++ b/drivers/net/caif/caif_hsi.c
+@@ -939,7 +939,7 @@ static void cfhsi_wake_down(struct work_struct *work)
+ 			break;
+ 
+ 		set_current_state(TASK_INTERRUPTIBLE);
+-		schedule_timeout(1);
++		schedule_min_hrtimeout();
+ 		retry--;
+ 	}
+ 
+diff --git a/fs/btrfs/delalloc-space.c b/fs/btrfs/delalloc-space.c
+index 0e354e9e57d0..ec0333d68191 100644
+--- a/fs/btrfs/delalloc-space.c
++++ b/fs/btrfs/delalloc-space.c
+@@ -422,7 +422,7 @@ int btrfs_delalloc_reserve_metadata(struct btrfs_inode *inode, u64 num_bytes)
+ 			flush = BTRFS_RESERVE_FLUSH_LIMIT;
+ 
+ 		if (btrfs_transaction_in_commit(fs_info))
+-			schedule_timeout(1);
++			schedule_min_hrtimeout();
+ 	}
+ 
+ 	num_bytes = ALIGN(num_bytes, fs_info->sectorsize);
+diff --git a/fs/btrfs/inode-map.c b/fs/btrfs/inode-map.c
+index 76d2e43817ea..6ba0604e2162 100644
+--- a/fs/btrfs/inode-map.c
++++ b/fs/btrfs/inode-map.c
+@@ -91,7 +91,7 @@ static int caching_kthread(void *data)
+ 				btrfs_release_path(path);
+ 				root->ino_cache_progress = last;
+ 				up_read(&fs_info->commit_root_sem);
+-				schedule_timeout(1);
++				schedule_min_hrtimeout();
+ 				goto again;
+ 			} else
+ 				continue;
+diff --git a/sound/usb/line6/pcm.c b/sound/usb/line6/pcm.c
+index fdbdfb7bce92..fa8e8faf3eb3 100644
+--- a/sound/usb/line6/pcm.c
++++ b/sound/usb/line6/pcm.c
+@@ -127,7 +127,7 @@ static void line6_wait_clear_audio_urbs(struct snd_line6_pcm *line6pcm,
+ 		if (!alive)
+ 			break;
+ 		set_current_state(TASK_UNINTERRUPTIBLE);
+-		schedule_timeout(1);
++		schedule_min_hrtimeout();
+ 	} while (--timeout > 0);
+ 	if (alive)
+ 		dev_err(line6pcm->line6->ifcdev,
+-- 
+2.28.0
+

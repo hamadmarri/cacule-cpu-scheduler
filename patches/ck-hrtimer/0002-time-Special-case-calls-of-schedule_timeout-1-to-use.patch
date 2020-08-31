@@ -1,18 +1,18 @@
-From 44448604833cb577ef7d2cb8c3776f553b19c9a5 Mon Sep 17 00:00:00 2001
+From f78a1b413c1af536c13bf74eb8bb1a2293a54fda Mon Sep 17 00:00:00 2001
 From: Con Kolivas <kernel@kolivas.org>
 Date: Sat, 5 Nov 2016 09:27:36 +1100
-Subject: [PATCH 05/16] time: Special case calls of schedule_timeout(1) to use the
- min hrtimeout of 1ms, working around low Hz resolutions.
+Subject: [PATCH 2/8] time: Special case calls of schedule_timeout(1) to use
+ the min hrtimeout of 1ms, working around low Hz resolutions.
 
 ---
  kernel/time/timer.c | 16 ++++++++++++++--
  1 file changed, 14 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/time/timer.c b/kernel/time/timer.c
-index daa431373f55..d2ef89c53e0c 100644
+index a50364df1054..d82073605125 100644
 --- a/kernel/time/timer.c
 +++ b/kernel/time/timer.c
-@@ -1895,6 +1895,18 @@ signed long __sched schedule_timeout(signed long timeout)
+@@ -1873,6 +1873,18 @@ signed long __sched schedule_timeout(signed long timeout)
  
  	expire = timeout + jiffies;
  
@@ -31,7 +31,7 @@ index daa431373f55..d2ef89c53e0c 100644
  	timer.task = current;
  	timer_setup_on_stack(&timer.timer, process_timeout, 0);
  	__mod_timer(&timer.timer, expire, MOD_TIMER_NOTPENDING);
-@@ -1903,10 +1915,10 @@ signed long __sched schedule_timeout(signed long timeout)
+@@ -1881,10 +1893,10 @@ signed long __sched schedule_timeout(signed long timeout)
  
  	/* Remove the timer from the object tracker */
  	destroy_timer_on_stack(&timer.timer);
@@ -45,5 +45,5 @@ index daa431373f55..d2ef89c53e0c 100644
  }
  EXPORT_SYMBOL(schedule_timeout);
 -- 
-2.25.1
+2.28.0
 

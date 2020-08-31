@@ -1,8 +1,8 @@
-From 60ab14f95a806b3a05ef322e26509ed56a36a446 Mon Sep 17 00:00:00 2001
+From 7674dc60be8cbc0ea2a8dd7b404644a77efdf140 Mon Sep 17 00:00:00 2001
 From: Con Kolivas <kernel@kolivas.org>
 Date: Sat, 12 Aug 2017 11:53:39 +1000
-Subject: [PATCH 04/16] hrtimer: Create highres timeout variants of schedule_timeout
- functions.
+Subject: [PATCH 1/8] hrtimer: Create highres timeout variants of
+ schedule_timeout functions.
 
 ---
  include/linux/freezer.h |  1 +
@@ -11,10 +11,10 @@ Subject: [PATCH 04/16] hrtimer: Create highres timeout variants of schedule_time
  3 files changed, 99 insertions(+), 2 deletions(-)
 
 diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-index 21f5aa0b217f..ee9b46394fdf 100644
+index 27828145ca09..504cc97bf475 100644
 --- a/include/linux/freezer.h
 +++ b/include/linux/freezer.h
-@@ -297,6 +297,7 @@ static inline void set_freezable(void) {}
+@@ -311,6 +311,7 @@ static inline void set_freezable(void) {}
  #define wait_event_freezekillable_unsafe(wq, condition)			\
  		wait_event_killable(wq, condition)
  
@@ -23,10 +23,10 @@ index 21f5aa0b217f..ee9b46394fdf 100644
  
  #endif	/* FREEZER_H_INCLUDED */
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 793cdd00d6e0..71e3063c06b3 100644
+index 8e9172eaa826..db591b288f43 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -217,13 +217,40 @@ struct task_group;
+@@ -213,13 +213,40 @@ struct task_group;
  
  extern void scheduler_tick(void);
  
@@ -70,10 +70,10 @@ index 793cdd00d6e0..71e3063c06b3 100644
  extern void schedule_preempt_disabled(void);
  asmlinkage void preempt_schedule_irq(void);
 diff --git a/kernel/time/hrtimer.c b/kernel/time/hrtimer.c
-index d89da1c7e005..48fe5f00b078 100644
+index 95b6a708b040..b294bc4f9593 100644
 --- a/kernel/time/hrtimer.c
 +++ b/kernel/time/hrtimer.c
-@@ -2216,3 +2216,72 @@ int __sched schedule_hrtimeout(ktime_t *expires,
+@@ -2223,3 +2223,72 @@ int __sched schedule_hrtimeout(ktime_t *expires,
  	return schedule_hrtimeout_range(expires, 0, mode);
  }
  EXPORT_SYMBOL_GPL(schedule_hrtimeout);
@@ -147,5 +147,5 @@ index d89da1c7e005..48fe5f00b078 100644
 +}
 +EXPORT_SYMBOL(schedule_msec_hrtimeout_uninterruptible);
 -- 
-2.25.1
+2.28.0
 

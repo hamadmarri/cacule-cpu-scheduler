@@ -1,9 +1,11 @@
-From ba90509527dfcb2355c677af999cd0545821115e Mon Sep 17 00:00:00 2001
+From 73e7ab776b8fd353f7a0e55555406f07d4e73c43 Mon Sep 17 00:00:00 2001
 From: Con Kolivas <kernel@kolivas.org>
 Date: Mon, 20 Feb 2017 13:30:32 +1100
-Subject: [PATCH 09/16] hrtimer: Replace all calls to schedule_timeout_uninterruptible
- of potentially under 50ms to use schedule_msec_hrtimeout_uninterruptible
+Subject: [PATCH 6/8] hrtimer: Replace all calls to
+ schedule_timeout_uninterruptible of potentially under 50ms to use
+ schedule_msec_hrtimeout_uninterruptible
 
+Signed-off-by: Alexandre Frade <kernel@xanmod.org>
 ---
  drivers/media/pci/cx18/cx18-gpio.c           | 4 ++--
  drivers/net/wireless/intel/ipw2x00/ipw2100.c | 4 ++--
@@ -33,7 +35,7 @@ index cf7cfda94107..f63e17489547 100644
  
  /*
 diff --git a/drivers/net/wireless/intel/ipw2x00/ipw2100.c b/drivers/net/wireless/intel/ipw2x00/ipw2100.c
-index 97ea6e2035e6..1c693729bbd3 100644
+index 461e955aa259..5ab8e7396ea4 100644
 --- a/drivers/net/wireless/intel/ipw2x00/ipw2100.c
 +++ b/drivers/net/wireless/intel/ipw2x00/ipw2100.c
 @@ -816,7 +816,7 @@ static int ipw2100_hw_send_command(struct ipw2100_priv *priv,
@@ -86,10 +88,10 @@ index 2018614f258f..fc19b312c345 100644
  
  	if (rtc_ctrl & WM8350_RTC_ALMSTS)
 diff --git a/drivers/scsi/lpfc/lpfc_scsi.c b/drivers/scsi/lpfc/lpfc_scsi.c
-index ad62fb3f3a54..a84d4c99d7d7 100644
+index 983eeb0e3d07..007966930f94 100644
 --- a/drivers/scsi/lpfc/lpfc_scsi.c
 +++ b/drivers/scsi/lpfc/lpfc_scsi.c
-@@ -5191,7 +5191,7 @@ lpfc_reset_flush_io_context(struct lpfc_vport *vport, uint16_t tgt_id,
+@@ -5194,7 +5194,7 @@ lpfc_reset_flush_io_context(struct lpfc_vport *vport, uint16_t tgt_id,
  					tgt_id, lun_id, context);
  	later = msecs_to_jiffies(2 * vport->cfg_devloss_tmo * 1000) + jiffies;
  	while (time_after(later, jiffies) && cnt) {
@@ -121,11 +123,11 @@ index 40232a278b1a..d87fae1113aa 100644
  		if (! snd_m3_try_read_vendor(chip))
  			break;
 diff --git a/sound/soc/codecs/rt5631.c b/sound/soc/codecs/rt5631.c
-index f70b9f7e68bb..77b65398ca07 100644
+index 653da3eaf355..d77d12902594 100644
 --- a/sound/soc/codecs/rt5631.c
 +++ b/sound/soc/codecs/rt5631.c
-@@ -415,7 +415,7 @@ static void onebit_depop_mute_stage(struct snd_soc_component *component, int ena
- 	hp_zc = snd_soc_component_read32(component, RT5631_INT_ST_IRQ_CTRL_2);
+@@ -417,7 +417,7 @@ static void onebit_depop_mute_stage(struct snd_soc_component *component, int ena
+ 	hp_zc = snd_soc_component_read(component, RT5631_INT_ST_IRQ_CTRL_2);
  	snd_soc_component_write(component, RT5631_INT_ST_IRQ_CTRL_2, hp_zc & 0xf7ff);
  	if (enable) {
 -		schedule_timeout_uninterruptible(msecs_to_jiffies(10));
@@ -133,8 +135,8 @@ index f70b9f7e68bb..77b65398ca07 100644
  		/* config one-bit depop parameter */
  		rt5631_write_index(component, RT5631_SPK_INTL_CTRL, 0x307f);
  		snd_soc_component_update_bits(component, RT5631_HP_OUT_VOL,
-@@ -525,7 +525,7 @@ static void depop_seq_mute_stage(struct snd_soc_component *component, int enable
- 	hp_zc = snd_soc_component_read32(component, RT5631_INT_ST_IRQ_CTRL_2);
+@@ -529,7 +529,7 @@ static void depop_seq_mute_stage(struct snd_soc_component *component, int enable
+ 	hp_zc = snd_soc_component_read(component, RT5631_INT_ST_IRQ_CTRL_2);
  	snd_soc_component_write(component, RT5631_INT_ST_IRQ_CTRL_2, hp_zc & 0xf7ff);
  	if (enable) {
 -		schedule_timeout_uninterruptible(msecs_to_jiffies(10));
@@ -143,7 +145,7 @@ index f70b9f7e68bb..77b65398ca07 100644
  		/* config depop sequence parameter */
  		rt5631_write_index(component, RT5631_SPK_INTL_CTRL, 0x302f);
 diff --git a/sound/soc/soc-dapm.c b/sound/soc/soc-dapm.c
-index e2632841b321..7a445c1a2167 100644
+index 3273161e2787..7fb9b4c6dd7b 100644
 --- a/sound/soc/soc-dapm.c
 +++ b/sound/soc/soc-dapm.c
 @@ -154,7 +154,7 @@ static void dapm_assert_locked(struct snd_soc_dapm_context *dapm)
@@ -156,5 +158,5 @@ index e2632841b321..7a445c1a2167 100644
  
  __printf(3, 4)
 -- 
-2.25.1
+2.28.0
 

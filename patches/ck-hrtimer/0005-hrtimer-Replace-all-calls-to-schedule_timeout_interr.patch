@@ -1,8 +1,9 @@
-From 8812c29108719f9f030cdd5544ff3555a515e58a Mon Sep 17 00:00:00 2001
+From 5ccecf136aa07df9ca628422c7de36d974675338 Mon Sep 17 00:00:00 2001
 From: Con Kolivas <kernel@kolivas.org>
 Date: Mon, 20 Feb 2017 13:30:07 +1100
-Subject: [PATCH 08/16] hrtimer: Replace all calls to schedule_timeout_interruptible of
- potentially under 50ms to use schedule_msec_hrtimeout_interruptible.
+Subject: [PATCH 5/8] hrtimer: Replace all calls to
+ schedule_timeout_interruptible of potentially under 50ms to use
+ schedule_msec_hrtimeout_interruptible.
 
 ---
  drivers/hwmon/fam15h_power.c        |  2 +-
@@ -22,10 +23,10 @@ Subject: [PATCH 08/16] hrtimer: Replace all calls to schedule_timeout_interrupti
  14 files changed, 26 insertions(+), 30 deletions(-)
 
 diff --git a/drivers/hwmon/fam15h_power.c b/drivers/hwmon/fam15h_power.c
-index 267eac00a3fb..352af68c6cd7 100644
+index 29f5fed28c2a..974cb08c7aa7 100644
 --- a/drivers/hwmon/fam15h_power.c
 +++ b/drivers/hwmon/fam15h_power.c
-@@ -225,7 +225,7 @@ static ssize_t power1_average_show(struct device *dev,
+@@ -221,7 +221,7 @@ static ssize_t power1_average_show(struct device *dev,
  		prev_ptsc[cu] = data->cpu_sw_pwr_ptsc[cu];
  	}
  
@@ -35,7 +36,7 @@ index 267eac00a3fb..352af68c6cd7 100644
  		return 0;
  
 diff --git a/drivers/iio/light/tsl2563.c b/drivers/iio/light/tsl2563.c
-index d8c40a83097d..8332baf4961c 100644
+index abc8d7db8dc1..baa9d6338a52 100644
 --- a/drivers/iio/light/tsl2563.c
 +++ b/drivers/iio/light/tsl2563.c
 @@ -269,11 +269,7 @@ static void tsl2563_wait_adc(struct tsl2563_chip *chip)
@@ -127,7 +128,7 @@ index fb9de7bbcd19..e53cf45e7f3f 100644
  	}
  
 diff --git a/drivers/media/radio/tea575x.c b/drivers/media/radio/tea575x.c
-index b0303cf00387..0925b5065147 100644
+index c37315226c42..e73e6393403c 100644
 --- a/drivers/media/radio/tea575x.c
 +++ b/drivers/media/radio/tea575x.c
 @@ -401,7 +401,7 @@ int snd_tea575x_s_hw_freq_seek(struct file *file, struct snd_tea575x *tea,
@@ -140,10 +141,10 @@ index b0303cf00387..0925b5065147 100644
  			tea->val &= ~TEA575X_BIT_SEARCH;
  			snd_tea575x_set_freq(tea);
 diff --git a/drivers/parport/ieee1284.c b/drivers/parport/ieee1284.c
-index 90fb73575495..c94048b048a5 100644
+index 4547ac44c8d4..8fa1a7fdf12c 100644
 --- a/drivers/parport/ieee1284.c
 +++ b/drivers/parport/ieee1284.c
-@@ -208,7 +208,7 @@ int parport_wait_peripheral(struct parport *port,
+@@ -202,7 +202,7 @@ int parport_wait_peripheral(struct parport *port,
  			/* parport_wait_event didn't time out, but the
  			 * peripheral wasn't actually ready either.
  			 * Wait for another 10ms. */
@@ -153,10 +154,10 @@ index 90fb73575495..c94048b048a5 100644
  	}
  
 diff --git a/drivers/parport/ieee1284_ops.c b/drivers/parport/ieee1284_ops.c
-index 5d41dda6da4e..34705f6b423f 100644
+index 2c11bd3fe1fd..8cb6b61c0880 100644
 --- a/drivers/parport/ieee1284_ops.c
 +++ b/drivers/parport/ieee1284_ops.c
-@@ -537,7 +537,7 @@ size_t parport_ieee1284_ecp_read_data (struct parport *port,
+@@ -520,7 +520,7 @@ size_t parport_ieee1284_ecp_read_data (struct parport *port,
  			/* Yield the port for a while. */
  			if (count && dev->port->irq != PARPORT_IRQ_NONE) {
  				parport_release (dev);
@@ -206,7 +207,7 @@ index bffe548187ee..c2918ee3e100 100644
  
  	timer_setup(&ips->timer, monitor_timeout, TIMER_DEFERRABLE);
 diff --git a/net/core/pktgen.c b/net/core/pktgen.c
-index 08e2811b5274..955fcfdd3c3c 100644
+index 95f4c6b8f51a..05f6826351f7 100644
 --- a/net/core/pktgen.c
 +++ b/net/core/pktgen.c
 @@ -1894,7 +1894,7 @@ static void pktgen_mark_device(const struct pktgen_net *pn, const char *ifname)
@@ -219,7 +220,7 @@ index 08e2811b5274..955fcfdd3c3c 100644
  
  		if (++i >= max_tries) {
 diff --git a/sound/soc/codecs/wm8350.c b/sound/soc/codecs/wm8350.c
-index fe99584c917f..f1344d532a13 100644
+index a6aa212fa0c8..8bfa549b38db 100644
 --- a/sound/soc/codecs/wm8350.c
 +++ b/sound/soc/codecs/wm8350.c
 @@ -233,10 +233,10 @@ static void wm8350_pga_work(struct work_struct *work)
@@ -272,10 +273,10 @@ index fe99584c917f..f1344d532a13 100644
  
  		pm1 &= ~WM8350_BIASEN;
 diff --git a/sound/soc/codecs/wm8900.c b/sound/soc/codecs/wm8900.c
-index 271235a69c01..3ec90e1b1eb4 100644
+index a9a6d766a176..45bf31de6282 100644
 --- a/sound/soc/codecs/wm8900.c
 +++ b/sound/soc/codecs/wm8900.c
-@@ -1109,7 +1109,7 @@ static int wm8900_set_bias_level(struct snd_soc_component *component,
+@@ -1104,7 +1104,7 @@ static int wm8900_set_bias_level(struct snd_soc_component *component,
  		/* Need to let things settle before stopping the clock
  		 * to ensure that restart works, see "Stopping the
  		 * master clock" in the datasheet. */
@@ -285,7 +286,7 @@ index 271235a69c01..3ec90e1b1eb4 100644
  			     WM8900_REG_POWER2_SYSCLK_ENA);
  		break;
 diff --git a/sound/soc/codecs/wm9713.c b/sound/soc/codecs/wm9713.c
-index 6497c1ea6228..08fefeca9d82 100644
+index 7072ffacbdfd..e8414ec4759c 100644
 --- a/sound/soc/codecs/wm9713.c
 +++ b/sound/soc/codecs/wm9713.c
 @@ -199,7 +199,7 @@ static int wm9713_voice_shutdown(struct snd_soc_dapm_widget *w,
@@ -307,5 +308,5 @@ index 6497c1ea6228..08fefeca9d82 100644
  }
  
 -- 
-2.25.1
+2.28.0
 

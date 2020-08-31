@@ -1,9 +1,9 @@
-From 9cd90daf3a56353f129f8512dff9953a5e1f0a9a Mon Sep 17 00:00:00 2001
+From 64b30a7c3d26a8f11dcaa7461fa2df3e4bd3b073 Mon Sep 17 00:00:00 2001
 From: Con Kolivas <kernel@kolivas.org>
 Date: Wed, 19 Aug 2020 23:00:40 +0000
-Subject: [PATCH] clockevents, hrtimer: Make hrtimer granularity and minimum
- hrtimeout configurable in sysctl. Set default granularity to 100us and min
- timeout to 500us.
+Subject: [PATCH 8/8] clockevents, hrtimer: Make hrtimer granularity and
+ minimum hrtimeout configurable in sysctl. Set default granularity to 100us
+ and min timeout to 500us.
 
 Signed-off-by: Alexandre Frade <kernel@xanmod.org>
 ---
@@ -13,7 +13,7 @@ Signed-off-by: Alexandre Frade <kernel@xanmod.org>
  3 files changed, 69 insertions(+), 7 deletions(-)
 
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index db1ce7af2563..2955a57fd225 100644
+index 287862f91717..12fa00c67ed9 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -120,7 +120,9 @@ static unsigned long long_max = LONG_MAX;
@@ -27,7 +27,7 @@ index db1ce7af2563..2955a57fd225 100644
  static int ten_thousand = 10000;
  #endif
  #ifdef CONFIG_PERF_EVENTS
-@@ -2410,6 +2412,24 @@ static struct ctl_table kern_table[] = {
+@@ -2431,6 +2433,24 @@ static struct ctl_table kern_table[] = {
  		.proc_handler	= proc_dointvec,
  	},
  #endif
@@ -69,10 +69,10 @@ index f5490222e134..544c58c29267 100644
  /**
   * clockevents_increase_min_delta - raise minimum delta of a clock event device
 diff --git a/kernel/time/hrtimer.c b/kernel/time/hrtimer.c
-index 8293ebf4ca08..e4f5b4c483a0 100644
+index 8b78fecf82f1..19918cf649b0 100644
 --- a/kernel/time/hrtimer.c
 +++ b/kernel/time/hrtimer.c
-@@ -2224,7 +2224,7 @@ EXPORT_SYMBOL_GPL(schedule_hrtimeout);
+@@ -2231,7 +2231,7 @@ EXPORT_SYMBOL_GPL(schedule_hrtimeout);
  long __sched schedule_msec_hrtimeout(long timeout)
  {
  	struct hrtimer_sleeper t;
@@ -81,7 +81,7 @@ index 8293ebf4ca08..e4f5b4c483a0 100644
  	ktime_t expires;
  
  	if (!timeout) {
-@@ -2241,9 +2241,8 @@ long __sched schedule_msec_hrtimeout(long timeout)
+@@ -2248,9 +2248,8 @@ long __sched schedule_msec_hrtimeout(long timeout)
  	if (jiffs > 4 || hrtimer_resolution >= NSEC_PER_SEC / HZ || pm_freezing)
  		return schedule_timeout(jiffs);
  
@@ -92,7 +92,7 @@ index 8293ebf4ca08..e4f5b4c483a0 100644
  
  	hrtimer_init_sleeper_on_stack(&t, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
  	hrtimer_set_expires_range_ns(&t.timer, expires, delta);
-@@ -2265,9 +2264,51 @@ long __sched schedule_msec_hrtimeout(long timeout)
+@@ -2272,9 +2271,51 @@ long __sched schedule_msec_hrtimeout(long timeout)
  
  EXPORT_SYMBOL(schedule_msec_hrtimeout);
  

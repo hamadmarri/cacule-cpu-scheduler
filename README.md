@@ -19,27 +19,35 @@ runs for 4 milliseconds and then got preempted if there are other tasks in the r
 * Cachy might be good for mobiles or Android since it has high responsiveness. Cachy need to be integrated to
 Android, I don't think the current version it is ready to go without some tweeking and adapting to Android hacks.
 
+
+## Patched Kernel Tree
+1. Go to [kernel tree repository](https://github.com/hamadmarri/linux) 
+2. Select a tag version that starts with `cachy` (i.e `cachy-5.9-r1`)
+3. Download and compile
+
+
 ## How to apply the patch
-1. Select the branch of kernel version and install the folder linux-(version)-cachy which is the good to go patched linux kernel.
-    * **`make menuconfig` make sure to disable `FAIR_GROUP_SCHED` and `NUMA`**
-2. Or patch it yourself
-    * Download the linux kernel (https://www.kernel.org/) that is same version as the patch (i.e if patch file name is cachy-5.7.6.patch, then download https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.7.6.tar.xz)
-    * Unzip linux kernel
-    * Download cachy patch file and place it inside the just unzipped linux kernel folder
-    * cd linux-(version)
-    * patch -p1 < cachy-5.7.6.patch
-    * **`make menuconfig` make sure to disable `FAIR_GROUP_SCHED` and `NUMA`**
-    * To build the kernel you need to follow linux build kernel tutorials.
+1. Download the linux kernel (https://www.kernel.org/) that is same version as the patch (i.e if patch file name is cachy-5.7.6.patch, then download https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.7.6.tar.xz)
+2. Unzip linux kernel
+3. Download cachy patch file and place it inside the just unzipped linux kernel folder
+4. cd linux-(version)
+5. patch -p1 < cachy-5.7.6.patch
+6. **`make menuconfig` make sure `FAIR_GROUP_SCHED` and `NUMA` are disabled**
+7. To build the kernel you need to follow linux build kernel documentation and tutorials.
 
 
 To confirm that Cachy is currently running:
 ```
 
 dmesg | grep -i "cachy cpu"
-[    0.059697] Cachy CPU scheduler v5.7.10 by Hamad Al Marri. Thanks to my wife Sarah for her patience.
+[    0.059697] Cachy CPU scheduler v5.9 by Hamad Al Marri. Thanks to my wife Sarah for her patience.
 
 ```
-    
+
+## Special Thanks to
+1. Alexandre Frade (the maintainer of [xanmod](https://github.com/xanmod))
+
+
 ## Complexity
 * The complexity of Enqueue and Dequeue a task is `O(1)`.
 * The complexity of pick the next task is in `O(n)`, where 
