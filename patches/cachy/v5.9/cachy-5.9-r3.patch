@@ -1,7 +1,7 @@
 From 9f39c7979a44606d04b4f1058dd16508ff06ef0c Mon Sep 17 00:00:00 2001
 From: Hamad Marri <hamad.s.almarri@gmail.com>
 Date: Mon, 31 Aug 2020 15:43:30 +0300
-Subject: [PATCH 1/9] cachy-5.9-r1
+Subject: [PATCH 01/10] cachy-5.9-r1
 
 ---
  arch/x86/Kconfig      |     2 +
@@ -10378,7 +10378,7 @@ index 28709f6b0975..54e168e8b6d0 100644
 From 9d459b79ba475aa71330cbfd3f0730aef91576a4 Mon Sep 17 00:00:00 2001
 From: Alexandre Frade <kernel@xanmod.org>
 Date: Tue, 1 Sep 2020 15:23:36 +0000
-Subject: [PATCH 2/9] x86/Kconfig, cachy: Fix enable CONFIG_X86_BIGSMP when
+Subject: [PATCH 02/10] x86/Kconfig, cachy: Fix enable CONFIG_X86_BIGSMP when
  CONFIG_CACHY_SCHED=y
 
 Signed-off-by: Alexandre Frade <kernel@xanmod.org>
@@ -10405,7 +10405,7 @@ index 189d9e99f939..f846111266e1 100644
 From f44b7945faa44d41a6edbd16fdbbf75a44384c05 Mon Sep 17 00:00:00 2001
 From: Hamad Marri <hamad.s.almarri@gmail.com>
 Date: Sat, 5 Sep 2020 03:02:30 +0300
-Subject: [PATCH 3/9] cachy: Add put_prev_task to prevent heavy threads
+Subject: [PATCH 03/10] cachy: Add put_prev_task to prevent heavy threads
  throttling
 
 ---
@@ -10462,7 +10462,7 @@ index 141c40576a4b..2e197d823728 100644
 From f31346441462f3680fd2afd8da5d5c4b88f84048 Mon Sep 17 00:00:00 2001
 From: Alexandre Frade <kernel@xanmod.org>
 Date: Sun, 6 Sep 2020 00:24:59 +0000
-Subject: [PATCH 4/9] cachy: more legacy cfs code cleanup
+Subject: [PATCH 04/10] cachy: more legacy cfs code cleanup
 
 Signed-off-by: Alexandre Frade <kernel@xanmod.org>
 ---
@@ -14089,7 +14089,7 @@ index 2e197d823728..a331e62aa47c 100644
 From aa05582a7aae9f48ca307e4c28ffed920f1573b0 Mon Sep 17 00:00:00 2001
 From: Alexandre Frade <kernel@xanmod.org>
 Date: Sun, 6 Sep 2020 00:25:01 +0000
-Subject: [PATCH 5/9] cachy: tag cachy v5.9-r2
+Subject: [PATCH 05/10] cachy: tag cachy v5.9-r2
 
 Signed-off-by: Alexandre Frade <kernel@xanmod.org>
 ---
@@ -14116,7 +14116,7 @@ index be97774d0113..8bd2414f7a5a 100644
 From 248c89dcb780f998e072f3753f3da25e0cfc71fa Mon Sep 17 00:00:00 2001
 From: hamadmarri <hamad.s.almarri@gmail.com>
 Date: Mon, 7 Sep 2020 14:22:08 +0300
-Subject: [PATCH 6/9] hrrn lifetime
+Subject: [PATCH 06/10] hrrn lifetime
 
 ---
  include/linux/sched.h |  2 ++
@@ -14262,7 +14262,7 @@ index 8bd2414f7a5a..fd214a6bfff7 100644
 From 4099610f96f09564ee9f51a66e835d5241dcdd63 Mon Sep 17 00:00:00 2001
 From: hamadmarri <hamad.s.almarri@gmail.com>
 Date: Mon, 7 Sep 2020 16:39:50 +0300
-Subject: [PATCH 7/9] prev skip
+Subject: [PATCH 07/10] prev skip
 
 ---
  kernel/sched/cachy.c | 12 +++++++-----
@@ -14318,7 +14318,7 @@ index 4d4dcfbcae62..a80690fd9d98 100644
 From 592ed0cdbeb4a51142c4c5a3790448aedec76655 Mon Sep 17 00:00:00 2001
 From: hamadmarri <hamad.s.almarri@gmail.com>
 Date: Wed, 9 Sep 2020 02:41:05 +0300
-Subject: [PATCH 8/9] lifetime = 12ms
+Subject: [PATCH 08/10] lifetime = 12ms
 
 ---
  kernel/sched/cachy.c | 16 +++++++---------
@@ -14386,7 +14386,7 @@ index a80690fd9d98..5bd281e0aee7 100644
 From 6406ba353670bbcafed5b8f39b0e57410b5375d3 Mon Sep 17 00:00:00 2001
 From: hamadmarri <hamad.s.almarri@gmail.com>
 Date: Wed, 9 Sep 2020 04:29:42 +0300
-Subject: [PATCH 9/9] new tasks have 1 hrrn value for 10ms
+Subject: [PATCH 09/10] new tasks have 1 hrrn value for 10ms
 
 ---
  kernel/sched/cachy.c | 40 ++++++++++++++++++++--------------------
@@ -14476,6 +14476,32 @@ index 5bd281e0aee7..4e3c5b749413 100644
  
 -	p->se.hrrn_start_time = p->start_time;
 +	p->se.hrrn_start_time = rq_clock_task(rq) + 10000000ULL; // + 10ms
+ 
+ 	cfs_rq = task_cfs_rq(current);
+ 	curr = cfs_rq->curr;
+-- 
+2.28.0
+
+
+From 535207d8aad068900ba953b5409a55976d0872ab Mon Sep 17 00:00:00 2001
+From: hamadmarri <hamad.s.almarri@gmail.com>
+Date: Thu, 10 Sep 2020 13:36:13 +0300
+Subject: [PATCH 10/10] new task latency 6ms/sysctl_sched_latency
+
+---
+ kernel/sched/cachy.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kernel/sched/cachy.c b/kernel/sched/cachy.c
+index 4e3c5b749413..ef932f237741 100644
+--- a/kernel/sched/cachy.c
++++ b/kernel/sched/cachy.c
+@@ -6740,7 +6740,7 @@ static void task_fork_fair(struct task_struct *p)
+ 	rq_lock(rq, &rf);
+ 	update_rq_clock(rq);
+ 
+-	p->se.hrrn_start_time = rq_clock_task(rq) + 10000000ULL; // + 10ms
++	p->se.hrrn_start_time = rq_clock_task(rq) + sysctl_sched_latency;
  
  	cfs_rq = task_cfs_rq(current);
  	curr = cfs_rq->curr;
