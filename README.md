@@ -40,7 +40,7 @@ To confirm that Cachy is currently running:
 ```
 
 dmesg | grep -i "cachy cpu"
-[    0.059697] Cachy CPU scheduler v5.9 by Hamad Al Marri. Thanks to my wife Sarah for her patience.
+[    0.059697] Cachy CPU scheduler v5.9 by Hamad Al Marri.
 
 ```
 
