@@ -115,20 +115,20 @@ return -1;
 ```
 
 
-Highest response ratio next (HRRN) scheduling is a non-preemptive discipline. It was developed by Brinch Hansen as modification of shortest job next (SJN) to mitigate the problem of process starvation [wikipedia](https://en.wikipedia.org/wiki/Highest_response_ratio_next). The original HRRN is non-preemptive meaning that a task runs untill it finishes. This nature is not
-good for interactive systems. Applying original HRRN with preemptive modifications requires two changes. First, what happenes if
+Highest response ratio next (HRRN) scheduling is a non-preemptive discipline. It was developed by Brinch Hansen as modification of shortest job next (SJN) to mitigate the problem of process starvation [wikipedia](https://en.wikipedia.org/wiki/Highest_response_ratio_next). The original HRRN is non-preemptive meaning that a task runs until it finishes. This nature is not
+good for interactive systems. Applying original HRRN with preemptive modifications requires two changes. First, what happens if
 the scheduler forces a task to preempt every tick? This can work great for short amount of time lets say (< 60 minutes) until some
-tasks ages and new tasks created, then the imbalance happenes. Assume one task `T1` (Xorg) is running and waiting for users inputs.
-This task will have high HRRN because it sleeps more than it runs, however, after a long time (say 60 minuts = 3600000000000ns) the life
+tasks ages and new tasks created, then the imbalance happens. Assume one task `T1` (Xorg) is running and waiting for users inputs.
+This task will have high HRRN because it sleeps more than it runs, however, after a long time (say 60 minuets = 3600000000000ns) the life
 time of `T1` is 3600000000000ns lets assume the sum of execution time is 50% = 1800000000000ns. The HRRN = 3600000000000 / 1800000000000 
 = 2. If `T1` runs for 4ms, the rate of change on HRRN is too low: HRRN = 3600000000000 / 1800004000000 = 1.999995556
 
-Also, if `T1` waited for 1s HRRN = 3601000000000 / 1800004000000 = 2.00055111, the rate of change is low too. Both situations are bad, because 
+Also, if `T1` waited for 1s HRRN = 3601000000000 / 1800004000000 = 2.00055111, the rate of change is low too. Both situations are bad, because:
 1. A new task `T2` will have higher HRRN when it starts, thus it will be picked instead of `T1`
 2. The rate of change of `T2` compared to `T1` is higher.
 
-This situation is not good for infinite processes such as Xorg and desktop related threads. Those task must run ASAP when they
-wake up, because they are releated to responsiveness and Interactivity.
+This situation is not good for infinite-life processes such as Xorg and desktop related threads. Those task must run ASAP when they
+wake up, because they are related to responsiveness and Interactivity.
 
 Therefore, the original HRRN needs some modifications.
 
@@ -136,7 +136,7 @@ Therefore, the original HRRN needs some modifications.
 We have implemented two modifications that enhances HRRN to work as a preemptive policy:
 
 #### HRRN maximum life time
-Instead of calculating a task HRRN value for inifinite life time, we propused `hrrn_max_lifetime` which is 10s by default. A task's
+Instead of calculating a task HRRN value for infinite life time, we proposed `hrrn_max_lifetime` which is 10s by default. A task's
 `hrrn_start_time` and `hrrn_sum_exec_runtime` reset every 10s. Therefore, the rate of change of HRRN for old and new tasks is
 normalized. The value `hrrn_max_lifetime` can be changed at run time by the following sysctl command:
 
@@ -144,26 +144,26 @@ normalized. The value `hrrn_max_lifetime` can be changed at run time by the foll
 sudo sysctl kernel.sched_hrrn_max_lifetime_ms=60000
 ```
 
-The value is milliseconds, the above command changes `hrrn_max_lifetime` from 10s to 60s.
+The value is in milliseconds, the above command changes `hrrn_max_lifetime` from 10s to 60s.
 
 #### HRRN latency
-A new task could overcome old tasks because it has 1 sum execution, and lets say few microseconds 7000 (7us). This new task will have
-HRRN = 7000 which is high compared with older tasks. Thats way wer proposed `hrrn_latency` which is in microseconds. When new task is
+A new task could overcome old tasks because it has 1 sum execution, and lets say its age is few microseconds 7000ns (7us). This new task will have
+HRRN = 7000 which is high compared with older tasks. That's why we proposed `hrrn_latency` which is in microseconds. When a new task is
 forked, the `hrrn_start_time` is set to (current time in nano + hrrn_latency). The default value of `hrrn_latency` is 0. This value
 can be changed by the following:
 
 ```
-sudo sysctl kernel.sched_hrrn_latency_us=6000000
+sudo sysctl kernel.sched_hrrn_latency_us=6000
 ```
 
-This sets `hrrn_latency` to 6ms. Notice that a new task will have HRRN=1 for this period. Notice also that if no runnable tasks other
+This sets `hrrn_latency` to 6ms. Notice that a new task will have HRRN=1 for this period of time. Notice also that if no runnable tasks other
 than this new task, this task will run. Adding 6ms doesn't mean that a new task will pause for 6ms. It means it will have HRRN=1 or 0
 for 6ms. It depends on how many other task on the run queue and whether they have higher HRRN or not. This will solve a problem when
 having heavy compilation with -j5 on 4CPUS machine. The compilation will create new threads for each file and that might cause freezes
-and hangups and technecally those new threads could have higher HRRN values than Xorg or whatever old running desktop task.
+and hangups. Technically those new threads could have higher HRRN values than Xorg or whatever old running desktop tasks.
 
 Having said that, the default value is 0, on my machine this value doesn't make any problems and I don't have any freezes when
-compiling kernel unless I changed it to -500000000. It depeneds on your machine and on how fast is your HD drive.
+compiling kernel unless I changed it to -500000000. It depends on your machine and on how fast is your HD drive.
 
 
 
