@@ -1,26 +1,369 @@
-From 2ec690ccaffcf88d4c20e548c2c2fbc0b39e8edb Mon Sep 17 00:00:00 2001
-From: hamadmarri <hamad.s.almarri@gmail.com>
-Date: Sun, 13 Sep 2020 05:33:58 +0300
-Subject: [PATCH 1/3] sysctl for hrrn max lifetime, new tasks latency
+From 63884b4dad24eef5b91524d5c5b086152c58e5d2 Mon Sep 17 00:00:00 2001
+From: Hamad Marri <hamad.s.almarri@gmail.com>
+Date: Sun, 13 Sep 2020 12:56:58 +0000
+Subject: [PATCH] sched: Add Cachy CPU scheduler v5.8-r2
 
+Cachy-sched is a cpu process scheduler that utilizes CPU cache
+and it is based on Highest Response Ratio Next (HRRN) policy.
+
+About Cachy Scheduler
+
+* All balancing code is removed except for idle CPU balancing.
+  There is no periodic balancing, only idle CPU balancing is applied.
+  Once a task is assigned to a CPU, it sticks with it until another CPUS
+  got idle then this task might get pulled to new cpu. The reason of
+  disabling periodic balancing is to utilize the CPU cache of tasks.
+
+* No grouping for tasks, FAIR_GROUP_SCHED must be disabled.
+
+* No support for NUMA, NUMA must be disabled.
+
+* Each CPU has its own runqueue.
+
+* NORMAL runqueue is a linked list of sched_entities (instead of RB-Tree).
+
+* RT and other runqueues are just the same as the CFS's.
+
+* A task gets preempted in every tick. If the clock ticks in 250HZ
+  (i.e. CONFIG_HZ_250=y) then a task runs for 4 milliseconds and then got
+  preempted if there are other tasks in the runqueue.
+
+* Wake up tasks preempt currently running tasks if its HRRN value is higher.
+
+* This scheduler is designed for desktop usage since it is about responsiveness.
+  It may be not bad for servers.
+
+* Cachy might be good for mobiles or Android since it has high responsiveness.
+  Cachy need to be integrated to Android, I don't think the current version it
+  is ready to go without some tweeking and adapting to Android hacks.
+
+Signed-off-by: Alexandre Frade <kernel@xanmod.org>
+Signed-off-by: Hamad Marri <hamad.s.almarri@gmail.com>
 ---
- arch/x86/Kconfig             |    1 +
- include/linux/sched.h        |    6 +
- include/linux/sched/sysctl.h |    5 +
- init/Kconfig                 |   17 +-
- kernel/sched/Makefile        |   10 +-
- kernel/sched/cachy.c         | 7072 ++++++++++++++++++++++++++++++++++
- kernel/sched/core.c          |   10 +-
- kernel/sched/sched.h         |    1 +
- kernel/sysctl.c              |   16 +
- 9 files changed, 7131 insertions(+), 7 deletions(-)
+ Documentation/admin-guide/sysctl/kernel.rst |   40 +
+ Documentation/scheduler/sched-Cachy.rst     |  247 +
+ arch/x86/Kconfig                            |    1 +
+ include/linux/sched.h                       |    6 +
+ include/linux/sched/sysctl.h                |    5 +
+ init/Kconfig                                |   17 +-
+ kernel/sched/Makefile                       |   10 +-
+ kernel/sched/cachy.c                        | 7072 +++++++++++++++++++
+ kernel/sched/core.c                         |   10 +-
+ kernel/sched/sched.h                        |    1 +
+ kernel/sysctl.c                             |   16 +
+ 11 files changed, 7418 insertions(+), 7 deletions(-)
+ create mode 100644 Documentation/scheduler/sched-Cachy.rst
  create mode 100644 kernel/sched/cachy.c
 
+diff --git a/Documentation/admin-guide/sysctl/kernel.rst b/Documentation/admin-guide/sysctl/kernel.rst
+index 83acf5025488..20354dea9cba 100644
+--- a/Documentation/admin-guide/sysctl/kernel.rst
++++ b/Documentation/admin-guide/sysctl/kernel.rst
+@@ -1055,6 +1055,46 @@ requirements for EAS but you do not want to use it, change
+ this value to 0.
+ 
+ 
++sched_hrrn_latency_us (Cachy scheduler only)
++============================================
++
++A new task could overcome old tasks because it has 1 sum execution, and lets
++say its age is few microseconds 7000ns (7us). This new task will have
++HRRN = 7000 which is high compared with older tasks. That's why we proposed
++hrrn_latency which is in microseconds. When new task is forked, the
++hrrn_start_time is set to (current time in nano + hrrn_latency). The default
++value of hrrn_latency is 0. This value can be changed by the following:
++
++  sysctl kernel.sched_hrrn_latency_us=6000000
++
++This sets `hrrn_latency` to 6ms. Notice that a new task will have HRRN=1 for
++this period of time. Notice also that if no runnable tasks other than this new
++task, this task will run. Adding 6ms doesn't mean that a new task will pause
++for 6ms.
++
++It means it will have HRRN=1 or 0 for 6ms. It depends on how many other task
++on the run queue and whether they have higher HRRN or not. This will solve a
++problem when having heavy compilation with -j5 on 4CPUS machine.
++The compilation will create new threads for each file and that might cause
++freezes and hangups. Technically those new threads could have higher HRRN
++values than Xorg or whatever old running desktop tasks.
++
++
++sched_hrrn_max_lifetime_ms (Cachy scheduler only)
++=================================================
++
++Instead of calculating a task HRRN value for infinite life time, we proposed
++hrrn_max_lifetime which is 10s by default. A task's hrrn_start_time and
++hrrn_sum_exec_runtime reset every 10s. Therefore, the rate of change of HRRN
++for old and new tasks is normalized. The value hrrn_max_lifetime can be
++changed at run time by the following sysctl command:
++
++  sysctl kernel.sched_hrrn_max_lifetime_ms=60000
++
++The value is in milliseconds, the above command changes hrrn_max_lifetime
++from 10s to 60s.
++
++
+ sched_schedstats
+ ================
+ 
+diff --git a/Documentation/scheduler/sched-Cachy.rst b/Documentation/scheduler/sched-Cachy.rst
+new file mode 100644
+index 000000000000..8e10d87a9395
+--- /dev/null
++++ b/Documentation/scheduler/sched-Cachy.rst
+@@ -0,0 +1,247 @@
++======================================
++The Cachy Scheduler by Hamad Al Marri.
++======================================
++
++1.  Overview
++=============
++
++Cachy scheduler is a CFS-based cpu process scheduler that utilizes CPU cache
++and it is based on Highest Response Ratio Next (HRRN) policy.
++
++1.1 About Cachy Scheduler
++--------------------------
++
++  - All balancing code is removed except for idle CPU balancing. There is no
++    periodic balancing, only idle CPU balancing is applied. Once a task is
++    assigned to a CPU, it sticks with it until another CPUS got idle then this
++    task might get pulled to new cpu. The reason of disabling periodic
++    balancing is to utilize the CPU cache of tasks.
++
++  - No grouping for tasks, FAIR_GROUP_SCHED must be disabled.
++
++  - No support for NUMA, NUMA must be disabled.
++
++  - Each CPU has its own runqueue.
++
++  - NORMAL runqueue is a linked list of sched_entities (instead of RB-Tree).
++
++  - RT and other runqueues are just the same as the CFS's.
++
++  - A task gets preempted in every tick. If the clock ticks in 250HZ
++    (i.e. CONFIG_HZ_250=y) then a task runs for 4 milliseconds and then got
++    preempted if there are other tasks in the runqueue.
++
++  - Wake up tasks preempt currently running tasks if its HRRN value is higher.
++
++  - This scheduler is designed for desktop usage since it is about
++    responsiveness. It may be not bad for servers.
++
++  - Cachy might be good for mobiles or Android since it has high
++    responsiveness.
++    Cachy need to be integrated to Android, I don't think the current version
++    it is ready to go without some tweeking and adapting to Android hacks.
++
++1.2. Complexity
++----------------
++
++The complexity of Enqueue and Dequeue a task is O(1).
++
++The complexity of pick the next task is in O(n), where n is the number of tasks
++in a runqueue (each CPU has its own runqueue).
++
++Note: O(n) sounds scary, but usually for a machine with 4 CPUS where it is used
++for desktop or mobile jobs, the maximum number of runnable tasks might not
++exceeds 10 (at the pick next run time) - the idle tasks are excluded since they
++are dequeued when sleeping and enqueued when they wake up. The Cachy scheduler
++latency for a high number of CPUs (4+) is usually less than the CFS's since no
++tree balancing nor tasks balancing are required - again for desktop and mobile
++usage.
++
++
++2. The Cachy Highest Response Ratio Next (HRRN) policy
++=======================================================
++
++Cachy is based in Highest Response Ratio Next (HRRN) policy with some
++modifications. HRRN is a scheduling policy in which the process that has the
++highest response ratio will run next.
++
++Each process has a response ratio value R = (w_t + s_t) / s_t where w_t is
++the process waiting time, and s_t is the process running
++time. If two process has similar running times, the
++process that has been waiting longer will run first. HRRN aims
++to prevent starvation since it strives the waiting time for processes,
++and also it increases the response time.
++
++If two processes have the same R after integer rounding, the division remainder
++is compared. See below the full
++calculation for R value:
++
++	u64 r_curr, r_se, w_curr = 1ULL, w_se = 1ULL;
++	struct task_struct *t_curr = task_of(curr);
++	struct task_struct *t_se = task_of(se);
++	u64 vr_curr   = curr->hrrn_sum_exec_runtime + 1;
++	u64 vr_se   = se->hrrn_sum_exec_runtime   + 1;
++	s64 diff;
++
++	diff = now - curr->hrrn_start_time;
++	if (diff > 0)
++		w_curr  = diff;
++
++	diff = now - se->hrrn_start_time;
++	if (diff > 0)
++		w_se  = diff;
++
++	// adjusting for priorities
++	w_curr  *= (140 - t_curr->prio);
++	w_se  *= (140 - t_se->prio);
++
++	r_curr  = w_curr / vr_curr;
++	r_se  = w_se / vr_se;
++	diff  = r_se - r_curr;
++
++	// take the remainder if equal
++	if (diff == 0)
++	{
++		r_curr  = w_curr % vr_curr;
++		r_se  = w_se % vr_se;
++		diff  = r_se - r_curr;
++	}
++
++	if (diff > 0)
++		return 1;
++
++	return -1;
++
++2.1 More about HRRN algorithm
++------------------------------
++
++The Highest response ratio next (HRRN) scheduling is a non-preemptive
++discipline. It was developed by Brinch Hansen as modification of shortest job
++next (SJN) to mitigate the problem of process starvation. `Wikipedia <https://en.wikipedia.org/wiki/Highest_response_ratio_next>`_.
++
++The original HRRN is non-preemptive meaning that a task runs until it finishes.
++This nature is not good for interactive systems. Applying original HRRN with
++preemptive modifications requires two changes.
++
++First, what happens if the scheduler forces a task to preempt every tick? This
++can work great for short amount of time lets say (< 60 minutes) until some
++tasks ages and new tasks created, then the imbalance happens. Assume one task
++T1 (Xorg) is running and waiting for users inputs.
++
++This task will have high HRRN because it sleeps more than it runs, however,
++after a long time (say 60 minuets = 3600000000000ns) the life time of T1 is
++3600000000000ns lets assume the sum of execution time is 50% = 1800000000000ns.
++
++The HRRN = 3600000000000 / 1800000000000 = 2.
++If T1 runs for 4ms, the rate of change on HRRN is too low:
++HRRN = 3600000000000 / 1800004000000 = 1.999995556
++
++Also, if T1 waited for 1s HRRN = 3601000000000 / 1800004000000 = 2.00055111,
++the rate of change is low too. Both situations are bad, because:
++
++1. A new task T2 will have higher HRRN when it starts, thus it will be picked
++instead of T1.
++
++2. The rate of change of T2 compared to T1 is higher.
++
++This situation is not good for infinite processes such as Xorg and desktop
++related threads. Those task must run ASAP when they wake up, because they are
++related to responsiveness and Interactivity.
++
++Therefore, the original HRRN needs some modifications.
++
++
++3. HRRN Tunables
++=================
++
++We have implemented two modifications that enhances HRRN to work as a
++preemptive policy:
++
++
++3.1 HRRN maximum life time
++---------------------------
++
++Instead of calculating a task HRRN value for infinite life time, we proposed
++hrrn_max_lifetime which is 10s by default. A task's hrrn_start_time and
++hrrn_sum_exec_runtime reset every 10s. Therefore, the rate of change of HRRN
++for old and new tasks is normalized. The value hrrn_max_lifetime can be changed
++at run time by the following sysctl command:
++
++	sysctl kernel.sched_hrrn_max_lifetime_ms=60000
++
++The value is in milliseconds, the above command changes hrrn_max_lifetime from
++10s to 60s.
++
++
++3.2 HRRN latency
++-----------------
++
++A new task could overcome old tasks because it has 1 sum execution, and lets
++say its age is few microseconds 7000ns (7us). This new task will have
++HRRN =7000 which is high compared with older tasks. That's why we proposed
++hrrn_latency which is in microseconds. When a new task is forked, the
++hrrn_start_time is set to (current time in nano + hrrn_latency). The default
++value of hrrn_latency is 0. This value can be changed by the following:
++
++	sysctl kernel.sched_hrrn_latency_us=6000
++
++This sets hrrn_latency to 6ms. Notice that a new task will have HRRN=1 for this
++period of time. Notice also that if no runnable tasks other than this new task,
++this task will run. Adding 6ms doesn't mean that a new task will pause for 6ms.
++It means it will have HRRN=1 or 0 for 6ms. It depends on how many other task on
++the run queue and whether they have higher HRRN or not. This will solve a
++problem when having heavy compilation with -j5 on 4CPUS machine. The
++compilation will create new threads for each file and that might cause freezes
++and hangups.
++
++Technically those new threads could have higher HRRN values than Xorg or
++whatever old running desktop tasks.
++
++Having said that, the default value is 0, on my machine this value doesn't make
++any problems and don't have any freezes when compiling kernel unless changed it
++to -500000000. It depends on your machine and on how fast is your HD drive.
++
++
++4. Priorities
++==============
++
++The priorities are applied as the followings:
++
++  - The wait time is calculated and then multiplied by (140 - t_curr->prio)
++    wheret_curr is the task.
++
++  - Highest priority in NORMAL policy is 100 so the wait is multiplied by
++    140 - 100 = 40.
++
++  - Normal priority in NORMAL policy is 120 so the wait is multiplied by
++    140 - 120 = 20.
++
++  - Lowest priority is 139 so the wait is multiplied by 140 - 139 = 1.
++
++This calculation is applied for all task in NORMAL policy where they range from
++100 - 139. After the multiplication, wait is divided by s_t
++(the sum_exec_runtime + 1).
++
++
++5. Scheduling policies
++=======================
++
++Cachy some CFS, implements three scheduling policies:
++
++  - SCHED_NORMAL (traditionally called SCHED_OTHER): The scheduling
++    policy that is used for regular tasks.
++
++  - SCHED_BATCH: Does not preempt nearly as often as regular tasks
++    would, thereby allowing tasks to run longer and make better use of
++    caches but at the cost of interactivity. This is well suited for
++    batch jobs.
++
++  - SCHED_IDLE: This is even weaker than nice 19, but its not a true
++    idle timer scheduler in order to avoid to get into priority
++    inversion problems which would deadlock the machine.
++
++SCHED_FIFO/_RR are implemented in sched/rt.c and are as specified by
++POSIX.
++
++The command chrt from util-linux-ng 2.13.1.1 can set all of these except
++SCHED_IDLE.
 diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 883da0abf779..ba439ad92f4c 100644
+index 4a64395bc35d..3fcf82b1f2ae 100644
 --- a/arch/x86/Kconfig
 +++ b/arch/x86/Kconfig
-@@ -1542,6 +1542,7 @@ config AMD_MEM_ENCRYPT_ACTIVE_BY_DEFAULT
+@@ -1543,6 +1543,7 @@ config AMD_MEM_ENCRYPT_ACTIVE_BY_DEFAULT
  # Common NUMA Features
  config NUMA
  	bool "NUMA Memory Allocation and Scheduler Support"
@@ -29,10 +372,10 @@ index 883da0abf779..ba439ad92f4c 100644
  	depends on X86_64 || (X86_32 && HIGHMEM64G && X86_BIGSMP)
  	default y if X86_BIGSMP
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 683372943093..d2086956fae6 100644
+index 84b181c173f5..3dd95eb966f8 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -449,6 +449,12 @@ struct sched_entity {
+@@ -476,6 +476,12 @@ struct sched_entity {
  	/* For load-balancing: */
  	struct load_weight		load;
  	struct rb_node			run_node;
@@ -62,10 +405,10 @@ index 660ac49f2b53..9bc871c4f98f 100644
  	SCHED_TUNABLESCALING_NONE,
  	SCHED_TUNABLESCALING_LOG,
 diff --git a/init/Kconfig b/init/Kconfig
-index 0498af567f70..053626d9ab94 100644
+index b18b7b57e440..e6806c1e1dcb 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
-@@ -793,6 +793,18 @@ config UCLAMP_BUCKETS_COUNT
+@@ -806,6 +806,18 @@ config UCLAMP_BUCKETS_COUNT
  
  endmenu
  
@@ -84,7 +427,7 @@ index 0498af567f70..053626d9ab94 100644
  #
  # For architectures that want to enable the support for NUMA-affine scheduler
  # balancing logic:
-@@ -910,6 +922,7 @@ config CGROUP_WRITEBACK
+@@ -923,6 +935,7 @@ config CGROUP_WRITEBACK
  
  menuconfig CGROUP_SCHED
  	bool "CPU controller"
@@ -92,7 +435,7 @@ index 0498af567f70..053626d9ab94 100644
  	default n
  	help
  	  This feature lets CPU scheduler recognize task groups and control CPU
-@@ -1172,9 +1185,7 @@ config CHECKPOINT_RESTORE
+@@ -1185,9 +1198,7 @@ config CHECKPOINT_RESTORE
  
  config SCHED_AUTOGROUP
  	bool "Automatic process group scheduling"
@@ -7203,10 +7546,10 @@ index 000000000000..3048b1729cba
 +}
 +EXPORT_SYMBOL_GPL(sched_trace_rd_span);
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 2142c6767682..d7e53244bf1c 100644
+index fd3d44d91efa..3228ee93909f 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -3335,7 +3335,7 @@ static struct rq *finish_task_switch(struct task_struct *prev)
+@@ -3423,7 +3423,7 @@ static struct rq *finish_task_switch(struct task_struct *prev)
  	return rq;
  }
  
@@ -7215,7 +7558,7 @@ index 2142c6767682..d7e53244bf1c 100644
  
  /* rq->lock is NOT held, but preemption is disabled */
  static void __balance_callback(struct rq *rq)
-@@ -3695,7 +3695,9 @@ void scheduler_tick(void)
+@@ -3783,7 +3783,9 @@ void scheduler_tick(void)
  
  	perf_event_task_tick();
  
@@ -7226,7 +7569,7 @@ index 2142c6767682..d7e53244bf1c 100644
  	rq->idle_balance = idle_cpu(cpu);
  	trigger_load_balance(rq);
  #endif
-@@ -6710,6 +6712,10 @@ void __init sched_init(void)
+@@ -6799,6 +6801,10 @@ void __init sched_init(void)
  	unsigned long ptr = 0;
  	int i;
  
@@ -7238,7 +7581,7 @@ index 2142c6767682..d7e53244bf1c 100644
  
  #ifdef CONFIG_FAIR_GROUP_SCHED
 diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 877fb08eb1b0..9e247ef00696 100644
+index c82857e2e288..de6abcc86875 100644
 --- a/kernel/sched/sched.h
 +++ b/kernel/sched/sched.h
 @@ -515,6 +515,7 @@ struct cfs_rq {
@@ -7250,10 +7593,10 @@ index 877fb08eb1b0..9e247ef00696 100644
  	struct sched_entity	*next;
  	struct sched_entity	*last;
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index db1ce7af2563..e5689d0d2db9 100644
+index 22296fb9b6ad..117e0a946739 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
-@@ -1660,6 +1660,22 @@ static struct ctl_table kern_table[] = {
+@@ -1662,6 +1662,22 @@ static struct ctl_table kern_table[] = {
  		.mode		= 0644,
  		.proc_handler	= proc_dointvec,
  	},
@@ -7276,414 +7619,6 @@ index db1ce7af2563..e5689d0d2db9 100644
  #ifdef CONFIG_SCHED_DEBUG
  	{
  		.procname	= "sched_min_granularity_ns",
--- 
-2.28.0
-
-
-From d3505d0c00b39f67923cca57a505454293e6cc24 Mon Sep 17 00:00:00 2001
-From: Alexandre Frade <kernel@xanmod.org>
-Date: Sat, 12 Sep 2020 19:31:09 +0000
-Subject: [PATCH 2/3] cachy: Add Cachy CPU scheduler documentation
-
-Signed-off-by: hamadmarri <hamad.s.almarri@gmail.com>
----
- Documentation/admin-guide/sysctl/kernel.rst |  38 +++
- Documentation/scheduler/sched-Cachy.rst     | 244 ++++++++++++++++++++
- 2 files changed, 282 insertions(+)
- create mode 100644 Documentation/scheduler/sched-Cachy.rst
-
-diff --git a/Documentation/admin-guide/sysctl/kernel.rst b/Documentation/admin-guide/sysctl/kernel.rst
-index 83acf5025488..2b3c57d823cb 100644
---- a/Documentation/admin-guide/sysctl/kernel.rst
-+++ b/Documentation/admin-guide/sysctl/kernel.rst
-@@ -1055,6 +1055,44 @@ requirements for EAS but you do not want to use it, change
- this value to 0.
- 
- 
-+sched_hrrn_latency_us (Cachy scheduler only)
-+============================================
-+
-+A new task could overcome old tasks because it has 1 sum execution, and lets say
-+its age is few microseconds 7000ns (7us). This new task will have HRRN = 7000 
-+which is high compared with older tasks. That's why we proposed hrrn_latency which
-+is in microseconds. When new task is forked, the hrrn_start_time is set to (current
-+time in nano + hrrn_latency). The default value of hrrn_latency is 0. This value
-+can be changed by the following:
-+
-+  sysctl kernel.sched_hrrn_latency_us=6000000
-+
-+This sets `hrrn_latency` to 6ms. Notice that a new task will have HRRN=1 for this
-+period of time. Notice also that if no runnable tasks other than this new task,
-+this task will run. Adding 6ms doesn't mean that a new task will pause for 6ms.
-+It means it will have HRRN=1 or 0 for 6ms. It depends on how many other task on
-+the run queue and whether they have higher HRRN or not. This will solve a problem 
-+when having heavy compilation with -j5 on 4CPUS machine. The compilation will 
-+create new threads for each file and that might cause freezes and hangups.
-+Technically those new threads could have higher HRRN values than Xorg or whatever 
-+old running desktop tasks.
-+
-+
-+sched_hrrn_max_lifetime_ms (Cachy scheduler only)
-+=================================================
-+
-+Instead of calculating a task HRRN value for infinite life time, we proposed 
-+hrrn_max_lifetime which is 10s by default. A task's hrrn_start_time and 
-+hrrn_sum_exec_runtime reset every 10s. Therefore, the rate of change of HRRN
-+for old and new tasks is normalized. The value hrrn_max_lifetime can be
-+changed at run time by the following sysctl command:
-+
-+  sysctl kernel.sched_hrrn_max_lifetime_ms=60000
-+
-+The value is in milliseconds, the above command changes hrrn_max_lifetime
-+from 10s to 60s.
-+
-+
- sched_schedstats
- ================
- 
-diff --git a/Documentation/scheduler/sched-Cachy.rst b/Documentation/scheduler/sched-Cachy.rst
-new file mode 100644
-index 000000000000..145e2874f709
---- /dev/null
-+++ b/Documentation/scheduler/sched-Cachy.rst
-@@ -0,0 +1,244 @@
-+======================================
-+The Cachy Scheduler by Hamad Al Marri.
-+======================================
-+
-+1.  Overview
-+=============
-+
-+Cachy scheduler is a CFS-based cpu process scheduler that utilizes CPU cache
-+and it is based on Highest Response Ratio Next (HRRN) policy.
-+
-+1.1 About Cachy Scheduler
-+--------------------------
-+
-+  - All balancing code is removed except for idle CPU balancing. There is no
-+    periodic balancing, only idle CPU balancing is applied. Once a task is
-+    assigned to a CPU, it sticks with it until another CPUS got idle then this
-+    task might get pulled to new cpu. The reason of disabling periodic balancing
-+    is to utilize the CPU cache of tasks.
-+
-+  - No grouping for tasks, FAIR_GROUP_SCHED must be disabled.
-+
-+  - No support for NUMA, NUMA must be disabled.
-+
-+  - Each CPU has its own runqueue.
-+
-+  - NORMAL runqueue is a linked list of sched_entities (instead of RB-Tree).
-+
-+  - RT and other runqueues are just the same as the CFS's.
-+
-+  - A task gets preempted in every tick. If the clock ticks in 250HZ
-+    (i.e. CONFIG_HZ_250=y) then a task runs for 4 milliseconds and then got
-+    preempted if there are other tasks in the runqueue.
-+
-+  - Wake up tasks preempt currently running tasks if its HRRN value is higher.
-+
-+  - This scheduler is designed for desktop usage since it is about
-+    responsiveness. It may be not bad for servers.
-+
-+  - Cachy might be good for mobiles or Android since it has high responsiveness.
-+    Cachy need to be integrated to Android, I don't think the current version
-+    it is ready to go without some tweeking and adapting to Android hacks.
-+
-+1.2. Complexity
-+----------------
-+
-+The complexity of Enqueue and Dequeue a task is O(1).
-+
-+The complexity of pick the next task is in O(n), where n is the number of tasks
-+in a runqueue (each CPU has its own runqueue).
-+
-+Note: O(n) sounds scary, but usually for a machine with 4 CPUS where it is used
-+for desktop or mobile jobs, the maximum number of runnable tasks might not
-+exceeds 10 (at the pick next run time) - the idle tasks are excluded since they
-+are dequeued when sleeping and enqueued when they wake up. The Cachy scheduler
-+latency for a high number of CPUs (4+) is usually less than the CFS's since no
-+tree balancing nor tasks balancing are required - again for desktop and mobile
-+usage.
-+
-+
-+2. The Cachy Highest Response Ratio Next (HRRN) policy
-+=======================================================
-+
-+Cachy is based in Highest Response Ratio Next (HRRN) policy with some
-+modifications. HRRN is a scheduling policy in which the process that has the
-+highest response ratio will run next.
-+
-+Each process has a response ratio value R = (w_t + s_t) / s_t where w_t is
-+the process waiting time, and s_t is the process running
-+time. If two process has similar running times, the
-+process that has been waiting longer will run first. HRRN aims
-+to prevent starvation since it strives the waiting time for processes,
-+and also it increases the response time.
-+
-+If two processes have the same R after integer rounding, the division remainder
-+is compared. See below the full
-+calculation for R value:
-+
-+	u64 r_curr, r_se, w_curr = 1ULL, w_se = 1ULL;
-+	struct task_struct *t_curr = task_of(curr);
-+	struct task_struct *t_se = task_of(se);
-+	u64 vr_curr   = curr->hrrn_sum_exec_runtime + 1;
-+	u64 vr_se   = se->hrrn_sum_exec_runtime   + 1;
-+	s64 diff;
-+	
-+	diff = now - curr->hrrn_start_time;
-+	if (diff > 0)
-+		w_curr  = diff;
-+	
-+	diff = now - se->hrrn_start_time;
-+	if (diff > 0)
-+		w_se  = diff;
-+	
-+	// adjusting for priorities
-+	w_curr  *= (140 - t_curr->prio);
-+	w_se  *= (140 - t_se->prio);
-+	
-+	r_curr  = w_curr / vr_curr;
-+	r_se  = w_se / vr_se;
-+	diff  = r_se - r_curr;
-+	
-+	// take the remainder if equal
-+	if (diff == 0)
-+	{
-+		r_curr  = w_curr % vr_curr;
-+		r_se  = w_se % vr_se;
-+		diff  = r_se - r_curr;
-+	}
-+
-+	if (diff > 0)
-+		return 1;
-+		
-+	return -1;
-+
-+2.1 More about HRRN algorithm
-+------------------------------
-+
-+The Highest response ratio next (HRRN) scheduling is a non-preemptive
-+discipline. It was developed by Brinch Hansen as modification of shortest job
-+next (SJN) to mitigate the problem of process starvation. `Wikipedia <https://en.wikipedia.org/wiki/Highest_response_ratio_next>`_.
-+
-+The original HRRN is non-preemptive meaning that a task runs until it finishes.
-+This nature is not good for interactive systems. Applying original HRRN with
-+preemptive modifications requires two changes.
-+
-+First, what happens if the scheduler forces a task to preempt every tick? This
-+can work great for short amount of time lets say (< 60 minutes) until some
-+tasks ages and new tasks created, then the imbalance happens. Assume one task
-+T1 (Xorg) is running and waiting for users inputs.
-+
-+This task will have high HRRN because it sleeps more than it runs, however,
-+after a long time (say 60 minuets = 3600000000000ns) the life time of T1 is
-+3600000000000ns lets assume the sum of execution time is 50% = 1800000000000ns.
-+
-+The HRRN = 3600000000000 / 1800000000000 = 2.
-+If T1 runs for 4ms, the rate of change on HRRN is too low:
-+HRRN = 3600000000000 / 1800004000000 = 1.999995556
-+
-+Also, if T1 waited for 1s HRRN = 3601000000000 / 1800004000000 = 2.00055111,
-+the rate of change is low too. Both situations are bad, because:
-+
-+1. A new task T2 will have higher HRRN when it starts, thus it will be picked
-+instead of T1.
-+
-+2. The rate of change of T2 compared to T1 is higher.
-+
-+This situation is not good for infinite processes such as Xorg and desktop
-+related threads. Those task must run ASAP when they wake up, because they are
-+related to responsiveness and Interactivity.
-+
-+Therefore, the original HRRN needs some modifications.
-+
-+
-+3. HRRN Tunables
-+=================
-+
-+We have implemented two modifications that enhances HRRN to work as a preemptive
-+policy:
-+
-+
-+3.1 HRRN maximum life time
-+---------------------------
-+
-+Instead of calculating a task HRRN value for infinite life time, we proposed
-+hrrn_max_lifetime which is 10s by default. A task's hrrn_start_time and
-+hrrn_sum_exec_runtime reset every 10s. Therefore, the rate of change of HRRN
-+for old and new tasks is normalized. The value hrrn_max_lifetime can be changed
-+at run time by the following sysctl command:
-+
-+	sysctl kernel.sched_hrrn_max_lifetime_ms=60000
-+
-+The value is in milliseconds, the above command changes hrrn_max_lifetime from 10s
-+to 60s.
-+
-+
-+3.2 HRRN latency
-+-----------------
-+
-+A new task could overcome old tasks because it has 1 sum execution, and lets say
-+its age is few microseconds 7000ns (7us). This new task will have HRRN = 7000 which
-+is high compared with older tasks. That's why we proposed hrrn_latency which is in
-+microseconds. When a new task is forked, the hrrn_start_time is set to (current
-+time in nano + hrrn_latency). The default value of hrrn_latency is 0. This value
-+can be changed by the following:
-+
-+	sysctl kernel.sched_hrrn_latency_us=6000
-+
-+This sets hrrn_latency to 6ms. Notice that a new task will have HRRN=1 for this
-+period of time. Notice also that if no runnable tasks other than this new task, this
-+task will run. Adding 6ms doesn't mean that a new task will pause for 6ms.
-+It means it will have HRRN=1 or 0 for 6ms. It depends on how many other task on
-+the run queue and whether they have higher HRRN or not. This will solve a
-+problem when having heavy compilation with -j5 on 4CPUS machine. The compilation
-+will create new threads for each file and that might cause freezes and hangups.
-+Technically those new threads could have higher HRRN values than Xorg or whatever
-+old running desktop tasks.
-+
-+Having said that, the default value is 0, on my machine this value doesn't make
-+any problems and I don't have any freezes when compiling kernel unless I changed
-+it to -500000000. It depends on your machine and on how fast is your HD drive.
-+
-+
-+4. Priorities
-+==============
-+
-+The priorities are applied as the followings:
-+
-+  - The wait time is calculated and then multiplied by (140 - t_curr->prio)
-+    wheret_curr is the task.
-+
-+  - Highest priority in NORMAL policy is 100 so the wait is multiplied by
-+    140 - 100 = 40.
-+
-+  - Normal priority in NORMAL policy is 120 so the wait is multiplied by
-+    140 - 120 = 20.
-+
-+  - Lowest priority is 139 so the wait is multiplied by 140 - 139 = 1.
-+
-+This calculation is applied for all task in NORMAL policy where they range from
-+100 - 139. After the multiplication, wait is divided by s_t
-+(the sum_exec_runtime + 1).
-+
-+
-+5. Scheduling policies
-+=======================
-+
-+Cachy some CFS, implements three scheduling policies:
-+
-+  - SCHED_NORMAL (traditionally called SCHED_OTHER): The scheduling
-+    policy that is used for regular tasks.
-+
-+  - SCHED_BATCH: Does not preempt nearly as often as regular tasks
-+    would, thereby allowing tasks to run longer and make better use of
-+    caches but at the cost of interactivity. This is well suited for
-+    batch jobs.
-+
-+  - SCHED_IDLE: This is even weaker than nice 19, but its not a true
-+    idle timer scheduler in order to avoid to get into priority
-+    inversion problems which would deadlock the machine.
-+
-+SCHED_FIFO/_RR are implemented in sched/rt.c and are as specified by
-+POSIX.
-+
-+The command chrt from util-linux-ng 2.13.1.1 can set all of these except
-+SCHED_IDLE.
--- 
-2.28.0
-
-
-From f46c6036de01825699eaf334156f96a9f215ccf9 Mon Sep 17 00:00:00 2001
-From: hamadmarri <hamad.s.almarri@gmail.com>
-Date: Sun, 13 Sep 2020 14:40:26 +0300
-Subject: [PATCH 3/3] Documentation: fix whitespaces
-
----
- Documentation/admin-guide/sysctl/kernel.rst | 12 ++++++------
- Documentation/scheduler/sched-Cachy.rst     | 12 ++++++------
- 2 files changed, 12 insertions(+), 12 deletions(-)
-
-diff --git a/Documentation/admin-guide/sysctl/kernel.rst b/Documentation/admin-guide/sysctl/kernel.rst
-index 2b3c57d823cb..6c55c2218860 100644
---- a/Documentation/admin-guide/sysctl/kernel.rst
-+++ b/Documentation/admin-guide/sysctl/kernel.rst
-@@ -1059,7 +1059,7 @@ sched_hrrn_latency_us (Cachy scheduler only)
- ============================================
- 
- A new task could overcome old tasks because it has 1 sum execution, and lets say
--its age is few microseconds 7000ns (7us). This new task will have HRRN = 7000 
-+its age is few microseconds 7000ns (7us). This new task will have HRRN = 7000
- which is high compared with older tasks. That's why we proposed hrrn_latency which
- is in microseconds. When new task is forked, the hrrn_start_time is set to (current
- time in nano + hrrn_latency). The default value of hrrn_latency is 0. This value
-@@ -1071,18 +1071,18 @@ This sets `hrrn_latency` to 6ms. Notice that a new task will have HRRN=1 for thi
- period of time. Notice also that if no runnable tasks other than this new task,
- this task will run. Adding 6ms doesn't mean that a new task will pause for 6ms.
- It means it will have HRRN=1 or 0 for 6ms. It depends on how many other task on
--the run queue and whether they have higher HRRN or not. This will solve a problem 
--when having heavy compilation with -j5 on 4CPUS machine. The compilation will 
-+the run queue and whether they have higher HRRN or not. This will solve a problem
-+when having heavy compilation with -j5 on 4CPUS machine. The compilation will
- create new threads for each file and that might cause freezes and hangups.
--Technically those new threads could have higher HRRN values than Xorg or whatever 
-+Technically those new threads could have higher HRRN values than Xorg or whatever
- old running desktop tasks.
- 
- 
- sched_hrrn_max_lifetime_ms (Cachy scheduler only)
- =================================================
- 
--Instead of calculating a task HRRN value for infinite life time, we proposed 
--hrrn_max_lifetime which is 10s by default. A task's hrrn_start_time and 
-+Instead of calculating a task HRRN value for infinite life time, we proposed
-+hrrn_max_lifetime which is 10s by default. A task's hrrn_start_time and
- hrrn_sum_exec_runtime reset every 10s. Therefore, the rate of change of HRRN
- for old and new tasks is normalized. The value hrrn_max_lifetime can be
- changed at run time by the following sysctl command:
-diff --git a/Documentation/scheduler/sched-Cachy.rst b/Documentation/scheduler/sched-Cachy.rst
-index 145e2874f709..18ea1564993b 100644
---- a/Documentation/scheduler/sched-Cachy.rst
-+++ b/Documentation/scheduler/sched-Cachy.rst
-@@ -81,23 +81,23 @@ calculation for R value:
- 	u64 vr_curr   = curr->hrrn_sum_exec_runtime + 1;
- 	u64 vr_se   = se->hrrn_sum_exec_runtime   + 1;
- 	s64 diff;
--	
-+
- 	diff = now - curr->hrrn_start_time;
- 	if (diff > 0)
- 		w_curr  = diff;
--	
-+
- 	diff = now - se->hrrn_start_time;
- 	if (diff > 0)
- 		w_se  = diff;
--	
-+
- 	// adjusting for priorities
- 	w_curr  *= (140 - t_curr->prio);
- 	w_se  *= (140 - t_se->prio);
--	
-+
- 	r_curr  = w_curr / vr_curr;
- 	r_se  = w_se / vr_se;
- 	diff  = r_se - r_curr;
--	
-+
- 	// take the remainder if equal
- 	if (diff == 0)
- 	{
-@@ -108,7 +108,7 @@ calculation for R value:
- 
- 	if (diff > 0)
- 		return 1;
--		
-+
- 	return -1;
- 
- 2.1 More about HRRN algorithm
 -- 
 2.28.0
 
