@@ -11095,10 +11095,38 @@ index 000000000000..d1800bda879f
 +}
 +EXPORT_SYMBOL_GPL(sched_trace_rd_span);
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 2142c6767682..f893d4969302 100644
+index 2142c6767682..b41410694c72 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -3335,7 +3335,7 @@ static struct rq *finish_task_switch(struct task_struct *prev)
+@@ -2923,7 +2923,12 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
+ 	/*
+ 	 * Make sure we do not leak PI boosting priority to the child.
+ 	 */
++#ifdef CONFIG_CACHY_SCHED
++	p->prio = current->original_prio;
++	p->original_prio = current->original_prio;
++#else
+ 	p->prio = current->normal_prio;
++#endif
+ 
+ 	uclamp_fork(p);
+ 
+@@ -3020,6 +3025,14 @@ void wake_up_new_task(struct task_struct *p)
+ 
+ 	raw_spin_lock_irqsave(&p->pi_lock, rf.flags);
+ 	p->state = TASK_RUNNING;
++
++#ifdef CONFIG_CACHY_SCHED
++	if (p->pid > 1 && p->original_prio >= 120) {
++		p->prio = p->static_prio = p->normal_prio = 139;
++		set_load_weight(p, true);
++	}
++#endif
++
+ #ifdef CONFIG_SMP
+ 	/*
+ 	 * Fork balancing, do it here and not earlier because:
+@@ -3335,7 +3348,7 @@ static struct rq *finish_task_switch(struct task_struct *prev)
  	return rq;
  }
  
@@ -11107,7 +11135,7 @@ index 2142c6767682..f893d4969302 100644
  
  /* rq->lock is NOT held, but preemption is disabled */
  static void __balance_callback(struct rq *rq)
-@@ -4649,6 +4649,11 @@ void set_user_nice(struct task_struct *p, long nice)
+@@ -4649,6 +4662,11 @@ void set_user_nice(struct task_struct *p, long nice)
  	struct rq_flags rf;
  	struct rq *rq;
  
@@ -11119,7 +11147,7 @@ index 2142c6767682..f893d4969302 100644
  	if (task_nice(p) == nice || nice < MIN_NICE || nice > MAX_NICE)
  		return;
  	/*
-@@ -4676,6 +4681,14 @@ void set_user_nice(struct task_struct *p, long nice)
+@@ -4676,6 +4694,14 @@ void set_user_nice(struct task_struct *p, long nice)
  		put_prev_task(rq, p);
  
  	p->static_prio = NICE_TO_PRIO(nice);
@@ -11134,7 +11162,7 @@ index 2142c6767682..f893d4969302 100644
  	set_load_weight(p, true);
  	old_prio = p->prio;
  	p->prio = effective_prio(p);
-@@ -6710,6 +6723,10 @@ void __init sched_init(void)
+@@ -6710,6 +6736,10 @@ void __init sched_init(void)
  	unsigned long ptr = 0;
  	int i;
  
@@ -11145,7 +11173,7 @@ index 2142c6767682..f893d4969302 100644
  	wait_bit_init();
  
  #ifdef CONFIG_FAIR_GROUP_SCHED
-@@ -6838,6 +6855,9 @@ void __init sched_init(void)
+@@ -6838,6 +6868,9 @@ void __init sched_init(void)
  		atomic_set(&rq->nr_iowait, 0);
  	}
  
