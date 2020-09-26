@@ -387,10 +387,10 @@ index 5fc9c9b70862..617822d189d3 100644
  obj-$(CONFIG_SCHED_AUTOGROUP) += autogroup.o
 diff --git a/kernel/sched/cachy.c b/kernel/sched/cachy.c
 new file mode 100644
-index 000000000000..477aebe000f0
+index 000000000000..d1800bda879f
 --- /dev/null
 +++ b/kernel/sched/cachy.c
-@@ -0,0 +1,10701 @@
+@@ -0,0 +1,10703 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Completely Fair Scheduling (CFS) Class (SCHED_NORMAL/SCHED_BATCH)
@@ -4562,6 +4562,8 @@ index 000000000000..477aebe000f0
 +
 +	update_cfs_group(se);
 +}
++
++static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr);
 +
 +/*
 + * Preempt the current task with a newly woken task if needed:
