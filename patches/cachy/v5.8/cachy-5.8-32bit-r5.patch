@@ -1,0 +1,42 @@
+diff --git a/kernel/sched/cachy.c b/kernel/sched/cachy.c
+index d1800bda879f..ea2205aebf4f 100644
+--- a/kernel/sched/cachy.c
++++ b/kernel/sched/cachy.c
+@@ -26,6 +26,7 @@
+  */
+ #include "sched.h"
+ 
++#include <linux/math64.h>
+ #include <trace/events/sched.h>
+ 
+ /*
+@@ -6310,6 +6311,7 @@ static int
+ wakeup_preempt_entity(u64 now, struct sched_entity *curr, struct sched_entity *se)
+ {
+ 	u64 r_curr, r_se, l_curr, l_se;
++	u32 r_curr_rem, r_se_rem;
+ 	u64 vr_curr	= curr->vruntime + 1;
+ 	u64 vr_se	= se->vruntime + 1;
+ 	s64 diff;
+@@ -6327,17 +6329,14 @@ wakeup_preempt_entity(u64 now, struct sched_entity *curr, struct sched_entity *s
+ 	l_curr	= now - curr->hrrn_start_time;
+ 	l_se	= now - se->hrrn_start_time;
+ 
+-	r_curr	= l_curr / vr_curr;
+-	r_se	= l_se / vr_se;
++	r_curr	= div_u64_rem(l_curr, vr_curr, &r_curr_rem);
++	r_se	= div_u64_rem(l_se, vr_se, &r_se_rem);
+ 
+ 	diff	= r_se - r_curr;
+ 
+ 	// take the remainder if equal
+-	if (diff == 0) {
+-		r_curr	= l_curr % vr_curr;
+-		r_se	= l_se % vr_se;
+-		diff	= r_se - r_curr;
+-	}
++	if (diff == 0)
++		diff	= r_se_rem - r_curr_rem;
+ 
+ 	if (diff > 0)
+ 		return 1;
