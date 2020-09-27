@@ -7,8 +7,8 @@ and it is based on Highest Response Ratio Next (HRRN) policy.
 * All balancing code is removed except for idle CPU balancing. There is no periodic balancing, only idle CPU balancing is applied. Once a task is
 assigned to a CPU, it sticks with it until another CPUS got idle then this task might get pulled to new cpu.
 The reason of disabling periodic balancing is to utilize the CPU cache of tasks.
-* ~~No grouping for tasks, `FAIR_GROUP_SCHED` must be disabled.~~
-* ~~No support for `NUMA`, `NUMA` must be disabled.~~
+* ~~No grouping for tasks, `FAIR_GROUP_SCHED` must be disabled.~~ (All cgroups features are supported with -r5 revisions)
+* ~~No support for `NUMA`, `NUMA` must be disabled.~~ (NUMA is supported with -r5 revisions)
 * Each CPU has its own runqueue.
 * NORMAL runqueue is a linked list of sched_entities (instead of RB-Tree).
 * RT and other runqueues are just the same as the CFS's.
@@ -32,7 +32,7 @@ Android, I don't think the current version it is ready to go without some tweeki
 3. Download cachy patch file and place it inside the just unzipped linux kernel folder
 4. cd linux-(version)
 5. patch -p1 < cachy-5.7.6.patch
-6. ~~**`make menuconfig` make sure `FAIR_GROUP_SCHED` and `NUMA` are disabled**~~
+6. ~~**`make menuconfig` make sure `FAIR_GROUP_SCHED` and `NUMA` are disabled**~~ (NUMA and all cgroups features are supported with -r5 revisions)
 7. To build the kernel you need to follow linux build kernel documentation and tutorials.
 
 
@@ -72,48 +72,7 @@ to prevent starvation since it strives the waiting time for processes,
 and also it increases the response time.
 
 
-If two processes have the same `R` after integer rounding, the division remainder is compared. See below the full
-calculation for `R` value:
-
-```
-u64 r_curr, r_se, w_curr = 1ULL, w_se = 1ULL;
-struct task_struct *t_curr = task_of(curr);
-struct task_struct *t_se = task_of(se);
-u64 vr_curr 	= curr->hrrn_sum_exec_runtime + 1;
-u64 vr_se 	= se->hrrn_sum_exec_runtime   + 1;
-s64 diff;
-
-diff = now - curr->hrrn_start_time;
-if (diff > 0)
-	w_curr	= diff;
-
-diff = now - se->hrrn_start_time;
-if (diff > 0)
-	w_se	= diff;
-
-// adjusting for priorities
-w_curr	*= (140 - t_curr->prio);
-w_se	*= (140 - t_se->prio);
-
-r_curr	= w_curr / vr_curr;
-r_se	= w_se / vr_se;
-diff	= r_se - r_curr;
-
-// take the remainder if equal
-if (diff == 0)
-{
-	r_curr	= w_curr % vr_curr;
-	r_se	= w_se % vr_se;
-	diff	= r_se - r_curr;
-}
-
-if (diff > 0)
-	return 1;
-
-return -1;
-
-```
-
+If two processes have the same `R` after integer rounding, the division remainder is compared.
 
 Highest response ratio next (HRRN) scheduling is a non-preemptive discipline. It was developed by Brinch Hansen as modification of shortest job next (SJN) to mitigate the problem of process starvation [wikipedia](https://en.wikipedia.org/wiki/Highest_response_ratio_next). The original HRRN is non-preemptive meaning that a task runs until it finishes. This nature is not
 good for interactive systems. Applying original HRRN with preemptive modifications requires one change. Native HRRN can work great for short amount of time lets say (< 60 minutes) until some
@@ -148,13 +107,18 @@ The value is in milliseconds, the above command changes `hrrn_max_lifetime` from
 
 ## Priorities
 The priorities are applied as the followings:
-* The wait time is calculated and then multiplied by `(140 - t_curr->prio)` where `t_curr` is the task.
-* Highest priority in NORMAL policy is `100` so the wait is multiplied by `140 - 100 = 40`.
-* Normal priority in NORMAL policy is `120` so the wait is multiplied by `140 - 120 = 20`.
-* Lowest priority is `139` so the wait is multiplied by `140 - 139 = 1`.
-* This calculation is applied for all task in NORMAL policy where they range from `100 - 139`.
-* After the multiplication, wait is divided by `s_t` (the `sum_exec_runtime + 1`).
+The `vruntime` is used in HRRN as the sum of execution time. The `vruntime` is adjusted by CFS based on tasks priorities.
+The same code fro CFS is used in Cachy. The `vruntime` is equal to `sum_exec_runtime` if a task has nice value of 0 (normal priority).
+The `vruntime` will be lower than `sum_exec_runtime` for higher tasks priorities, which make HRRN thinks that those task didn't run for much time (compared to
+their actual run time).
+The `vruntime` will be higher than `sum_exec_runtime` for lower tasks priorities, which make HRRN thinks that those task ran for much time (compared to
+their actual run time).
+So priorities are already taken in the acount by using `vruntime` in the HRRN equation instead of actual `sum_exec_runtime`.
 
+
+## Dynamic Priorities
+Every new task gets the least priotiry (nice = 19) and gradually climb up (or down! the way you like) to its original priority. Dynamic priorities are usefull to 
+smooth out just started heavy load tasks. Without dynamic priorities the system might have some regressions.
 
 
 ## Tests and Benchmarks
