@@ -4,9 +4,7 @@ Cachy-sched is a linux scheduler that utilizes CPU cache
 and it is based on Highest Response Ratio Next (HRRN) policy.
 
 ## About Cachy Scheduler
-* All balancing code is removed except for idle CPU balancing. There is no periodic balancing, only idle CPU balancing is applied. Once a task is
-assigned to a CPU, it sticks with it until another CPUS got idle then this task might get pulled to new cpu.
-The reason of disabling periodic balancing is to utilize the CPU cache of tasks.
+* ~~All balancing code is removed except for idle CPU balancing. There is no periodic balancing, only idle CPU balancing is applied. Once a task is assigned to a CPU, it sticks with it until another CPUS got idle then this task might get pulled to new cpu. The reason of disabling periodic balancing is to utilize the CPU cache of tasks.~~
 * ~~No grouping for tasks, `FAIR_GROUP_SCHED` must be disabled.~~ (All cgroups features are supported with -r5 revisions)
 * ~~No support for `NUMA`, `NUMA` must be disabled.~~ (NUMA is supported with -r5 revisions)
 * Each CPU has its own runqueue.
@@ -57,7 +55,7 @@ Note: `O(n)` sounds scary, but usually for a machine with 4 CPUS where it is use
 desktop or mobile jobs, the maximum number of runnable tasks might
 not exceeds 10 (at the pick next run time) - the idle tasks are excluded since they are dequeued when sleeping 
 and enqueued when they wake up. The Cachy scheduler latency for a high number of CPUs (4+)
-is usually less than the CFS's since no tree balancing nor tasks balancing are required - 
+is usually less than the CFS's since no tree balancing ~~nor tasks balancing~~ is required - 
 again for desktop and mobile usage.
 
 ## Highest Response Ratio Next (HRRN) policy
