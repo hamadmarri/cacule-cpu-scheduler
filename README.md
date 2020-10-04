@@ -1,26 +1,22 @@
-# Cachy-sched
+![cachy-logo](./cachy-logo.png)
 
-Cachy-sched is a linux scheduler that utilizes CPU cache
-and it is based on Highest Response Ratio Next (HRRN) policy.
+Cachy-sched is a linux scheduler that is based on Highest Response Ratio Next (HRRN) policy.
 
 ## About Cachy Scheduler
-* ~~All balancing code is removed except for idle CPU balancing. There is no periodic balancing, only idle CPU balancing is applied. Once a task is assigned to a CPU, it sticks with it until another CPUS got idle then this task might get pulled to new cpu. The reason of disabling periodic balancing is to utilize the CPU cache of tasks.~~
-* ~~No grouping for tasks, `FAIR_GROUP_SCHED` must be disabled.~~ (All cgroups features are supported with -r5 revisions)
-* ~~No support for `NUMA`, `NUMA` must be disabled.~~ (NUMA is supported with -r5 revisions)
 * Each CPU has its own runqueue.
 * NORMAL runqueue is a linked list of sched_entities (instead of RB-Tree).
 * RT and other runqueues are just the same as the CFS's.
 * A task gets preempted in every tick if any task has higher HRRN. If the clock ticks in 250HZ (i.e. `CONFIG_HZ_250=y`) then a task
 runs for 4 milliseconds and then got preempted if there are other tasks in the runqueue and if any task has higher HRRN.
 * Wake up tasks preempt currently running tasks if its HRRN value is higher.
-* This scheduler is designed for desktop usage since it is about responsiveness. It may be not bad for servers.
-* Cachy might be good for mobiles or Android since it has high responsiveness. Cachy need to be integrated to
+* This scheduler is designed for desktop usage since it is about responsiveness.
+* Cachy might be good for mobiles or Android since it has high responsiveness, but it needs to be integrated to
 Android, I don't think the current version it is ready to go without some tweeking and adapting to Android hacks.
 
 
 ## Patched Kernel Tree
 1. Go to [kernel tree repository](https://github.com/hamadmarri/linux) 
-2. Select a tag version that starts with `cachy` (i.e `cachy-5.9-r1`)
+2. Select a tag version that starts with `cachy` (i.e `cachy-5.8-r6`)
 3. Download and compile
 
 
@@ -29,9 +25,8 @@ Android, I don't think the current version it is ready to go without some tweeki
 2. Unzip linux kernel
 3. Download cachy patch file and place it inside the just unzipped linux kernel folder
 4. cd linux-(version)
-5. patch -p1 < cachy-5.7.6.patch
-6. ~~**`make menuconfig` make sure `FAIR_GROUP_SCHED` and `NUMA` are disabled**~~ (NUMA and all cgroups features are supported with -r5 revisions)
-7. To build the kernel you need to follow linux build kernel documentation and tutorials.
+5. patch -p1 < cachy-5.7.6.patch (or git -am)
+6. To build the kernel you need to follow linux build kernel documentation and tutorials.
 
 
 To confirm that Cachy is currently running:
@@ -47,16 +42,14 @@ dmesg | grep -i "cachy cpu"
 
 
 ## Complexity
-* The complexity of Enqueue and Dequeue a task is `O(1)`.
-* The complexity of pick the next task is in `O(n)`, where 
+* The complexity of Enqueue and Dequeue a task is `O(n)`.
+* The complexity of pick the next task is in `O(1)`, where 
 `n` is the number of tasks in a runqueue (each CPU has its own runqueue).
 
 Note: `O(n)` sounds scary, but usually for a machine with 4 CPUS where it is used for
 desktop or mobile jobs, the maximum number of runnable tasks might
 not exceeds 10 (at the pick next run time) - the idle tasks are excluded since they are dequeued when sleeping 
-and enqueued when they wake up. The Cachy scheduler latency for a high number of CPUs (4+)
-is usually less than the CFS's since no tree balancing ~~nor tasks balancing~~ is required - 
-again for desktop and mobile usage.
+and enqueued when they wake up.
 
 ## Highest Response Ratio Next (HRRN) policy
 Cachy is based in Highest Response Ratio Next (HRRN) policy with some modifications.
@@ -88,9 +81,6 @@ wake up, because they are related to responsiveness and Interactivity.
 
 Therefore, the original HRRN needs some modifications.
 
-### HRRN Modifications
-We have implemented two modifications that enhances HRRN to work as a preemptive policy:
-
 #### HRRN maximum life time
 Instead of calculating a task HRRN value for infinite life time, we proposed `hrrn_max_lifetime` which is 20s by default. A task's
 `hrrn_start_time` and `hrrn_sum_exec_runtime` reset every 20s. Therefore, the rate of change of HRRN for old and new tasks is
@@ -112,11 +102,6 @@ their actual run time).
 The `vruntime` will be higher than `sum_exec_runtime` for lower tasks priorities, which make HRRN thinks that those task ran for much time (compared to
 their actual run time).
 So priorities are already taken in the acount by using `vruntime` in the HRRN equation instead of actual `sum_exec_runtime`.
-
-
-## Dynamic Priorities
-Every new task gets the least priotiry (nice = 19) and gradually climb up (or down! the way you like) to its original priority. Dynamic priorities are usefull to 
-smooth out just started heavy load tasks. Without dynamic priorities the system might have some regressions.
 
 
 ## Tests and Benchmarks
@@ -143,3 +128,5 @@ to reveal the which is which go back to time 0s on the video and see `uname -r` 
 Note: In one of the tests, the recorder seems to be freezes and lagging, I repeated this test twice, while testing system is not pausing but the recorder maybe freezing or lagging while recording.
 
 
+## Contacts
+Telegram: https://t.me/cachy_sched
