@@ -10925,7 +10925,7 @@ index 000000000000..39eb8ca875a9
 +}
 +EXPORT_SYMBOL_GPL(sched_trace_rd_span);
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 2142c6767682..861ea7ff697e 100644
+index 2142c6767682..8b1fc662f823 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
 @@ -59,7 +59,8 @@ const_debug unsigned int sysctl_sched_features =
@@ -10933,7 +10933,7 @@ index 2142c6767682..861ea7ff697e 100644
   * Limited because this is done with IRQs disabled.
   */
 -const_debug unsigned int sysctl_sched_nr_migrate = 32;
-+const_debug unsigned int sysctl_sched_nr_migrate
++const_debug unsigned int sysctl_sched_nr_migrate =
 +IS_ENABLED(CONFIG_CACHY_SCHED) ? 256 : 32;
  
  /*
