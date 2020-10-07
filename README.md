@@ -42,7 +42,8 @@ dmesg | grep -i "cachy cpu"
 
 
 ## Complexity
-* The complexity of Enqueue and Dequeue a task is `O(n)`.
+* The complexity of Enqueue a task is `O(n)`.
+* The complexity of Dequeue a task is `O(1)`.
 * The complexity of pick the next task is in `O(1)`, where 
 `n` is the number of tasks in a runqueue (each CPU has its own runqueue).
 
