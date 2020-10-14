@@ -6,8 +6,7 @@ Cachy-sched is a linux scheduler that is based on Highest Response Ratio Next (H
 * Each CPU has its own runqueue.
 * NORMAL runqueue is a linked list of sched_entities (instead of RB-Tree).
 * RT and other runqueues are just the same as the CFS's.
-* A task gets preempted in every tick if any task has higher HRRN. If the clock ticks in 250HZ (i.e. `CONFIG_HZ_250=y`) then a task
-runs for 4 milliseconds and then got preempted if there are other tasks in the runqueue and if any task has higher HRRN.
+* A task gets preempted when any task in the runqueue has a higher HRRN.
 * Wake up tasks preempt currently running tasks if its HRRN value is higher.
 * This scheduler is designed for desktop usage since it is about responsiveness.
 * Cachy might be good for mobiles or Android since it has high responsiveness, but it needs to be integrated to
@@ -83,15 +82,28 @@ wake up, because they are related to responsiveness and Interactivity.
 Therefore, the original HRRN needs some modifications.
 
 #### HRRN maximum life time
-Instead of calculating a task HRRN value for infinite life time, we proposed `hrrn_max_lifetime` which is 20s by default. A task's
-`hrrn_start_time` and `hrrn_sum_exec_runtime` reset every 20s. Therefore, the rate of change of HRRN for old and new tasks is
-normalized. The value `hrrn_max_lifetime` can be changed at run time by the following sysctl command:
-
+Instead of calculating a task HRRN value for infinite life time, we proposed
+`hrrn_max_lifetime` which is 30s by default. A task's `hrrn_start_time` and
+`vruntime` shrink whenever a task life time exceeds 30s. Therefore, the rate of change of HRRN
+for old and new tasks is normalized. The value `hrrn_max_lifetime` can be
+changed at run time by the following sysctl command:
 ```
-sudo sysctl kernel.sched_hrrn_max_lifetime_ms=60000
+sysctl kernel.sched_hrrn_max_lifetime_ms=60000
 ```
+The value is in milliseconds, the above command changes `hrrn_max_lifetime`
+from 30s to 60s.
 
-The value is in milliseconds, the above command changes `hrrn_max_lifetime` from 20s to 60s.
+In the first round, the task's life time became > 30s, the `hrrn_start_time`
+get reset to be (current_time - 15s), then, the task will reset 
+every 15s after this point. The reset method of the vruntime preserves the same HRRN ratio (roughly)
+by the following:
+```
+// multiply old life time by 8 for more precision
+old_hrrn_x8 = old_life_time / ((vruntime / 8) + 1)
+
+// reset vruntime based on old hrrn ratio
+vruntime = (new_life_time * 8) / old_hrrn_x8;
+```
 
 
 ## Priorities
