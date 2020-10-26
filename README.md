@@ -105,6 +105,12 @@ old_hrrn_x8 = old_life_time / ((vruntime / 8) + 1)
 vruntime = (new_life_time * 8) / old_hrrn_x8;
 ```
 
+Another sysctl command is `sched_cachy_harsh_mode_enabled`
+
+The default value of `sched_cachy_harsh_mode_enabled` is 0 means disabled. You can set it to 1 to enable harsh mode.
+
+Note: harsh mode is good when normal using of the system (i.e. no background heavy work) if you compile while harsh mode enabled, you might have mini freezes. Sometimes it is usefule to enable harsh mode when you have a single task for example gaming or just browsing. The only time you don't want harsh mode is when you have a background heavy load.
+
 
 ## Priorities
 The priorities are applied as the followings:
