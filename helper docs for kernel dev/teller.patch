@@ -1,0 +1,201 @@
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 2b7b81d..a2a2b21 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -37,6 +37,7 @@
+ #define SCHED_RR       2
+ #define SCHED_BATCH        3
+ /* SCHED_ISO: reserved but not implemented yet */
++#define SCHED_NEW               4 /* Stealing from SCHED_ISO */
+ #define SCHED_IDLE     5
+ /* Can be ORed in to make sure the process is reverted back to SCHED_NORMAL on fork */
+ #define SCHED_RESET_ON_FORK     0x40000000
+diff --git a/init/Kconfig b/init/Kconfig
+index eb77e8c..0055d26 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -23,6 +23,11 @@ config CONSTRUCTORS
+
+ menu "General setup"
+
++config SCHED_NEW
++       bool "NEW cpu scheduler"
++       ---help---
++         Brand new scheduler 
++
+ config EXPERIMENTAL
+    bool "Prompt for development and/or incomplete code/drivers"
+    ---help---
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 3c2a54f..588960d 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1931,6 +1931,7 @@ static void deactivate_task(struct rq *rq, struct task_struct *p, int sleep)
+
+ #include "sched_idletask.c"
+ #include "sched_fair.c"
++#include "sched_new.c"
+ #include "sched_rt.c"
+ #ifdef CONFIG_SCHED_DEBUG
+ # include "sched_debug.c"
+diff --git a/kernel/sched_new.c b/kernel/sched_new.c
+new file mode 100644
+index 0000000..c2e269e
+--- /dev/null
++++ b/kernel/sched_new.c
+@@ -0,0 +1,140 @@
++#ifdef CONFIG_SCHED_NEW
++
++/*
++ * Starting with a simple, 1 runq per cpu scheduler.  Don't care
++ * about fairness for right now.  Just get it up and running to 
++ * verify that we have the interface correct
++ */
++
++static void
++enqueue_task_new(struct rq *rq, struct task_struct *p, int wakeup, bool head)
++{
++}
++
++static void dequeue_task_new(struct rq *rq, struct task_struct *p, int sleep)
++{
++}
++
++static void yield_task_new(struct rq *rq)
++{
++}
++
++static void check_preempt_curr_new(struct rq *rq, struct task_struct *p, int flags)
++{
++}
++
++static struct task_struct *pick_next_task_new(struct rq *rq)
++{
++}
++
++static void put_prev_task_new(struct rq *rq, struct task_struct *p)
++{
++}
++
++#ifdef CONFIG_SMP
++static int select_task_rq_new(struct task_struct *p, int sd_flag, int flags)
++{
++}
++static void pre_schedule_new(struct rq *rq, struct task_struct *prev)
++{
++}
++
++static void post_schedule_new(struct rq *rq)
++{
++}
++
++static void task_woken_new(struct rq *rq, struct task_struct *p)
++{
++}
++
++static void task_waking_new(struct rq *this_rq, struct task_struct *task)
++{
++}
++static void set_cpus_allowed_new(struct task_struct *p,
++               const struct cpumask *new_mask)
++{
++}
++/* Assumes rq->lock is held */
++static void rq_online_new(struct rq *rq)
++{
++}
++
++/* Assumes rq->lock is held */
++static void rq_offline_new(struct rq *rq)
++{
++}
++#endif /* COMFIG_SMP */
++
++static void set_curr_task_new(struct rq *rq)
++{
++}
++
++
++static void task_tick_new(struct rq *rq, struct task_struct *p, int queued)
++{
++} 
++
++static void task_fork_new(struct task_struct *p)
++{
++}
++static void switched_from_new(struct rq *rq, struct task_struct *p,
++              int running)
++{
++}
++static void switched_to_new(struct rq *this_rq, struct task_struct *task,
++               int running)
++{
++}
++static void prio_changed_new(struct rq *rq, struct task_struct *p,
++               int oldprio, int running)
++{
++}
++static unsigned int get_rr_interval_new(struct rq *rq, struct task_struct *task)
++{
++}
++
++
++
++static const struct sched_class new_sched_class = {
++   .next           = &fair_sched_class,
++   .enqueue_task       = enqueue_task_new,
++   .dequeue_task       = dequeue_task_new,
++   .yield_task     = yield_task_new,
++
++   .check_preempt_curr = check_preempt_curr_new,
++
++   .pick_next_task     = pick_next_task_new,
++   .put_prev_task      = put_prev_task_new,
++
++#ifdef CONFIG_SMP
++   .select_task_rq     = select_task_rq_new,
++
++   .pre_schedule       = pre_schedule_new,
++   .post_schedule      = post_schedule_new,
++
++   .task_waking            = task_waking_new,
++   .task_woken     = task_woken_new,
++
++   .set_cpus_allowed       = set_cpus_allowed_new,
++
++   .rq_online              = rq_online_new,
++   .rq_offline             = rq_offline_new,
++#endif
++
++   .set_curr_task          = set_curr_task_new,
++   .task_tick      = task_tick_new,
++   .task_fork              = task_fork_new,
++
++   .switched_from          = switched_from_new,
++   .switched_to        = switched_to_new,
++
++   .prio_changed       = prio_changed_new,
++
++   .get_rr_interval    = get_rr_interval_new,
++#ifdef CONFIG_FAIR_GROUP_SCHED
++   .moved_group            = NULL
++#endif
++};
++
++#endif /* CONFIG_SCHED_NEW */
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index b5b920a..aaf4beb 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -1731,7 +1731,11 @@ static unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *task)
+ }
+
+ static const struct sched_class rt_sched_class = {
++#ifdef CONFIG_SCHED_NEW
++   .next           = &new_sched_class,
++#else
+    .next           = &fair_sched_class,
++#endif /* CONFIG_SCHED_NEW */
+    .enqueue_task       = enqueue_task_rt,
+    .dequeue_task       = dequeue_task_rt,
+    .yield_task     = yield_task_rt,

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class=" js flexbox canvas canvastext webgl no-touch geolocation postmessage no-websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients no-cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths" style="" lang="en"><!--<![endif]--><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Scheduler Domains — The Linux Kernel  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="Scheduler%20Domains%20%E2%80%94%20The%20Linux%20Kernel%20documentation_files/modernizr.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="Scheduler%20Domains%20%E2%80%94%20The%20Linux%20Kernel%20documentation_files/documentation_options.js"></script>
+        <script type="text/javascript" src="Scheduler%20Domains%20%E2%80%94%20The%20Linux%20Kernel%20documentation_files/jquery.js"></script>
+        <script type="text/javascript" src="Scheduler%20Domains%20%E2%80%94%20The%20Linux%20Kernel%20documentation_files/underscore.js"></script>
+        <script type="text/javascript" src="Scheduler%20Domains%20%E2%80%94%20The%20Linux%20Kernel%20documentation_files/doctools.js"></script>
+        <script type="text/javascript" src="Scheduler%20Domains%20%E2%80%94%20The%20Linux%20Kernel%20documentation_files/language_data.js"></script>
+    
+    <script type="text/javascript" src="Scheduler%20Domains%20%E2%80%94%20The%20Linux%20Kernel%20documentation_files/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="Scheduler%20Domains%20%E2%80%94%20The%20Linux%20Kernel%20documentation_files/theme.css" type="text/css">
+  <link rel="stylesheet" href="Scheduler%20Domains%20%E2%80%94%20The%20Linux%20Kernel%20documentation_files/pygments.css" type="text/css">
+  <link rel="stylesheet" href="Scheduler%20Domains%20%E2%80%94%20The%20Linux%20Kernel%20documentation_files/theme_overrides.css" type="text/css">
+    <link rel="index" title="Index" href="https://www.kernel.org/doc/html/latest/genindex.html">
+    <link rel="search" title="Search" href="https://www.kernel.org/doc/html/latest/search.html">
+    <link rel="next" title="Capacity Aware Scheduling" href="https://www.kernel.org/doc/html/latest/scheduler/sched-capacity.html">
+    <link rel="prev" title="CFS Scheduler" href="https://www.kernel.org/doc/html/latest/scheduler/sched-design-CFS.html"> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="https://www.kernel.org/doc/html/latest/index.html" class="icon icon-home"> The Linux Kernel
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                5.9.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs">
+    <input type="hidden" name="check_keywords" value="yes">
+    <input type="hidden" name="area" value="default">
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/admin-guide/index.html">The Linux kernel user’s and administrator’s guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/kbuild/index.html">Kernel Build System</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/firmware-guide/index.html">The Linux kernel firmware guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/devicetree/index.html">Open Firmware and Device Tree</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/userspace-api/index.html">The Linux kernel user-space API guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/process/index.html">Working with the kernel development community</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/dev-tools/index.html">Development tools for the kernel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/doc-guide/index.html">How to write kernel documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/kernel-hacking/index.html">Kernel Hacking Guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/trace/index.html">Linux Tracing Technologies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/maintainer/index.html">Kernel Maintainer Handbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/fault-injection/index.html">fault-injection</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/livepatch/index.html">Kernel Livepatching</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/driver-api/index.html">The Linux driver implementer’s API guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/core-api/index.html">Core API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/locking/index.html">locking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/accounting/index.html">Accounting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/block/index.html">Block</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/cdrom/index.html">cdrom</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/cpu-freq/index.html">Linux CPUFreq - CPU frequency and voltage scaling code in the Linux(TM) kernel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/ide/index.html">Integrated Drive Electronics (IDE)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/fb/index.html">Frame Buffer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/fpga/index.html">fpga</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/hid/index.html">Human Interface Devices (HID)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/i2c/index.html">I2C/SMBus Subsystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/iio/index.html">Industrial I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/isdn/index.html">ISDN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/infiniband/index.html">InfiniBand</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/leds/index.html">LEDs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/netlabel/index.html">NetLabel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/networking/index.html">Linux Networking Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/pcmcia/index.html">pcmcia</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/power/index.html">Power Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/target/index.html">TCM Virtual Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/timers/index.html">timers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/spi/index.html">Serial Peripheral Interface (SPI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/w1/index.html">1-Wire Subsystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/watchdog/index.html">Linux Watchdog Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/virt/index.html">Linux Virtualization Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/input/index.html">The Linux Input Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/hwmon/index.html">Linux Hardware Monitoring</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/gpu/index.html">Linux GPU Driver Developer’s Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/security/index.html">Security Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/sound/index.html">Linux Sound Subsystem Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/crypto/index.html">Linux Kernel Crypto API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/filesystems/index.html">Filesystems in the Linux kernel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/vm/index.html">Linux Memory Management Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/bpf/index.html">BPF Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/usb/index.html">USB support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/PCI/index.html">Linux PCI Bus Subsystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/scsi/index.html">Linux SCSI Subsystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/misc-devices/index.html">Assorted Miscellaneous Devices Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/scheduler/index.html"><span class="toctree-expand"></span>Linux Scheduler</a><ul class="">
+<li class="toctree-l2"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/scheduler/completion.html">Completions - “wait for completion” barrier APIs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/scheduler/sched-arch.html">CPU Scheduler implementation hints for architecture specific code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/scheduler/sched-bwc.html">CFS Bandwidth Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/scheduler/sched-deadline.html">Deadline Task Scheduling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/scheduler/sched-design-CFS.html">CFS Scheduler</a></li>
+<li class="toctree-l2 current"><a class="reference internal current" href="#"><span class="toctree-expand"></span>Scheduler Domains</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#implementing-sched-domains">Implementing sched domains</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/scheduler/sched-capacity.html">Capacity Aware Scheduling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/scheduler/sched-energy.html">Energy Aware Scheduling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/scheduler/sched-nice-design.html">Scheduler Nice Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/scheduler/sched-rt-group.html">Real-Time group scheduling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/scheduler/sched-stats.html">Scheduler Statistics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/scheduler/text_files.html">Scheduler pelt c program</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/mhi/index.html">MHI</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/asm-annotations.html">Assembler Annotations</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/arm/index.html">ARM Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/arm64/index.html">ARM64 Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/ia64/index.html">IA-64 Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/m68k/index.html">m68k Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/mips/index.html">MIPS-specific Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/nios2/nios2.html">Linux on the Nios II architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/openrisc/index.html">OpenRISC Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/parisc/index.html">PA-RISC Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/powerpc/index.html">powerpc</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/riscv/index.html">RISC-V architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/s390/index.html">s390 Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/sh/index.html">SuperH Interfaces Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/sparc/index.html">Sparc Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/x86/index.html">x86-specific Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/xtensa/index.html">Xtensa Architecture</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/filesystems/ext4/index.html">ext4 Data Structures and Algorithms</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/staging/index.html">Unsorted Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/staging/index.html#atomic-types">Atomic Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/staging/index.html#atomic-bitops">Atomic bitops</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/staging/index.html#memory-barriers">Memory Barriers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/watch_queue.html">General notification mechanism</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="https://www.kernel.org/doc/html/latest/translations/index.html">Translations</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="https://www.kernel.org/doc/html/latest/index.html">The Linux Kernel</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="https://www.kernel.org/doc/html/latest/index.html">Docs</a> »</li>
+        
+          <li><a href="https://www.kernel.org/doc/html/latest/scheduler/index.html">Linux Scheduler</a> »</li>
+        
+      <li>Scheduler Domains</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="https://www.kernel.org/doc/html/latest/_sources/scheduler/sched-domains.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="scheduler-domains">
+<h1>Scheduler Domains<a class="headerlink" href="#scheduler-domains" title="Permalink to this headline">¶</a></h1>
+<p>Each CPU has a “base” scheduling domain (struct sched_domain). The domain
+hierarchy is built from these base domains via the -&gt;parent pointer. -&gt;parent
+MUST be NULL terminated, and domain structures should be per-CPU as they are
+locklessly updated.</p>
+<p>Each scheduling domain spans a number of CPUs (stored in the -&gt;span field).
+A domain’s span MUST be a superset of it child’s span (this restriction could
+be relaxed if the need arises), and a base domain for CPU i MUST span at least
+i. The top domain for each CPU will generally span all CPUs in the system
+although strictly it doesn’t have to, but this could lead to a case where some
+CPUs will never be given tasks to run unless the CPUs allowed mask is
+explicitly set. A sched domain’s span means “balance process load among these
+CPUs”.</p>
+<p>Each scheduling domain must have one or more CPU groups (struct sched_group)
+which are organised as a circular one way linked list from the -&gt;groups
+pointer. The union of cpumasks of these groups MUST be the same as the
+domain’s span. The group pointed to by the -&gt;groups pointer MUST contain the CPU
+to which the domain belongs. Groups may be shared among CPUs as they contain
+read only data after they have been set up. The intersection of cpumasks from
+any two of these groups may be non empty. If this is the case the SD_OVERLAP
+flag is set on the corresponding scheduling domain and its groups may not be
+shared between CPUs.</p>
+<p>Balancing within a sched domain occurs between groups. That is, each group
+is treated as one entity. The load of a group is defined as the sum of the
+load of each of its member CPUs, and only when the load of a group becomes
+out of balance are tasks moved between groups.</p>
+<p>In kernel/sched/core.c, trigger_load_balance() is run periodically on each CPU
+through scheduler_tick(). It raises a softirq after the next regularly scheduled
+rebalancing event for the current runqueue has arrived. The actual load
+balancing workhorse, run_rebalance_domains()-&gt;rebalance_domains(), is then run
+in softirq context (SCHED_SOFTIRQ).</p>
+<p>The latter function takes two arguments: the current CPU and whether it was idle
+at the time the scheduler_tick() happened and iterates over all sched domains
+our CPU is on, starting from its base domain and going up the -&gt;parent chain.
+While doing that, it checks to see if the current domain has exhausted its
+rebalance interval. If so, it runs load_balance() on that domain. It then checks
+the parent sched_domain (if it exists), and the parent of the parent and so
+forth.</p>
+<p>Initially, load_balance() finds the busiest group in the current sched domain.
+If it succeeds, it looks for the busiest runqueue of all the CPUs’ runqueues in
+that group. If it manages to find such a runqueue, it locks both our initial
+CPU’s runqueue and the newly found busiest one and starts moving tasks from it
+to our runqueue. The exact number of tasks amounts to an imbalance previously
+computed while iterating over this sched domain’s groups.</p>
+<div class="section" id="implementing-sched-domains">
+<h2>Implementing sched domains<a class="headerlink" href="#implementing-sched-domains" title="Permalink to this headline">¶</a></h2>
+<p>The “base” domain will “span” the first level of the hierarchy. In the case
+of SMT, you’ll span all siblings of the physical CPU, with each group being
+a single virtual CPU.</p>
+<p>In SMP, the parent of the base domain will span all physical CPUs in the
+node. Each group being a single physical CPU. Then with NUMA, the parent
+of the SMP domain will span the entire machine, with each group having the
+cpumask of a node. Or, you could do multi-level NUMA or Opteron, for example,
+might have just one domain covering its one NUMA level.</p>
+<p>The implementor should read comments in include/linux/sched.h:
+struct sched_domain fields, SD_FLAG_*, SD_*_INIT to get an idea of
+the specifics and what to tune.</p>
+<p>Architectures may retain the regular override the default SD_*_INIT flags
+while using the generic domain builder in kernel/sched/core.c if they wish to
+retain the traditional SMT-&gt;SMP-&gt;NUMA topology (or some subset of that). This
+can be done by #define’ing ARCH_HASH_SCHED_TUNE.</p>
+<p>Alternatively, the architecture may completely override the generic domain
+builder by #define’ing ARCH_HASH_SCHED_DOMAIN, and exporting your
+arch_init_sched_domains function. This function will attach domains to all
+CPUs using cpu_attach_domain.</p>
+<p>The sched-domains debugging infrastructure can be enabled by enabling
+CONFIG_SCHED_DEBUG. This enables an error checking parse of the sched domains
+which should catch most possible errors (described above). It also prints out
+the domain structure in a visual format.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="https://www.kernel.org/doc/html/latest/scheduler/sched-capacity.html" class="btn btn-neutral float-right" title="Capacity Aware Scheduling" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="https://www.kernel.org/doc/html/latest/scheduler/sched-design-CFS.html" class="btn btn-neutral float-left" title="CFS Scheduler" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+        © Copyright The kernel development community
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org/">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+
+</body></html>

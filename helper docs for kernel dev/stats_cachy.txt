@@ -1,0 +1,65 @@
+
+real    0m29.766s
+user    0m9.952s
+sys     0m3.591s
+
+real    0m25.972s
+user    0m10.261s
+sys     0m3.761s
+
+real    0m28.247s
+user    0m9.951s
+sys     0m3.718s
+
+----
+
+real    2m37.588s
+user    7m59.719s
+sys     0m2.293s
+
+real    2m40.434s
+user    8m1.976s
+sys     0m1.961s
+
+real    2m42.840s
+user    8m3.975s
+sys     0m1.970s
+
+./unzip_7z.sh  1475.97s user 22.45s system 249% cpu 10:01.06 total
+
+
+
+
+linux-5.7.6 ➤ sudo perf stat -e context-switches,cycles,instructions,L1-dcache-loads,L1-dcache-load-misses,LLC-loads,LLC-load-misses,branches,branch-misses -a -B stress-ng --cpu 4 -t 2m --cpu-method all --metrics-brief
+stress-ng: info:  [3765] dispatching hogs: 4 cpu
+stress-ng: info:  [3765] successful run completed in 120.09s (2 mins, 0.09 secs)
+stress-ng: info:  [3765] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [3765]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [3765] cpu               87475    120.04    479.01      0.01       728.70       182.61
+
+ Performance counter stats for 'system wide':
+
+            33,536      context-switches                                            
+ 1,241,038,860,985      cycles                                                        (62.50%)
+ 1,334,950,059,398      instructions              #    1.08  insn per cycle           (75.00%)
+   133,592,045,762      L1-dcache-loads                                               (57.13%)
+    12,203,171,082      L1-dcache-load-misses     #    9.13% of all L1-dcache hits    (58.56%)
+     3,094,917,048      LLC-loads                                                     (33.57%)
+         9,704,352      LLC-load-misses           #    0.31% of all LL-cache hits     (37.51%)
+   194,549,022,540      branches                                                      (50.00%)
+     1,540,749,623      branch-misses             #    0.79% of all branches          (50.00%)
+
+     120.089865190 seconds time elapsed
+mom--, += 6
+----------------------
+
+
+
+
+
+
+make CC="ccache gcc" -j5  1189.99s user 213.64s system 292% cpu 7:59.21 total
+--------------
+
+make CC="ccache gcc" -j5  1042.09s user 167.31s system 324% cpu 6:12.78 total
+-------------

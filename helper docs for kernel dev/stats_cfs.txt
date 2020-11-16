@@ -1,0 +1,107 @@
+
+real    0m47.747s
+user    0m10.317s
+sys     0m4.076s
+
+real    0m33.005s
+user    0m10.227s
+sys     0m3.856s
+
+real    0m37.937s
+user    0m10.015s
+sys     0m3.810s
+
+real    0m26.992s
+user    0m9.967s
+sys     0m3.862s
+
+real    0m29.879s
+user    0m10.408s
+sys     0m3.948s
+
+real    0m29.829s
+user    0m10.027s
+sys     0m3.817s
+
+
+----
+
+
+real    2m34.281s
+user    8m8.074s
+sys     0m2.094s
+
+real    2m35.716s
+user    8m16.044s
+sys     0m2.129s
+
+real    2m35.953s
+user    8m17.083s
+sys     0m1.958s
+
+./unzip_7z.sh  1511.76s user 23.13s system 260% cpu 9:49.22 total
+
+
+---------------------------------
+
+
+
+
+make -j5  4575.76s user 369.04s system 378% cpu 21:47.00 total
+-------
+
+make -j5  4608.92s user 381.03s system 369% cpu 22:30.38 total
+22:32
+
+
+~ ➤ cd dev/linux/linux-5.7.6/                                                                                                         
+linux-5.7.6 ➤ uname -a                                                                                                                
+Linux suse 5.7.7-1-default #1 SMP Wed Jul 1 19:03:27 UTC 2020 (cba119b) x86_64 x86_64 x86_64 GNU/Linux
+linux-5.7.6 ➤ sudo perf stat -e context-switches,cycles,instructions,L1-dcache-loads,L1-dcache-load-misses,LLC-loads,LLC-load-misses,branches,branch-misses -a -B stress-ng --cpu 4 -t 2m --cpu-method all --metrics-brief
+[sudo] password for root: 
+stress-ng: info:  [2862] dispatching hogs: 4 cpu
+stress-ng: info:  [2862] successful run completed in 120.08s (2 mins, 0.08 secs)
+stress-ng: info:  [2862] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [2862]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [2862] cpu               86378    120.04    478.73      0.01       719.58       180.43
+
+ Performance counter stats for 'system wide':
+
+            31,631      context-switches                                            
+ 1,234,757,563,294      cycles                                                        (62.50%)
+ 1,320,229,149,505      instructions              #    1.07  insn per cycle           (75.00%)
+   131,542,661,029      L1-dcache-loads                                               (62.32%)
+    12,147,505,410      L1-dcache-load-misses     #    9.23% of all L1-dcache hits    (56.44%)
+     4,326,450,020      LLC-loads                                                     (40.23%)
+        14,863,894      LLC-load-misses           #    0.34% of all LL-cache hits     (37.50%)
+   191,987,804,607      branches                                                      (49.99%)
+     1,514,131,111      branch-misses             #    0.79% of all branches          (50.00%)
+
+     120.132072691 seconds time elapsed
+
+
+linux-5.7.6 ➤ sudo perf stat -e context-switches,cycles,instructions,L1-dcache-loads,L1-dcache-load-misses,LLC-loads,LLC-load-misses,branches,branch-misses -a -B stress-ng --cpu 4 -t 2m --cpu-method all --metrics-brief
+stress-ng: info:  [2977] dispatching hogs: 4 cpu
+stress-ng: info:  [2977] successful run completed in 120.03s (2 mins, 0.03 secs)
+stress-ng: info:  [2977] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [2977]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [2977] cpu               85301    120.02    478.35      0.00       710.73       178.32
+
+ Performance counter stats for 'system wide':
+
+            30,146      context-switches                                            
+ 1,228,778,813,984      cycles                                                        (62.48%)
+ 1,304,409,387,838      instructions              #    1.06  insn per cycle           (74.99%)
+   130,558,776,289      L1-dcache-loads                                               (60.01%)
+    12,242,228,415      L1-dcache-load-misses     #    9.38% of all L1-dcache hits    (60.00%)
+     3,047,019,720      LLC-loads                                                     (28.82%)
+        13,255,454      LLC-load-misses           #    0.44% of all LL-cache hits     (34.45%)
+   189,999,729,360      branches                                                      (46.88%)
+     1,481,330,952      branch-misses             #    0.78% of all branches          (49.98%)
+
+     120.037103480 seconds time elapsed
+
+linux-5.7.6 ➤ uname -a                                                                                                                
+Linux suse 5.7.7-1-default #1 SMP Wed Jul 1 19:03:27 UTC 2020 (cba119b) x86_64 x86_64 x86_64 GNU/Linux
+linux-5.7.6 ➤ 
+

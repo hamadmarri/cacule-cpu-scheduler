@@ -1,0 +1,38 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252"><title>Software Interrupt Context: Softirqs and Tasklets</title><meta name="generator" content="DocBook XSL Stylesheets V1.78.1"><link rel="home" href="https://www.kernel.org/doc/htmldocs/kernel-hacking/index.html" title="Unreliable Guide To Hacking The Linux Kernel"><link rel="up" href="https://www.kernel.org/doc/htmldocs/kernel-hacking/basic-players.html" title="Chapter&nbsp;2.&nbsp;The Players"><link rel="prev" href="https://www.kernel.org/doc/htmldocs/kernel-hacking/basics-hardirqs.html" title="Hardware Interrupts (Hard IRQs)"><link rel="next" href="https://www.kernel.org/doc/htmldocs/kernel-hacking/basic-rules.html" title="Chapter&nbsp;3.&nbsp;Some Basic Rules"></head><body vlink="#840084" text="black" link="#0000FF" bgcolor="white" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tbody><tr><th colspan="3" align="center">Software Interrupt Context: Softirqs and Tasklets</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="https://www.kernel.org/doc/htmldocs/kernel-hacking/basics-hardirqs.html">Prev</a>&nbsp;</td><th width="60%" align="center">Chapter&nbsp;2.&nbsp;The Players</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="https://www.kernel.org/doc/htmldocs/kernel-hacking/basic-rules.html">Next</a></td></tr></tbody></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="basics-softirqs"></a>Software Interrupt Context: Softirqs and Tasklets</h2></div></div></div><p>
+    Whenever a system call is about to return to userspace, or a
+    hardware interrupt handler exits, any 'software interrupts'
+    which are marked pending (usually by hardware interrupts) are
+    run (<code class="filename">kernel/softirq.c</code>).
+   </p><p>
+    Much of the real interrupt handling work is done here.  Early in
+    the transition to <acronym class="acronym">SMP</acronym>, there were only 'bottom
+    halves' (BHs), which didn't take advantage of multiple CPUs.  Shortly 
+    after we switched from wind-up computers made of match-sticks and snot,
+    we abandoned this limitation and switched to 'softirqs'.
+   </p><p>
+    <code class="filename">include/linux/interrupt.h</code> lists the
+    different softirqs.  A very important softirq is the
+    timer softirq (<code class="filename">include/linux/timer.h</code>): you can
+    register to have it call functions for you in a given length of
+    time.
+   </p><p>
+    Softirqs are often a pain to deal with, since the same softirq
+    will run simultaneously on more than one CPU.  For this reason,
+    tasklets (<code class="filename">include/linux/interrupt.h</code>) are more
+    often used: they are dynamically-registrable (meaning you can have
+    as many as you want), and they also guarantee that any tasklet
+    will only run on one CPU at any time, although different tasklets
+    can run simultaneously.
+   </p><div class="caution" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Caution</h3><p>
+     The name 'tasklet' is misleading: they have nothing to do with 'tasks',
+     and probably more to do with some bad vodka Alexey Kuznetsov had at the 
+     time.
+    </p></div><p>
+    You can tell you are in a softirq (or tasklet)
+    using the <code class="function">in_softirq()</code> macro 
+    (<code class="filename">include/linux/interrupt.h</code>).
+   </p><div class="caution" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Caution</h3><p>
+     Beware that this will return a false positive if a bh lock (see below)
+     is held.
+    </p></div></div><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tbody><tr><td width="40%" align="left"><a accesskey="p" href="https://www.kernel.org/doc/htmldocs/kernel-hacking/basics-hardirqs.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="https://www.kernel.org/doc/htmldocs/kernel-hacking/basic-players.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="https://www.kernel.org/doc/htmldocs/kernel-hacking/basic-rules.html">Next</a></td></tr><tr><td width="40%" valign="top" align="left">Hardware Interrupts (Hard IRQs)&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="https://www.kernel.org/doc/htmldocs/kernel-hacking/index.html">Home</a></td><td width="40%" valign="top" align="right">&nbsp;Chapter&nbsp;3.&nbsp;Some Basic Rules</td></tr></tbody></table></div>
+</body></html>
