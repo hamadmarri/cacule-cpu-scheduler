@@ -1,0 +1,30 @@
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index ea28012c1a3..25247e45770 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -7079,7 +7079,7 @@ void __init sched_init(void)
+ #endif
+ 
+ #ifdef CONFIG_CACHY_SCHED
+-	printk(KERN_INFO "Cachy CPU scheduler v5.9-r8 by Hamad Al Marri.");
++	printk(KERN_INFO "Cachy CPU scheduler v5.9-Idle_Balance by Hamad Al Marri.");
+ #endif
+ 
+ 	wait_bit_init();
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index b9113dde396..1c287261040 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -10866,6 +10866,12 @@ static __latent_entropy void run_rebalance_domains(struct softirq_action *h)
+ 	if (nohz_idle_balance(this_rq, idle))
+ 		return;
+ 
++#ifdef CONFIG_CACHY_SCHED
++	// if busy CPU, return
++	if (idle == CPU_NOT_IDLE)
++		return;
++#endif
++
+ 	/* normal load balance */
+ 	update_blocked_averages(this_rq->cpu);
+ 	rebalance_domains(this_rq, idle);
