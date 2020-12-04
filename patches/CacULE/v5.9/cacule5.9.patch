@@ -944,14 +944,14 @@ index 8d1ca65db3b..50f6b260dea 100644
  #ifdef	CONFIG_SCHED_DEBUG
  	unsigned int		nr_spread_over;
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index afad085960b..a1aa276cacd 100644
+index afad085960b..c2d81b9ccc1 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -1659,6 +1659,15 @@ static struct ctl_table kern_table[] = {
  		.mode		= 0644,
  		.proc_handler	= proc_dointvec,
  	},
-+#ifdef CONFIG_CACHY_SCHED
++#ifdef CONFIG_CACULE_SCHED
 +	{
 +		.procname	= "sched_interactivity_factor",
 +		.data		= &interactivity_factor,
