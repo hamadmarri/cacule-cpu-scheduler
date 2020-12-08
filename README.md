@@ -22,7 +22,7 @@ mechanism to ULE's interactivity score mechanism for picking next task to run.
 Sets the value *m* for interactivity score calculations. See Figure 1 in
 https://web.cs.ucdavis.edu/~roper/ecs150/ULE.pdf
 The default value of in CacULE is 32768 which means that the Maximum Interactive
-Score is 20 (since m = Maximum Interactive Score / 2).
+Score is 65536 (since m = Maximum Interactive Score / 2).
 You can tune sched_interactivity_factor with sysctl command:
 
 	sysctl kernel.sched_interactivity_factor=50
