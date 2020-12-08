@@ -1,0 +1,22 @@
+f27603adbd31fb7d899514bf52142ed3fc1b77f7 - SLOB
+------------------------------------------------
+stress-ng: info:  [2613] dispatching hogs: 4 cpu
+stress-ng: info:  [2613] successful run completed in 120.25s (2 mins, 0.25 secs)
+stress-ng: info:  [2613] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [2613]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [2613] cpu               83898    120.02    447.27      0.23       699.05       187.48
+
+ Performance counter stats for 'system wide':
+
+           151,697      context-switches                                            
+ 1,222,311,524,114      cycles                                                        (57.04%)
+ 1,306,213,010,402      instructions              #    1.07  insn per cycle           (69.54%)
+   131,605,232,247      L1-dcache-loads                                               (52.69%)
+    11,737,570,212      L1-dcache-load-misses     #    8.92% of all L1-dcache accesses  (55.81%)
+     5,542,390,402      LLC-loads                                                     (28.61%)
+       204,400,166      LLC-load-misses           #    3.69% of all LL-cache accesses  (35.03%)
+   190,854,458,863      branches                                                      (44.09%)
+     1,544,819,402      branch-misses             #    0.81% of all branches          (44.55%)
+
+     120.308500398 seconds time elapsed
+

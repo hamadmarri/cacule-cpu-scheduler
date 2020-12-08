@@ -1,0 +1,115 @@
+python3 responsiveness.py -i1 -p4 --np 4
+
+CFS - 5.9.11-1-default
+---------------------------------------
+0 prime time:  115.558969155
+1 prime time:  115.780895789
+2 prime time:  115.91826441499998
+3 prime time:  115.995038855
+0 total response time:  1.2504091669999085  runs:  57  average:  0.021937002929822955
+
+0 prime time:  117.53387537799998
+1 prime time:  117.52702334699998
+2 prime time:  117.814768039
+3 prime time:  117.77086084000001
+0 total response time:  1.2835053690002383  runs:  58  average:  0.02212940291379721
+
+0 prime time:  117.71127276199996
+1 prime time:  118.22344207400005
+2 prime time:  118.11814993400003
+3 prime time:  118.26353250200003
+0 total response time:  1.30649363699996  runs:  58  average:  0.022525752362068278
+
+0 prime time:  116.66593937800008
+1 prime time:  117.01383923699996
+2 prime time:  117.090874982
+3 prime time:  117.14956111500004
+0 total response time:  1.3090887689997999  runs:  58  average:  0.02257049601723793
+
+
+
+Cachy - 5.9.11-1-Cachy+
+kernel.sched_cachy_harsh_mode_enabled = 0
+-----------------------------------------
+0 prime time:  118.00453601699996
+1 prime time:  118.16645942499986
+2 prime time:  118.74430411700018
+3 prime time:  118.64091126199992
+0 total response time:  0.8610030720003579  runs:  59  average:  0.014593272406785726
+
+0 prime time:  114.81131572799995
+1 prime time:  114.66748957100003
+2 prime time:  114.17456025599995
+3 prime time:  114.73633657300002
+0 total response time:  0.7932568710004944  runs:  57  average:  0.013916787210534989
+
+0 prime time:  116.53721111599998
+1 prime time:  117.10646629300004
+2 prime time:  116.29110849500012
+3 prime time:  116.58584087500003
+0 total response time:  0.8357337370009645  runs:  58  average:  0.014409202362085595
+
+0 prime time:  117.08640440399995
+1 prime time:  117.39175003800005
+2 prime time:  117.44923690799988
+3 prime time:  117.16854416499996
+0 total response time:  1.0480351590013015  runs:  58  average:  0.01806957170691899
+
+
+
+Cachy - 5.9.11-1-Cachy+
+kernel.sched_cachy_harsh_mode_enabled = 1
+-----------------------------------------
+0 prime time:  116.36505878799971
+1 prime time:  116.90118143000018
+2 prime time:  116.90224043199987
+3 prime time:  116.03946270699998
+0 total response time:  1.0793182420011362  runs:  58  average:  0.01860893520691614
+
+0 prime time:  116.5337830540002
+1 prime time:  116.04240172000027
+2 prime time:  116.8248163760004
+3 prime time:  116.27841497300005
+0 total response time:  1.0559370240002863  runs:  58  average:  0.018205810758625627
+
+0 prime time:  116.32936639299987
+1 prime time:  115.56086582200032
+2 prime time:  116.31137453300016
+3 prime time:  115.76605883499997
+0 total response time:  1.1260522069997023  runs:  58  average:  0.0194146932241328
+
+0 prime time:  118.08934088700016
+1 prime time:  117.96989735299985
+2 prime time:  117.95013339100024
+3 prime time:  117.88605335000011
+0 total response time:  0.7856301240003631  runs:  59  average:  0.013315764813565476
+
+
+CacULE - 5.9.11-1-CacULE+
+kernel.sched_interactivity_factor = 10
+---------------------------------------
+0 prime time:  117.301767866
+1 prime time:  117.23865019600001
+2 prime time:  117.315004945
+3 prime time:  116.51098499399998
+0 total response time:  0.7840230079999557  runs:  58  average:  0.013517638068964754
+
+0 prime time:  118.726616898
+1 prime time:  119.12676730600003
+2 prime time:  119.176756608
+3 prime time:  118.75688120200002
+0 total response time:  0.7712049480000474  runs:  59  average:  0.013071270305085548
+
+0 prime time:  116.22481284099996
+1 prime time:  116.253093912
+2 prime time:  115.74524078600001
+3 prime time:  115.95401834199998
+0 total response time:  0.7675745460002759  runs:  58  average:  0.013234043896556481
+
+
+0 prime time:  114.70115897400001
+1 prime time:  114.90773822200003
+2 prime time:  115.27796281799999
+3 prime time:  114.64383349500008
+0 total response time:  0.7460935049997488  runs:  57  average:  0.013089359736837699
+

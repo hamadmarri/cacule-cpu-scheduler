@@ -1,0 +1,268 @@
+CFS - SLUB
+-----------
+
+----------------------------------- 4 THREADS -----------------------------------
+CPU speed:
+    events per second:  2605.41
+
+General statistics:
+    total time:                          120.0015s
+    total number of events:              312658
+
+Latency (ms):
+         min:                                    1.03
+         avg:                                    1.54
+         max:                                   17.30
+         95th percentile:                        1.64
+         sum:                               479937.90
+
+Threads fairness:
+    events (avg/stddev):           78164.5000/169.23
+    execution time (avg/stddev):   119.9845/0.00
+
+
+ Performance counter stats for 'system wide':
+
+           113,949      context-switches                                            
+ 1,260,571,170,928      cycles                                                        (62.42%)
+   415,481,384,624      instructions              #    0.33  insn per cycle           (74.93%)
+       855,422,532      L1-dcache-loads                                               (56.73%)
+        55,459,400      L1-dcache-load-misses     #    6.48% of all L1-dcache accesses  (61.69%)
+        17,089,818      LLC-loads                                                     (27.42%)
+         4,312,620      LLC-load-misses           #   25.24% of all LL-cache accesses  (34.64%)
+   116,137,125,429      branches                                                      (46.87%)
+     1,507,173,480      branch-misses             #    1.30% of all branches          (49.92%)
+
+     120.007542431 seconds time elapsed
+
+
+CPU speed:
+    events per second:  2609.07
+
+General statistics:
+    total time:                          120.0016s
+    total number of events:              313098
+
+Latency (ms):
+         min:                                    1.21
+         avg:                                    1.53
+         max:                                   17.67
+         95th percentile:                        1.64
+         sum:                               479939.29
+
+Threads fairness:
+    events (avg/stddev):           78274.5000/205.91
+    execution time (avg/stddev):   119.9848/0.00
+
+
+ Performance counter stats for 'system wide':
+
+           120,840      context-switches                                            
+ 1,261,888,673,328      cycles                                                        (62.46%)
+   416,359,875,902      instructions              #    0.33  insn per cycle           (74.96%)
+       935,628,142      L1-dcache-loads                                               (57.54%)
+        62,936,217      L1-dcache-load-misses     #    6.73% of all L1-dcache accesses  (61.19%)
+        17,161,824      LLC-loads                                                     (28.70%)
+         5,189,421      LLC-load-misses           #   30.24% of all LL-cache accesses  (34.50%)
+   116,350,098,844      branches                                                      (46.87%)
+     1,489,501,370      branch-misses             #    1.28% of all branches          (49.95%)
+
+     120.007757192 seconds time elapsed
+
+
+CPU speed:
+    events per second:  2610.72
+
+General statistics:
+    total time:                          120.0013s
+    total number of events:              313295
+
+Latency (ms):
+         min:                                    1.03
+         avg:                                    1.53
+         max:                                   17.61
+         95th percentile:                        1.64
+         sum:                               479934.45
+
+Threads fairness:
+    events (avg/stddev):           78323.7500/203.63
+    execution time (avg/stddev):   119.9836/0.00
+
+
+ Performance counter stats for 'system wide':
+
+           134,561      context-switches                                            
+ 1,262,967,118,762      cycles                                                        (62.44%)
+   416,586,819,679      instructions              #    0.33  insn per cycle           (74.94%)
+       917,989,681      L1-dcache-loads                                               (56.81%)
+        61,935,561      L1-dcache-load-misses     #    6.75% of all L1-dcache accesses  (61.89%)
+        18,225,571      LLC-loads                                                     (26.54%)
+         4,516,856      LLC-load-misses           #   24.78% of all LL-cache accesses  (34.48%)
+   116,476,548,076      branches                                                      (46.87%)
+     1,498,206,645      branch-misses             #    1.29% of all branches          (49.94%)
+
+     120.007423179 seconds time elapsed
+
+---------------------------------------------------------------------------------
+----------------------------------- 8 THREADS -----------------------------------
+CPU speed:
+    events per second:  2628.61
+
+General statistics:
+    total time:                          120.0023s
+    total number of events:              315444
+
+Latency (ms):
+         min:                                    1.16
+         avg:                                    3.04
+         max:                                   41.69
+         95th percentile:                        9.56
+         sum:                               959832.25
+
+Threads fairness:
+    events (avg/stddev):           39430.5000/157.26
+    execution time (avg/stddev):   119.9790/0.01
+
+
+
+
+CPU speed:
+    events per second:  2632.32
+
+General statistics:
+    total time:                          120.0018s
+    total number of events:              315889
+
+Latency (ms):
+         min:                                    1.20
+         avg:                                    3.04
+         max:                                   30.22
+         95th percentile:                        9.56
+         sum:                               959774.71
+
+Threads fairness:
+    events (avg/stddev):           39486.1250/84.30
+    execution time (avg/stddev):   119.9718/0.01
+
+
+
+
+CPU speed:
+    events per second:  2630.15
+
+General statistics:
+    total time:                          120.0024s
+    total number of events:              315629
+
+Latency (ms):
+         min:                                    1.18
+         avg:                                    3.04
+         max:                                   29.60
+         95th percentile:                       13.22
+         sum:                               959830.50
+
+Threads fairness:
+    events (avg/stddev):           39453.6250/97.71
+    execution time (avg/stddev):   119.9788/0.01
+
+
+
+
+
+
+----------------------------------------------------------------------------------------
+----------------------------------- MEMORY 8 THREADS -----------------------------------
+Running memory speed test with the following options:
+  block size: 1KiB
+  total size: 102400MiB
+  operation: write
+  scope: global
+
+Initializing worker threads...
+
+Threads started!
+
+Total operations: 104857600 (11086592.33 per second)
+
+102400.00 MiB transferred (10826.75 MiB/sec)
+
+
+General statistics:
+    total time:                          9.4563s
+    total number of events:              104857600
+
+Latency (ms):
+         min:                                    0.00
+         avg:                                    0.00
+         max:                                   32.00
+         95th percentile:                        0.00
+         sum:                                47065.04
+
+Threads fairness:
+    events (avg/stddev):           13107200.0000/0.00
+    execution time (avg/stddev):   5.8831/0.13
+
+
+
+Running memory speed test with the following options:
+  block size: 1KiB
+  total size: 102400MiB
+  operation: write
+  scope: global
+
+Initializing worker threads...
+
+Threads started!
+
+Total operations: 104857600 (12053695.90 per second)
+
+102400.00 MiB transferred (11771.19 MiB/sec)
+
+
+General statistics:
+    total time:                          8.6977s
+    total number of events:              104857600
+
+Latency (ms):
+         min:                                    0.00
+         avg:                                    0.00
+         max:                                   26.59
+         95th percentile:                        0.00
+         sum:                                40444.72
+
+Threads fairness:
+    events (avg/stddev):           13107200.0000/0.00
+    execution time (avg/stddev):   5.0556/0.14
+
+
+
+Running memory speed test with the following options:
+  block size: 1KiB
+  total size: 102400MiB
+  operation: write
+  scope: global
+
+Initializing worker threads...
+
+Threads started!
+
+Total operations: 104857600 (12362276.67 per second)
+
+102400.00 MiB transferred (12072.54 MiB/sec)
+
+
+General statistics:
+    total time:                          8.4802s
+    total number of events:              104857600
+
+Latency (ms):
+         min:                                    0.00
+         avg:                                    0.00
+         max:                                   30.73
+         95th percentile:                        0.00
+         sum:                                39259.92
+
+Threads fairness:
+    events (avg/stddev):           13107200.0000/0.00
+    execution time (avg/stddev):   4.9075/0.12
+

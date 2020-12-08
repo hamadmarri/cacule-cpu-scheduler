@@ -1,0 +1,204 @@
+f27603adbd31fb7d899514bf52142ed3fc1b77f7 - SLUB
+------------------------------------------------
+stress-ng: info:  [2479] dispatching hogs: 4 cpu
+stress-ng: info:  [2479] successful run completed in 120.01s (2 mins, 0.01 secs)
+stress-ng: info:  [2479] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [2479]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [2479] cpu               88784    120.01    477.19      0.00       739.83       186.06
+
+ Performance counter stats for 'system wide':
+
+            29,941      context-switches                                            
+ 1,249,354,016,181      cycles                                                        (62.50%)
+ 1,361,024,279,922      instructions              #    1.09  insn per cycle           (75.00%)
+   135,652,545,777      L1-dcache-loads                                               (67.41%)
+    12,343,074,293      L1-dcache-load-misses     #    9.10% of all L1-dcache accesses  (51.62%)
+     3,254,278,767      LLC-loads                                                     (35.62%)
+        14,060,451      LLC-load-misses           #    0.43% of all LL-cache accesses  (37.50%)
+   197,742,541,843      branches                                                      (49.95%)
+     1,575,852,448      branch-misses             #    0.80% of all branches          (50.00%)
+
+     120.030089097 seconds time elapsed
+
+stress-ng: info:  [2599] dispatching hogs: 4 cpu
+stress-ng: info:  [2599] successful run completed in 120.02s (2 mins, 0.02 secs)
+stress-ng: info:  [2599] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [2599]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [2599] cpu               88873    120.01    476.75      0.02       740.57       186.41
+
+ Performance counter stats for 'system wide':
+
+            28,193      context-switches                                            
+ 1,251,414,353,260      cycles                                                        (62.50%)
+ 1,362,901,312,892      instructions              #    1.09  insn per cycle           (75.00%)
+   135,869,547,060      L1-dcache-loads                                               (59.83%)
+    12,146,586,535      L1-dcache-load-misses     #    8.94% of all L1-dcache accesses  (56.24%)
+     3,891,153,154      LLC-loads                                                     (30.73%)
+        13,024,236      LLC-load-misses           #    0.33% of all LL-cache accesses  (37.50%)
+   197,759,843,601      branches                                                      (49.99%)
+     1,595,285,650      branch-misses             #    0.81% of all branches          (50.00%)
+
+     120.027118483 seconds time elapsed
+
+stress-ng: info:  [2760] dispatching hogs: 4 cpu
+stress-ng: info:  [2760] successful run completed in 120.09s (2 mins, 0.09 secs)
+stress-ng: info:  [2760] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [2760]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [2760] cpu               88719    120.04    476.56      0.00       739.09       186.17
+
+ Performance counter stats for 'system wide':
+
+            33,493      context-switches                                            
+ 1,252,322,544,386      cycles                                                        (62.50%)
+ 1,359,363,457,402      instructions              #    1.09  insn per cycle           (75.00%)
+   135,096,146,435      L1-dcache-loads                                               (60.59%)
+    12,107,885,895      L1-dcache-load-misses     #    8.96% of all L1-dcache accesses  (55.15%)
+     4,862,039,880      LLC-loads                                                     (31.17%)
+        15,358,704      LLC-load-misses           #    0.32% of all LL-cache accesses  (37.50%)
+   197,359,882,264      branches                                                      (49.99%)
+     1,575,318,501      branch-misses             #    0.80% of all branches          (50.00%)
+
+     120.097264222 seconds time elapsed
+
+stress-ng: info:  [2909] dispatching hogs: 4 cpu
+stress-ng: info:  [2909] successful run completed in 120.07s (2 mins, 0.07 secs)
+stress-ng: info:  [2909] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [2909]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [2909] cpu               86392    120.05    477.00      0.01       719.63       181.11
+
+ Performance counter stats for 'system wide':
+
+            28,608      context-switches                                            
+ 1,220,432,099,544      cycles                                                        (62.44%)
+ 1,322,115,818,829      instructions              #    1.08  insn per cycle           (74.94%)
+   131,941,401,921      L1-dcache-loads                                               (62.80%)
+    12,155,713,520      L1-dcache-load-misses     #    9.21% of all L1-dcache accesses  (56.54%)
+     4,014,640,036      LLC-loads                                                     (32.71%)
+        14,786,567      LLC-load-misses           #    0.37% of all LL-cache accesses  (34.57%)
+   192,590,665,315      branches                                                      (46.88%)
+     1,531,051,208      branch-misses             #    0.79% of all branches          (49.94%)
+
+     120.082528243 seconds time elapsed
+
+stress-ng: info:  [3069] dispatching hogs: 4 cpu
+stress-ng: info:  [3069] successful run completed in 120.04s (2 mins, 0.04 secs)
+stress-ng: info:  [3069] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [3069]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [3069] cpu               88651    120.02    477.25      0.00       738.66       185.75
+
+ Performance counter stats for 'system wide':
+
+            26,888      context-switches                                            
+ 1,254,127,700,135      cycles                                                        (62.50%)
+ 1,358,858,842,197      instructions              #    1.08  insn per cycle           (75.00%)
+   135,152,287,886      L1-dcache-loads                                               (64.19%)
+    12,226,005,448      L1-dcache-load-misses     #    9.05% of all L1-dcache accesses  (54.98%)
+     4,206,071,909      LLC-loads                                                     (37.52%)
+        12,893,923      LLC-load-misses           #    0.31% of all LL-cache accesses  (37.53%)
+   197,584,564,020      branches                                                      (49.97%)
+     1,569,254,631      branch-misses             #    0.79% of all branches          (50.00%)
+
+     120.042562893 seconds time elapsed
+
+stress-ng: info:  [2963] dispatching hogs: 4 cpu
+stress-ng: info:  [2963] successful run completed in 120.05s (2 mins, 0.05 secs)
+stress-ng: info:  [2963] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [2963]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [2963] cpu               88598    120.03    477.30      0.02       738.12       185.62
+
+ Performance counter stats for 'system wide':
+
+            26,771      context-switches                                            
+ 1,250,562,270,448      cycles                                                        (62.50%)
+ 1,356,550,566,925      instructions              #    1.08  insn per cycle           (75.00%)
+   134,874,653,845      L1-dcache-loads                                               (65.14%)
+    12,003,865,985      L1-dcache-load-misses     #    8.90% of all L1-dcache accesses  (53.85%)
+     4,247,365,612      LLC-loads                                                     (37.18%)
+        14,443,226      LLC-load-misses           #    0.34% of all LL-cache accesses  (37.50%)
+   196,995,779,076      branches                                                      (49.97%)
+     1,569,239,883      branch-misses             #    0.80% of all branches          (50.00%)
+
+     120.057156251 seconds time elapsed
+
+stress-ng: info:  [4218] dispatching hogs: 4 cpu
+stress-ng: info:  [4218] successful run completed in 120.05s (2 mins, 0.05 secs)
+stress-ng: info:  [4218] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [4218]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [4218] cpu               87374    120.02    476.76      0.01       728.01       183.26
+
+ Performance counter stats for 'system wide':
+
+            29,368      context-switches                                            
+ 1,229,056,478,463      cycles                                                        (62.40%)
+ 1,336,880,132,048      instructions              #    1.09  insn per cycle           (74.91%)
+   132,959,250,044      L1-dcache-loads                                               (62.35%)
+    12,191,450,008      L1-dcache-load-misses     #    9.17% of all L1-dcache accesses  (56.97%)
+     3,184,961,481      LLC-loads                                                     (33.32%)
+        13,555,685      LLC-load-misses           #    0.43% of all LL-cache accesses  (34.62%)
+   194,237,069,242      branches                                                      (46.89%)
+     1,536,546,536      branch-misses             #    0.79% of all branches          (49.91%)
+
+     120.059349032 seconds time elapsed
+
+stress-ng: info:  [4796] dispatching hogs: 4 cpu
+stress-ng: info:  [4796] successful run completed in 120.05s (2 mins, 0.05 secs)
+stress-ng: info:  [4796] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [4796]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [4796] cpu               87809    120.04    477.43      0.00       731.52       183.92
+
+ Performance counter stats for 'system wide':
+
+            30,388      context-switches                                            
+ 1,238,104,553,702      cycles                                                        (62.42%)
+ 1,345,234,090,173      instructions              #    1.09  insn per cycle           (74.92%)
+   134,164,662,514      L1-dcache-loads                                               (59.37%)
+    12,489,470,783      L1-dcache-load-misses     #    9.31% of all L1-dcache accesses  (60.06%)
+     3,163,554,280      LLC-loads                                                     (31.92%)
+        13,210,272      LLC-load-misses           #    0.42% of all LL-cache accesses  (34.66%)
+   195,249,613,536      branches                                                      (46.88%)
+     1,551,715,922      branch-misses             #    0.79% of all branches          (49.92%)
+
+     120.059242566 seconds time elapsed
+
+stress-ng: info:  [4918] dispatching hogs: 4 cpu
+stress-ng: info:  [4918] successful run completed in 120.08s (2 mins, 0.08 secs)
+stress-ng: info:  [4918] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [4918]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [4918] cpu               89153    120.02    477.38      0.01       742.81       186.75
+
+ Performance counter stats for 'system wide':
+
+            28,258      context-switches                                            
+ 1,255,079,239,438      cycles                                                        (62.50%)
+ 1,365,800,076,882      instructions              #    1.09  insn per cycle           (75.00%)
+   136,419,840,154      L1-dcache-loads                                               (57.39%)
+    12,233,313,971      L1-dcache-load-misses     #    8.97% of all L1-dcache accesses  (61.52%)
+     3,372,816,397      LLC-loads                                                     (42.49%)
+        12,288,665      LLC-load-misses           #    0.36% of all LL-cache accesses  (37.51%)
+   198,420,941,400      branches                                                      (50.00%)
+     1,584,525,309      branch-misses             #    0.80% of all branches          (50.00%)
+
+     120.088161746 seconds time elapsed
+
+stress-ng: info:  [5029] dispatching hogs: 4 cpu
+stress-ng: info:  [5029] successful run completed in 120.05s (2 mins, 0.05 secs)
+stress-ng: info:  [5029] stressor       bogo ops real time  usr time  sys time   bogo ops/s   bogo ops/s
+stress-ng: info:  [5029]                           (secs)    (secs)    (secs)   (real time) (usr+sys time)
+stress-ng: info:  [5029] cpu               88389    120.02    477.24      0.01       736.43       185.20
+
+ Performance counter stats for 'system wide':
+
+            28,803      context-switches                                            
+ 1,248,120,755,319      cycles                                                        (62.50%)
+ 1,353,182,130,505      instructions              #    1.08  insn per cycle           (75.00%)
+   134,290,007,495      L1-dcache-loads                                               (61.38%)
+    12,172,877,032      L1-dcache-load-misses     #    9.06% of all L1-dcache accesses  (59.43%)
+     4,174,192,855      LLC-loads                                                     (33.88%)
+        24,891,996      LLC-load-misses           #    0.60% of all LL-cache accesses  (37.52%)
+   196,571,296,981      branches                                                      (49.98%)
+     1,584,526,148      branch-misses             #    0.81% of all branches          (50.00%)
+
+     120.058598154 seconds time elapsed
+
+--------------------------------------------------------------
+bogo ops avg: 88274.2
