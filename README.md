@@ -42,6 +42,16 @@ for desktop or mobile jobs, the maximum number of runnable tasks might not
 exceeds 10 (at the pick next run time) - the idle tasks are excluded since they
 are dequeued when sleeping and enqueued when they wake up.
 
+## Tasks' Priorities
+The priorities are applied as the followings:
+The `vruntime` is used in Interactivity Score as the sum of execution time. The `vruntime` is adjusted by CFS based on tasks priorities.
+The same code from CFS is used in CacULE. The `vruntime` is equal to `sum_exec_runtime` if a task has nice value of 0 (normal priority).
+The `vruntime` will be lower than `sum_exec_runtime` for higher tasks priorities, which make Interactivity Score thinks that those task didn't run for much time (compared to
+their actual run time).
+The `vruntime` will be higher than `sum_exec_runtime` for lower tasks priorities, which make Interactivity Score thinks that those task ran for much time (compared to
+their actual run time).
+So priorities are already taken in the acount by using `vruntime` in the Interactivity Score equation instead of actual `sum_exec_runtime`.
+
 
 ## Patched Kernel Tree
 1. Go to [kernel tree repository](https://github.com/hamadmarri/linux) 
@@ -66,16 +76,6 @@ dmesg | grep -i "cacule cpu"
 [    0.122999] CacULE CPU scheduler v5.9 by Hamad Al Marri.
 
 ```
-
-## Tasks' Priorities
-The priorities are applied as the followings:
-The `vruntime` is used in Interactivity Score as the sum of execution time. The `vruntime` is adjusted by CFS based on tasks priorities.
-The same code from CFS is used in CacULE. The `vruntime` is equal to `sum_exec_runtime` if a task has nice value of 0 (normal priority).
-The `vruntime` will be lower than `sum_exec_runtime` for higher tasks priorities, which make Interactivity Score thinks that those task didn't run for much time (compared to
-their actual run time).
-The `vruntime` will be higher than `sum_exec_runtime` for lower tasks priorities, which make Interactivity Score thinks that those task ran for much time (compared to
-their actual run time).
-So priorities are already taken in the acount by using `vruntime` in the Interactivity Score equation instead of actual `sum_exec_runtime`.
 
 ## Blind Tests
 I made comparison between cfs and cachy on xanmod, for blind test
