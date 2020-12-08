@@ -1,26 +1,57 @@
-![cachy-logo](./cachy-logo.png)
+# CacULE CPU Scheduler
 
-Cachy-sched is a linux scheduler that is based on Highest Response Ratio Next (HRRN) policy.
+CacULE is a newer version of Cachy. The CacULE CPU scheduler is based on interactivity score mechanism.
+The interactivity score is inspired by the ULE scheduler (FreeBSD
+scheduler).
 
-## About Cachy Scheduler
+
+## About CacULE Scheduler
 * Each CPU has its own runqueue.
 * NORMAL runqueue is a linked list of sched_entities (instead of RB-Tree).
 * RT and other runqueues are just the same as the CFS's.
-* A task gets preempted when any task in the runqueue has a higher HRRN.
-* Wake up tasks preempt currently running tasks if its HRRN value is higher.
-* This scheduler is designed for desktop usage since it is about responsiveness.
-* Cachy might be good for mobiles or Android since it has high responsiveness, but it needs to be integrated to
-Android, I don't think the current version it is ready to go without some tweeking and adapting to Android hacks.
+* Wake up tasks preempt currently running tasks if its interactivity score value is higher.
+
+
+## The CacULE Interactivity Score
+The interactivity score is inspired by the ULE scheduler (FreeBSD scheduler).
+For more information see: https://web.cs.ucdavis.edu/~roper/ecs150/ULE.pdf
+CacULE doesn't replace CFS with ULE, it only changes the CFS' pick next task
+mechanism to ULE's interactivity score mechanism for picking next task to run.
+
+### sched_interactivity_factor
+Sets the value *m* for interactivity score calculations. See Figure 1 in
+https://web.cs.ucdavis.edu/~roper/ecs150/ULE.pdf
+The default value of in CacULE is 32768 which means that the Maximum Interactive
+Score is 20 (since m = Maximum Interactive Score / 2).
+You can tune sched_interactivity_factor with sysctl command:
+
+	sysctl kernel.sched_interactivity_factor=50
+
+This command changes the sched_interactivity_factor from 32768 to 50.
+
+
+
+## Complexity
+The complexity of Enqueue and Dequeue a task is O(1).
+
+The complexity of pick the next task is in O(n), where n is the number of tasks
+in a runqueue (each CPU has its own runqueue).
+
+Note: O(n) sounds scary, but usually for a machine with 4 CPUS where it is used
+for desktop or mobile jobs, the maximum number of runnable tasks might not
+exceeds 10 (at the pick next run time) - the idle tasks are excluded since they
+are dequeued when sleeping and enqueued when they wake up.
 
 
 ## Patched Kernel Tree
 1. Go to [kernel tree repository](https://github.com/hamadmarri/linux) 
-2. Select a tag version that starts with `cachy` (i.e `cachy-5.8-r6`)
+2. Select a tag version that starts with `cachy / cacule` (i.e `cachy-5.8-r6`)
 3. Download and compile
 
 
 ## How to apply the patch
-1. Download the linux kernel (https://www.kernel.org/) that is same version as the patch (i.e if patch file name is cachy-5.7.6.patch, then download https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.7.6.tar.xz)
+1. Download the linux kernel (https://www.kernel.org/) that is same version as the patch
+ (i.e if patch file name is cachy-5.7.6.patch, then download https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.7.6.tar.xz)
 2. Unzip linux kernel
 3. Download cachy patch file and place it inside the just unzipped linux kernel folder
 4. cd linux-(version)
@@ -28,112 +59,23 @@ Android, I don't think the current version it is ready to go without some tweeki
 6. To build the kernel you need to follow linux build kernel documentation and tutorials.
 
 
-To confirm that Cachy is currently running:
+To confirm that CacULE is currently running:
 ```
 
-dmesg | grep -i "cachy cpu"
-[    0.059697] Cachy CPU scheduler v5.9 by Hamad Al Marri.
+dmesg | grep -i "cacule cpu"
+[    0.122999] CacULE CPU scheduler v5.9 by Hamad Al Marri.
 
 ```
 
-## Special Thanks to
-1. Alexandre Frade (the maintainer of [xanmod](https://github.com/xanmod))
-
-
-## Complexity
-* The complexity of Enqueue a task is `O(n)`.
-* The complexity of Dequeue a task is `O(1)`.
-* The complexity of pick the next task is in `O(1)`, where 
-`n` is the number of tasks in a runqueue (each CPU has its own runqueue).
-
-Note: `O(n)` sounds scary, but usually for a machine with 4 CPUS where it is used for
-desktop or mobile jobs, the maximum number of runnable tasks might
-not exceeds 10 (at the pick next run time) - the idle tasks are excluded since they are dequeued when sleeping 
-and enqueued when they wake up.
-
-## Highest Response Ratio Next (HRRN) policy
-Cachy is based in Highest Response Ratio Next (HRRN) policy with some modifications.
-HRRN is a scheduling policy in which the process
-that has the highest response ratio will run next. Each process
-has a response ratio value `R = (w_t + s_t) / s_t` where `w_t` is
-the process waiting time, and `s_t` is the process running
-time. If two process has similar running times, the
-process that has been waiting longer will run first. HRRN aims
-to prevent starvation since it strives the waiting time for processes,
-and also it increases the response time.
-
-
-If two processes have the same `R` after integer rounding, the division remainder is compared.
-
-Highest response ratio next (HRRN) scheduling is a non-preemptive discipline. It was developed by Brinch Hansen as modification of shortest job next (SJN) to mitigate the problem of process starvation [wikipedia](https://en.wikipedia.org/wiki/Highest_response_ratio_next). The original HRRN is non-preemptive meaning that a task runs until it finishes. This nature is not
-good for interactive systems. Applying original HRRN with preemptive modifications requires one change. Native HRRN can work great for short amount of time lets say (< 60 minutes) until some
-tasks gets too old and new tasks created, then the imbalance happens. Assume one task `T1` (Xorg) is running and waiting for users inputs.
-This task will have high HRRN because it sleeps more than it runs, however, after a long time (say 60 minuets = 3600000000000ns) the life
-time of `T1` is 3600000000000ns lets assume the sum of execution time is 50% = 1800000000000ns. The HRRN = 3600000000000 / 1800000000000 
-= 2. If `T1` runs for 4ms, the rate of change on HRRN is too low: HRRN = 3600000000000 / 1800004000000 = 1.999995556
-
-Also, if `T1` waited for 1s HRRN = 3601000000000 / 1800004000000 = 2.00055111, the rate of change is low too. Both situations are bad, because:
-1. A new task `T2` will have higher HRRN when it starts, thus it will be picked instead of `T1`
-2. The rate of change of `T2` compared to `T1` is higher.
-
-This situation is not good for infinite-life processes such as Xorg and desktop related threads. Those task must run ASAP when they
-wake up, because they are related to responsiveness and Interactivity.
-
-Therefore, the original HRRN needs some modifications.
-
-#### HRRN maximum life time
-Instead of calculating a task HRRN value for infinite life time, we proposed
-`hrrn_max_lifetime` which is 30s by default. A task's `hrrn_start_time` and
-`vruntime` shrink whenever a task life time exceeds 30s. Therefore, the rate of change of HRRN
-for old and new tasks is normalized. The value `hrrn_max_lifetime` can be
-changed at run time by the following sysctl command:
-```
-sysctl kernel.sched_hrrn_max_lifetime_ms=60000
-```
-The value is in milliseconds, the above command changes `hrrn_max_lifetime`
-from 30s to 60s.
-
-In the first round, the task's life time became > 30s, the `hrrn_start_time`
-get reset to be (current_time - 15s), then, the task will reset 
-every 15s after this point. The reset method of the vruntime preserves the same HRRN ratio (roughly)
-by the following:
-```
-// multiply old life time by 8 for more precision
-old_hrrn_x8 = old_life_time / ((vruntime / 8) + 1)
-
-// reset vruntime based on old hrrn ratio
-vruntime = (new_life_time * 8) / old_hrrn_x8;
-```
-
-Another sysctl command is `sched_cachy_harsh_mode_enabled`
-
-The default value of `sched_cachy_harsh_mode_enabled` is 0 means disabled. You can set it to 1 to enable harsh mode.
-
-Note: harsh mode is good when normal using of the system (i.e. no background heavy work) if you compile while harsh mode enabled, you might have mini freezes. Sometimes it is usefule to enable harsh mode when you have a single task for example gaming or just browsing. The only time you don't want harsh mode is when you have a background heavy load.
-
-
-## Priorities
+## Tasks' Priorities
 The priorities are applied as the followings:
-The `vruntime` is used in HRRN as the sum of execution time. The `vruntime` is adjusted by CFS based on tasks priorities.
-The same code fro CFS is used in Cachy. The `vruntime` is equal to `sum_exec_runtime` if a task has nice value of 0 (normal priority).
-The `vruntime` will be lower than `sum_exec_runtime` for higher tasks priorities, which make HRRN thinks that those task didn't run for much time (compared to
+The `vruntime` is used in Interactivity Score as the sum of execution time. The `vruntime` is adjusted by CFS based on tasks priorities.
+The same code from CFS is used in CacULE. The `vruntime` is equal to `sum_exec_runtime` if a task has nice value of 0 (normal priority).
+The `vruntime` will be lower than `sum_exec_runtime` for higher tasks priorities, which make Interactivity Score thinks that those task didn't run for much time (compared to
 their actual run time).
-The `vruntime` will be higher than `sum_exec_runtime` for lower tasks priorities, which make HRRN thinks that those task ran for much time (compared to
+The `vruntime` will be higher than `sum_exec_runtime` for lower tasks priorities, which make Interactivity Score thinks that those task ran for much time (compared to
 their actual run time).
-So priorities are already taken in the acount by using `vruntime` in the HRRN equation instead of actual `sum_exec_runtime`.
-
-
-## Tests and Benchmarks
-
-### Interactivity and Responsiveness while compiling shaders
-#### Cachy compared with MUQSS
-[MUQSS](https://www.youtube.com/watch?v=B-6MVWONOuc)
-[Cachy](https://www.youtube.com/watch?v=jt1xl3wtZ0s)
-
-
-## Phoronix Test Suite
-https://openbenchmarking.org/result/2007301-NI-CACHYVSCF60
-
+So priorities are already taken in the acount by using `vruntime` in the Interactivity Score equation instead of actual `sum_exec_runtime`.
 
 ## Blind Tests
 I made comparison between cfs and cachy on xanmod, for blind test
@@ -146,6 +88,9 @@ to reveal the which is which go back to time 0s on the video and see `uname -r` 
 
 Note: In one of the tests, the recorder seems to be freezes and lagging, I repeated this test twice, while testing system is not pausing but the recorder maybe freezing or lagging while recording.
 
+
+## Special Thanks to
+1. Alexandre Frade (the maintainer of [xanmod](https://github.com/xanmod))
 
 ## Contacts
 Telegram: https://t.me/cachy_sched
