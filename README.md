@@ -94,3 +94,7 @@ Note: In one of the tests, the recorder seems to be freezes and lagging, I repea
 
 ## Contacts
 Telegram: https://t.me/cachy_sched
+
+## Donate
+* Paypal: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8F7F4D8BKR8XC
+
