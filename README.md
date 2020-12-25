@@ -93,7 +93,7 @@ Note: In one of the tests, the recorder seems to be freezes and lagging, I repea
 1. Alexandre Frade (the maintainer of [xanmod](https://github.com/xanmod))
 
 ## Contacts
-Telegram: https://t.me/cachy_sched
+Telegram: https://t.me/cacule_sched
 
 ## Donate
 * Paypal: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8F7F4D8BKR8XC
