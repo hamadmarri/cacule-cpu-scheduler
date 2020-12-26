@@ -53,7 +53,7 @@ their actual run time).
 So priorities are already taken in the acount by using `vruntime` in the Interactivity Score equation instead of actual `sum_exec_runtime`.
 
 
-## The Global Runqueue Patch
+## The Global Runqueue (GRQ) Patch
 Global Runqueue (GRQ) is a patch on top of cacule that replaces the CFS load balancer and removes
 most load statistics with a global runqueue which utilizes all CPUs with a single runqueue and a
 single global lock. Thus, no need to run load balancer periodically. Every CPU runs a task from a
