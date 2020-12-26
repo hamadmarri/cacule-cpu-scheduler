@@ -53,6 +53,18 @@ their actual run time).
 So priorities are already taken in the acount by using `vruntime` in the Interactivity Score equation instead of actual `sum_exec_runtime`.
 
 
+## The Global Runqueue Patch
+Global Runqueue (GRQ) is a patch on top of cacule that replaces the CFS load balancer and removes
+most load statistics with a global runqueue which utilizes all CPUs with a single runqueue and a
+single global lock. Thus, no need to run load balancer periodically. Every CPU runs a task from a
+global runqueue. The goal of GRQ is to enhance both performance and responsiveness.
+
+**Note**:
+* The GRQ is experimental, you run it under your responsiblity.
+* GRQ is only applied on NORMAL tasks (not rt, batch, ..).
+* FAIR_GROUP must be disabled.
+
+
 ## Patched Kernel Tree
 1. Go to [kernel tree repository](https://github.com/hamadmarri/linux) 
 2. Select a tag version that starts with `cachy / cacule` (i.e `cachy-5.8-r6`)
