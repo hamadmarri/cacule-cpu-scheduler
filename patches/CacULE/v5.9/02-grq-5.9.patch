@@ -114,7 +114,7 @@ index 08e94896c5d6..e4c3c2873702 100644
  
  	wait_bit_init();
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 335efc1c6f06..29704557eb89 100644
+index 335efc1c6f06..9db79c1736c9 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -44,6 +44,8 @@ static unsigned int normalized_sysctl_sched_latency	= 6000000ULL;
@@ -859,15 +859,9 @@ index 335efc1c6f06..29704557eb89 100644
  
  #ifdef CONFIG_FAIR_GROUP_SCHED
  	if (!prev || prev->sched_class != &fair_sched_class)
-@@ -7290,17 +7378,32 @@ pick_next_task_fair(struct rq *rq, struct task_struct *prev, struct rq_flags *rf
- 	goto done;
- simple:
- #endif
--	if (prev)
-+	if (prev) {
-+		prev->ran |= 0x4;
+@@ -7293,14 +7381,27 @@ pick_next_task_fair(struct rq *rq, struct task_struct *prev, struct rq_flags *rf
+ 	if (prev)
  		put_prev_task(rq, prev);
-+	}
  
 -	do {
 -		se = pick_next_entity(cfs_rq, NULL);
@@ -898,7 +892,7 @@ index 335efc1c6f06..29704557eb89 100644
  done: __maybe_unused;
  #ifdef CONFIG_SMP
  	/*
-@@ -7314,33 +7417,10 @@ done: __maybe_unused;
+@@ -7314,33 +7415,10 @@ done: __maybe_unused;
  	if (hrtick_enabled(rq))
  		hrtick_start_fair(rq, p);
  
@@ -933,6 +927,15 @@ index 335efc1c6f06..29704557eb89 100644
  	return NULL;
  }
  
+@@ -7357,6 +7435,8 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
+ 	struct sched_entity *se = &prev->se;
+ 	struct cfs_rq *cfs_rq;
+ 
++	prev->ran |= 0x4;
++
+ 	for_each_sched_entity(se) {
+ 		cfs_rq = cfs_rq_of(se);
+ 		put_prev_entity(cfs_rq, se);
 @@ -7380,8 +7460,8 @@ static void yield_task_fair(struct rq *rq)
  	/*
  	 * Are we the only task in the tree?
