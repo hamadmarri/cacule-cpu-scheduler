@@ -62,7 +62,8 @@ global runqueue. The goal of GRQ is to enhance both performance and responsivene
 **Note**:
 * The GRQ is experimental, you run it under your responsiblity.
 * GRQ is only applied on NORMAL tasks (not rt, batch, ..).
-* FAIR_GROUP must be disabled.
+* `CONFIG_PREEMPT_VOLUNTARY` must be selected instead of `CONFIG_PREEMPT`.
+* `FAIR_GROUP` must be disabled.
 
 
 ## Patched Kernel Tree
