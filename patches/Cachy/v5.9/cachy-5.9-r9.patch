@@ -143,7 +143,7 @@ index 36c54265bb2b..3c3cff283ab4 100644
  			cfs_rq->nr_spread_over);
  	SEQ_printf(m, "  .%-30s: %d\n", "nr_running", cfs_rq->nr_running);
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index c0c4d9ad7da8..f660f128692e 100644
+index c0c4d9ad7da8..18d9e9f9e8fc 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -19,6 +19,10 @@
@@ -568,28 +568,25 @@ index c0c4d9ad7da8..f660f128692e 100644
  	u64 now = cfs_rq_clock_pelt(cfs_rq);
  	int decayed;
  
-@@ -3808,11 +4005,13 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
+@@ -3808,8 +4005,10 @@ static inline void update_load_avg(struct cfs_rq *cfs_rq, struct sched_entity *s
  		if (flags & UPDATE_TG)
  			update_tg_load_avg(cfs_rq, 0);
  	}
 +#endif
  }
  
++#if !defined(CONFIG_CACHY_SCHED)
  #ifndef CONFIG_64BIT
  static inline u64 cfs_rq_last_update_time(struct cfs_rq *cfs_rq)
  {
-+#if !defined(CONFIG_CACHY_SCHED)
- 	u64 last_update_time_copy;
- 	u64 last_update_time;
- 
-@@ -3823,6 +4022,7 @@ static inline u64 cfs_rq_last_update_time(struct cfs_rq *cfs_rq)
- 	} while (last_update_time != last_update_time_copy);
- 
- 	return last_update_time;
-+#endif
+@@ -3830,6 +4029,7 @@ static inline u64 cfs_rq_last_update_time(struct cfs_rq *cfs_rq)
+ 	return cfs_rq->avg.last_update_time;
  }
- #else
- static inline u64 cfs_rq_last_update_time(struct cfs_rq *cfs_rq)
+ #endif
++#endif
+ 
+ /*
+  * Synchronize entity load avg of dequeued entity without locking
 @@ -3837,11 +4037,13 @@ static inline u64 cfs_rq_last_update_time(struct cfs_rq *cfs_rq)
   */
  static void sync_entity_load_avg(struct sched_entity *se)
