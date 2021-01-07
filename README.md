@@ -53,17 +53,8 @@ their actual run time).
 So priorities are already taken in the acount by using `vruntime` in the Interactivity Score equation instead of actual `sum_exec_runtime`.
 
 
-## The Global Runqueue (GRQ) Patch
-Global Runqueue (GRQ) is a patch on top of cacule that replaces the CFS load balancer and removes
-most load statistics with a global runqueue which utilizes all CPUs with a single runqueue and a
-single global lock. Thus, no need to run load balancer periodically. Every CPU runs a task from a
-global runqueue. The goal of GRQ is to enhance both performance and responsiveness.
-
-**Note**:
-* The GRQ is experimental, you run it under your responsiblity.
-* GRQ is only applied on NORMAL tasks (not rt, batch, ..).
-* `CONFIG_PREEMPT_VOLUNTARY` must be selected instead of `CONFIG_PREEMPT`.
-* `FAIR_GROUP` must be disabled.
+## Response Driven Balancer (RDB)
+TBA
 
 
 ## Patched Kernel Tree
@@ -89,6 +80,75 @@ dmesg | grep -i "cacule cpu"
 [    0.122999] CacULE CPU scheduler v5.9 by Hamad Al Marri.
 
 ```
+
+## Suggested Configs
+* SCHED_AUTOGROUP=n
+* CGROUP_SCHED=n
+* FAIR_GROUP_SCHED=n
+* CFS_BANDWIDTH=n
+* CONFIG_BSD_PROCESS_ACCT=n
+* CONFIG_TASK_XACCT=n
+* CONFIG_PSI=n
+* CONFIG_AUDIT=n
+* Cputime accounting (Simple tick based cputime accounting)  --->
+	* CONFIG_VIRT_CPU_ACCOUNTING_GEN=n
+	* CONFIG_TICK_CPU_ACCOUNTING=y
+
+* CONFIG_CGROUPS
+	* CONFIG_MEMCG=n
+	* CONFIG_CGROUP_CPUACCT=n
+	* CONFIG_CGROUP_DEBUG=n
+
+* CONFIG_CHECKPOINT_RESTORE=n
+* CONFIG_EXPERT=n
+* CONFIG_SLAB_MERGE_DEFAULT=n
+* CONFIG_SLAB_FREELIST_HARDENED=n
+* CONFIG_SLUB_CPU_PARTIAL=n
+* CONFIG_PROFILING=n
+
+### Processor type and features 
+* CONFIG_RETPOLINE=n
+* CONFIG_X86_5LEVEL=n
+* Timer frequency: I prefere 250 HZ
+* CONFIG_KEXEC=n
+* CONFIG_KEXEC_FILE=n
+* CONFIG_CRASH_DUMP=n
+
+if you are not using this kernel as guest in 
+a virtual machine, then disable `CONFIG_HYPERVISOR_GUEST`
+
+#### cpu type
+I have "Intel(R) Core(TM) i7-4600U CPU @ 2.10GHz"
+therefore I used CONFIG_MCORE2 (Processor family (Core 2/newer Xeon))
+
+may need to include 
+-march=corei7-avx flag
+KCFLAGS="-O2 -march=corei7-avx" KCPPFLAGS="-O2 -march=corei7-avx"
+
+CONFIG_NR_CPUS = 4 #as I have 4 cpus
+
+### power
+* Default CPUFreq governor (performance)
+* CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
+* CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+* CONFIG_CPU_FREQ_GOV_ONDEMAND=n
+
+### General architecture-dependent options
+* CONFIG_KPROBES=n
+* CONFIG_STACKPROTECTOR=n
+* CONFIG_VMAP_STACK=n
+
+### Security
+* CONFIG_SECURITY=n
+* CONFIG_HARDENED_USERCOPY=n
+
+### Kernel hacking
+* CONFIG_PAGE_EXTENSION=n
+* Disable all except
+	* CONFIG_DYNAMIC_DEBUG=y
+	* CONFIG_STRICT_DEVMEM=y
+	* CONFIG_IO_STRICT_DEVMEM=y
+	* CONFIG_RCU_CPU_STALL_TIMEOUT=4
 
 ## Blind Tests
 I made comparison between cfs and cachy on xanmod, for blind test
