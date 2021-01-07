@@ -148,7 +148,7 @@ CONFIG_NR_CPUS = 4 #as I have 4 cpus
 	* CONFIG_DYNAMIC_DEBUG=y
 	* CONFIG_STRICT_DEVMEM=y
 	* CONFIG_IO_STRICT_DEVMEM=y
-	* CONFIG_RCU_CPU_STALL_TIMEOUT=4
+* CONFIG_RCU_CPU_STALL_TIMEOUT=4
 
 ## Blind Tests
 I made comparison between cfs and cachy on xanmod, for blind test
