@@ -1,5 +1,5 @@
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 12aa57de8eea..4ec389d7e7c2 100644
+index 12aa57de8..4ec389d7e 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
 @@ -452,6 +452,11 @@ struct sched_entity {
@@ -15,7 +15,7 @@ index 12aa57de8eea..4ec389d7e7c2 100644
  	unsigned int			on_rq;
  
 diff --git a/include/linux/sched/sysctl.h b/include/linux/sched/sysctl.h
-index 3c31ba88aca5..cfeefb3d5681 100644
+index 3c31ba88a..cfeefb3d5 100644
 --- a/include/linux/sched/sysctl.h
 +++ b/include/linux/sched/sysctl.h
 @@ -31,6 +31,11 @@ extern unsigned int sysctl_sched_min_granularity;
@@ -31,7 +31,7 @@ index 3c31ba88aca5..cfeefb3d5681 100644
  	SCHED_TUNABLESCALING_NONE,
  	SCHED_TUNABLESCALING_LOG,
 diff --git a/init/Kconfig b/init/Kconfig
-index 2a5df1cf838c..23c583cc4935 100644
+index 2a5df1cf8..23c583cc4 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
 @@ -822,6 +822,17 @@ config UCLAMP_BUCKETS_COUNT
@@ -69,7 +69,7 @@ index 2a5df1cf838c..23c583cc4935 100644
  	select CGROUP_SCHED
  	select FAIR_GROUP_SCHED
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index c4da7e17b906..22538c0307e8 100644
+index c4da7e17b..22538c030 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
 @@ -3359,6 +3359,11 @@ void wake_up_new_task(struct task_struct *p)
@@ -96,7 +96,7 @@ index c4da7e17b906..22538c0307e8 100644
  
  #ifdef CONFIG_FAIR_GROUP_SCHED
 diff --git a/kernel/sched/debug.c b/kernel/sched/debug.c
-index 36c54265bb2b..3c3cff283ab4 100644
+index 36c54265b..3c3cff283 100644
 --- a/kernel/sched/debug.c
 +++ b/kernel/sched/debug.c
 @@ -481,8 +481,12 @@ static void print_rq(struct seq_file *m, struct rq *rq, int rq_cpu)
@@ -143,7 +143,7 @@ index 36c54265bb2b..3c3cff283ab4 100644
  			cfs_rq->nr_spread_over);
  	SEQ_printf(m, "  .%-30s: %d\n", "nr_running", cfs_rq->nr_running);
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index c0c4d9ad7da8..c29ab40d3a7a 100644
+index c0c4d9ad7..6a2aa306c 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -19,6 +19,10 @@
@@ -761,8 +761,8 @@ index c0c4d9ad7da8..c29ab40d3a7a 100644
  	if ((flags & (DEQUEUE_SAVE | DEQUEUE_MOVE)) != DEQUEUE_SAVE)
  		update_min_vruntime(cfs_rq);
 +#endif
-+}
-+
+ }
+ 
 +#ifdef CONFIG_CACHY_SCHED
 +static inline u32
 +hrrn_of(u64 now, struct sched_entity *se)
@@ -774,8 +774,8 @@ index c0c4d9ad7da8..c29ab40d3a7a 100644
 +	r_se	= l_se / vr_se;
 +
 +	return r_se;
- }
- 
++}
++
 +/*
 + * Preempt the current task with a newly woken task if needed:
 + */
@@ -1613,7 +1613,7 @@ index c0c4d9ad7da8..c29ab40d3a7a 100644
  {
  	unsigned long next_balance = jiffies + HZ;
  	int this_cpu = this_rq->cpu;
-@@ -10625,6 +11210,159 @@ void trigger_load_balance(struct rq *rq)
+@@ -10625,6 +11210,162 @@ void trigger_load_balance(struct rq *rq)
  
  	nohz_balancer_kick(rq);
  }
@@ -1752,28 +1752,31 @@ index c0c4d9ad7da8..c29ab40d3a7a 100644
 +
 +void trigger_load_balance(struct rq *rq)
 +{
-+	//int pulled = 0;
++	unsigned long interval = 3UL;
 +
 +	/* Don't need to rebalance while attached to NULL domain */
 +	if (unlikely(on_null_domain(rq)))
 +		return;
 +
-+	if (rq->idle_balance) {
-+		//pulled = idle_try_pull_any(&rq->cfs);
-+		idle_try_pull_any(&rq->cfs);
++	if (time_before(jiffies, rq->next_balance))
++		return;
 +
-+		//if (pulled)
-+			//resched_curr(rq);
++	if (rq->idle_balance) {
++		idle_try_pull_any(&rq->cfs);
 +	}
 +	else {
 +		active_balance(rq);
++
++		/* scale ms to jiffies */
++		interval = msecs_to_jiffies(interval);
++		rq->next_balance = jiffies + interval;
 +	}
 +}
 +#endif
  
  static void rq_online_fair(struct rq *rq)
  {
-@@ -10668,12 +11406,31 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
+@@ -10668,12 +11409,31 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
  	update_overutilized_status(task_rq(curr));
  }
  
@@ -1805,7 +1808,7 @@ index c0c4d9ad7da8..c29ab40d3a7a 100644
  {
  	struct cfs_rq *cfs_rq;
  	struct sched_entity *se = &p->se, *curr;
-@@ -10703,6 +11460,7 @@ static void task_fork_fair(struct task_struct *p)
+@@ -10703,6 +11463,7 @@ static void task_fork_fair(struct task_struct *p)
  	se->vruntime -= cfs_rq->min_vruntime;
  	rq_unlock(rq, &rf);
  }
@@ -1813,7 +1816,7 @@ index c0c4d9ad7da8..c29ab40d3a7a 100644
  
  /*
   * Priority of the task has changed. Check to see if we preempt
-@@ -10779,9 +11537,12 @@ static void propagate_entity_cfs_rq(struct sched_entity *se)
+@@ -10779,9 +11540,12 @@ static void propagate_entity_cfs_rq(struct sched_entity *se)
  	}
  }
  #else
@@ -1826,7 +1829,7 @@ index c0c4d9ad7da8..c29ab40d3a7a 100644
  static void detach_entity_cfs_rq(struct sched_entity *se)
  {
  	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-@@ -10792,9 +11553,11 @@ static void detach_entity_cfs_rq(struct sched_entity *se)
+@@ -10792,9 +11556,11 @@ static void detach_entity_cfs_rq(struct sched_entity *se)
  	update_tg_load_avg(cfs_rq, false);
  	propagate_entity_cfs_rq(se);
  }
@@ -1838,7 +1841,7 @@ index c0c4d9ad7da8..c29ab40d3a7a 100644
  	struct cfs_rq *cfs_rq = cfs_rq_of(se);
  
  #ifdef CONFIG_FAIR_GROUP_SCHED
-@@ -10810,10 +11573,12 @@ static void attach_entity_cfs_rq(struct sched_entity *se)
+@@ -10810,10 +11576,12 @@ static void attach_entity_cfs_rq(struct sched_entity *se)
  	attach_entity_load_avg(cfs_rq, se);
  	update_tg_load_avg(cfs_rq, false);
  	propagate_entity_cfs_rq(se);
@@ -1851,7 +1854,7 @@ index c0c4d9ad7da8..c29ab40d3a7a 100644
  	struct sched_entity *se = &p->se;
  	struct cfs_rq *cfs_rq = cfs_rq_of(se);
  
-@@ -10827,17 +11592,19 @@ static void detach_task_cfs_rq(struct task_struct *p)
+@@ -10827,17 +11595,19 @@ static void detach_task_cfs_rq(struct task_struct *p)
  	}
  
  	detach_entity_cfs_rq(se);
@@ -1872,7 +1875,7 @@ index c0c4d9ad7da8..c29ab40d3a7a 100644
  }
  
  static void switched_from_fair(struct rq *rq, struct task_struct *p)
-@@ -10893,13 +11660,21 @@ static void set_next_task_fair(struct rq *rq, struct task_struct *p, bool first)
+@@ -10893,13 +11663,21 @@ static void set_next_task_fair(struct rq *rq, struct task_struct *p, bool first)
  void init_cfs_rq(struct cfs_rq *cfs_rq)
  {
  	cfs_rq->tasks_timeline = RB_ROOT_CACHED;
@@ -1894,7 +1897,7 @@ index c0c4d9ad7da8..c29ab40d3a7a 100644
  }
  
  #ifdef CONFIG_FAIR_GROUP_SCHED
-@@ -11224,7 +11999,9 @@ void show_numa_stats(struct task_struct *p, struct seq_file *m)
+@@ -11224,7 +12002,9 @@ void show_numa_stats(struct task_struct *p, struct seq_file *m)
  __init void init_sched_fair_class(void)
  {
  #ifdef CONFIG_SMP
@@ -1905,7 +1908,7 @@ index c0c4d9ad7da8..c29ab40d3a7a 100644
  #ifdef CONFIG_NO_HZ_COMMON
  	nohz.next_balance = jiffies;
 diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 8d1ca65db3b0..65ffb0244f1e 100644
+index 8d1ca65db..65ffb0244 100644
 --- a/kernel/sched/sched.h
 +++ b/kernel/sched/sched.h
 @@ -523,10 +523,13 @@ struct cfs_rq {
@@ -1938,7 +1941,7 @@ index 8d1ca65db3b0..65ffb0244f1e 100644
  #ifdef	CONFIG_SCHED_DEBUG
  	unsigned int		nr_spread_over;
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index afad085960b8..bfe341f83969 100644
+index afad08596..bfe341f83 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -1659,6 +1659,22 @@ static struct ctl_table kern_table[] = {
