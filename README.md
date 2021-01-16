@@ -1,6 +1,6 @@
 # CacULE CPU Scheduler
 
-CacULE is a newer version of Cachy. The CacULE CPU scheduler is based on interactivity score mechanism.
+CacULE is a new version of Cachy. The CacULE CPU scheduler is based on interactivity score mechanism.
 The interactivity score is inspired by the ULE scheduler (FreeBSD
 scheduler).
 
