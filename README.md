@@ -169,6 +169,6 @@ Note: In one of the tests, the recorder seems to be freezes and lagging, I repea
 Telegram: https://t.me/cacule_sched
 
 ## Donate
-* BTC: 19FBeR6TAABYTAPALWggTU6f8Nou6hrYfY
+* BTC: 16ZZtjbWGX8HDpcyi7is1EigkTrFnfRKy8
 * Paypal: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8F7F4D8BKR8XC
 
