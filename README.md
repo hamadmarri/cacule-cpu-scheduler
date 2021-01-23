@@ -164,6 +164,7 @@ Note: In one of the tests, the recorder seems to be freezes and lagging, I repea
 
 ## Special Thanks to
 1. Alexandre Frade (the maintainer of [xanmod](https://github.com/xanmod))
+2. Raymond K. Zhao (https://github.com/raykzhao)
 
 ## Contacts
 Telegram: https://t.me/cacule_sched
