@@ -57,7 +57,7 @@ So priorities are already taken in the acount by using `vruntime` in the Interac
 This is an experimental load balancer for Cachy/CacULE. It is a lightweight
 load balancer which is a replacement of CFS load balancer. It migrates
 tasks based on their HRRN/Interactivity Scores (IS). Most of CFS load balancing-related
-updates (cfs and se updates weights) are removed. The RDB balancer follows CFS
+updates (cfs and se updates loads) are removed. The RDB balancer follows CFS
 paradigm in which RDB balancing happen at the same points CFS does. RDB balancing happens
 in three functions: `newidle_balance`, `idle_balance`, and `active_balance`. The `newidle_balance`
 is called exactly at the same time as CFS did (when pick next task fails to find any task to run).
