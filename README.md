@@ -63,9 +63,10 @@ in three functions: `newidle_balance`, `idle_balance`, and `active_balance`. The
 is called exactly at the same time as CFS did (when pick next task fails to find any task to run).
 The RDB `newidle_balance` pulls one task that is the highest HRRN/IS from any CPU. The RDB `idle_balance`
 is called in `trigger_load_balance` when CPU is idle, it does the same as `newidle_balance` but with 
-slight changes since `newidle_balance` is special case. The RDB `active_balance` checks if the current
+slight changes since `newidle_balance` is a special case. The RDB `active_balance` checks if the current
 (NORMAL) runqueue has one task, if so, it pulls the highest of the highest HRRN/IS among all other CPUS. If the
-runqueue has more than one task, then it pulls any highest HRRN/IS (same as idle does). For the all three balancing
+runqueue has more than one task, then it pulls any highest HRRN/IS (same as idle does). A CPU cannot pull a task
+from another CPU that has fewer tasks (when pull any). For the all three balancing
 `newidle_balance`, `idle_balance`, and `active_balance`, the cpu first tries to pull from a CPU that shares the same
 cache (`cpus_share_cache`). If can't pull any then it tries to pull from any CPU even though they are not in the same core.
 Only when pulling the highest of the highest HRRN/IS (i.e. `active_balance` when CPU has one task), there is no check for
