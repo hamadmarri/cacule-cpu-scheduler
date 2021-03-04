@@ -198,4 +198,9 @@ Telegram: https://t.me/cacule_sched
 ## Donate
 * BTC: 16ZZtjbWGX8HDpcyi7is1EigkTrFnfRKy8
 * Paypal: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8F7F4D8BKR8XC
+* Or you can do some monero mining on my behalf:
+	* Dowload https://github.com/fireice-uk/xmr-stak/releases/tag/1.0.5-rx, extract and run `./xmr-stak-rx`
+	* currency: monero
+	* pool address: pool.minexmr.com:4444
+	* wallet address: 41f2tHhZV4V4ef9rFiq3AE7iRkwrNYXSjTNJtt9A1P74KrQXhk2o1PbP4GgtM5vi8adfL8pxWyUre4AZSQxmbPRTLVMLmSJ
 
