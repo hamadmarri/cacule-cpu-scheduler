@@ -29,7 +29,7 @@ You can tune sched_interactivity_factor with sysctl command:
 
 This command changes the sched_interactivity_factor from 32768 to 50.
 
-#### sched_max_lifetime_ms
+### sched_max_lifetime_ms
 Instead of calculating a task IS value for infinite life time, we proposed
 `sched_max_lifetime_ms` which is 30s by default. A task's `cacule_start_time` and
 `vruntime` shrink whenever a task life time exceeds 30s. Therefore, the rate of change of IS
@@ -83,10 +83,11 @@ sudo sysctl -w kernel.sched_harsh_mode_enabled=0 | sudo tee -a /etc/sysctl.conf
 ```
 
 ## Complexity
-The complexity of Enqueue and Dequeue a task is O(1).
+* The complexity of Enqueue a task is O(n).
+* The complexity of Dequeue a task is O(1).
+* The complexity of pick the next task is in O(1).
 
-The complexity of pick the next task is in O(n), where n is the number of tasks
-in a runqueue (each CPU has its own runqueue).
+n is the number of tasks in a runqueue (each CPU has its own runqueue).
 
 Note: O(n) sounds scary, but usually for a machine with 4 CPUS where it is used
 for desktop or mobile jobs, the maximum number of runnable tasks might not
