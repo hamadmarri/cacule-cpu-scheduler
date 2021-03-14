@@ -29,7 +29,58 @@ You can tune sched_interactivity_factor with sysctl command:
 
 This command changes the sched_interactivity_factor from 32768 to 50.
 
+#### sched_max_lifetime_ms
+Instead of calculating a task IS value for infinite life time, we proposed
+`sched_max_lifetime_ms` which is 30s by default. A task's `cacule_start_time` and
+`vruntime` shrink whenever a task life time exceeds 30s. Therefore, the rate of change of IS
+for old and new tasks is normalized. The value `sched_max_lifetime` can be
+changed at run time by the following sysctl command:
+```
+sysctl kernel.sched_max_lifetime_ms=60000
+```
+The value is in milliseconds, the above command changes `sched_max_lifetime`
+from 30s to 60s.
 
+In the first round, the task's life time became > 30s, the `cacule_start_time`
+get reset to be (current_time - 15s), then, the task will keep resetting
+every 15s. The reset method of the vruntime preserves the same IS ratio (roughly)
+by the following:
+```
+// multiply old life time by 8 for more precision
+old_IS_x8 = old_life_time / ((vruntime / 8) + 1)
+// reset vruntime based on old hrrn ratio
+vruntime = (new_life_time * 8) / old_IS_x8;
+```
+
+### sched_harsh_mode_enabled
+Another sysctl command is `sched_harsh_mode_enabled`
+
+The default value of `sched_harsh_mode_enabled` is 0 means disabled.
+You can set it to 1 to enable harsh mode.
+
+Note: harsh mode is good when in normal use of the system
+(i.e. no background heavy work) if you compile while harsh mode enabled,
+you might have mini freezes.
+Sometimes it is usefule to enable harsh mode when you have a single task for
+example gaming or just browsing. The only time you don't want harsh mode
+is when you have a background heavy load.
+
+Also note that some 3rd parties enables harsh mode by default. To check:
+
+```
+$ sudo sysctl kernel.sched_harsh_mode_enabled
+kernel.sched_harsh_mode_enabled = 1
+```
+
+To disable harsh mode
+
+```
+# temporarily
+sudo sysctl kernel.sched_harsh_mode_enabled=0
+
+# permanently
+sudo sysctl -w kernel.sched_harsh_mode_enabled=0 | sudo tee -a /etc/sysctl.conf
+```
 
 ## Complexity
 The complexity of Enqueue and Dequeue a task is O(1).
