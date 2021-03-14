@@ -30,8 +30,8 @@ You can tune sched_interactivity_factor with sysctl command:
 This command changes the sched_interactivity_factor from 32768 to 50.
 
 ### sched_max_lifetime_ms
-Instead of calculating a task IS value for infinite life time, we proposed
-`sched_max_lifetime_ms` which is 30s by default. A task's `cacule_start_time` and
+Instead of calculating a task IS value for infinite life time, we use
+`sched_max_lifetime_ms` which is 30s by default. Task's `cacule_lifetime` and
 `vruntime` shrink whenever a task life time exceeds 30s. Therefore, the rate of change of IS
 for old and new tasks is normalized. The value `sched_max_lifetime` can be
 changed at run time by the following sysctl command:
@@ -41,14 +41,15 @@ sysctl kernel.sched_max_lifetime_ms=60000
 The value is in milliseconds, the above command changes `sched_max_lifetime`
 from 30s to 60s.
 
-In the first round, the task's life time became > 30s, the `cacule_start_time`
-get reset to be (current_time - 15s), then, the task will keep resetting
+In the first round, when the task's life time became > 30s, the `cacule_start_time`
+get reset to be (`current_time - 15s`), then, the task will keep resetting
 every 15s. The reset method of the vruntime preserves the same IS ratio (roughly)
 by the following:
 ```
 // multiply old life time by 8 for more precision
 old_IS_x8 = old_life_time / ((vruntime / 8) + 1)
-// reset vruntime based on old hrrn ratio
+
+// reset vruntime based on old IS ratio
 vruntime = (new_life_time * 8) / old_IS_x8;
 ```
 
