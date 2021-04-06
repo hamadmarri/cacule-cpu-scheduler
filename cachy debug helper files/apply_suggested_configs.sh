@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script set the recommended/suggested configs by Hamad Al Marri
+# This script sets the recommended/suggested configs by Hamad Al Marri
 # run this inside the kernel directory
 
 # Security
