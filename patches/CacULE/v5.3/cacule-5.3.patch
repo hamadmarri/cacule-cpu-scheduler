@@ -137,7 +137,7 @@ index 9f51932bd543..19022dc32198 100644
  
  	u64				nr_migrations;
 diff --git a/include/linux/sched/sysctl.h b/include/linux/sched/sysctl.h
-index d4f6215ee03f..fb4f1072d2ad 100644
+index d4f6215ee03f..9b09a51741d1 100644
 --- a/include/linux/sched/sysctl.h
 +++ b/include/linux/sched/sysctl.h
 @@ -25,6 +25,12 @@ extern unsigned int sysctl_sched_min_granularity;
@@ -153,16 +153,12 @@ index d4f6215ee03f..fb4f1072d2ad 100644
  enum sched_tunable_scaling {
  	SCHED_TUNABLESCALING_NONE,
  	SCHED_TUNABLESCALING_LOG,
-@@ -38,8 +44,15 @@ extern unsigned int sysctl_numa_balancing_scan_period_min;
- extern unsigned int sysctl_numa_balancing_scan_period_max;
- extern unsigned int sysctl_numa_balancing_scan_size;
+@@ -40,6 +46,11 @@ extern unsigned int sysctl_numa_balancing_scan_size;
  
-+#ifdef CONFIG_CACULE_RDB
  #ifdef CONFIG_SCHED_DEBUG
  extern __read_mostly unsigned int sysctl_sched_migration_cost;
-+#else
++#elif CONFIG_CACULE_RDB
 +extern unsigned int sysctl_sched_migration_cost;
-+#endif
 +#endif
 +
 +#ifdef CONFIG_SCHED_DEBUG
@@ -362,7 +358,7 @@ index f7e4579e746c..8d2044677253 100644
  
  	nr_switches = p->nvcsw + p->nivcsw;
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index ba7cc68a3993..5e8671d8901e 100644
+index ba7cc68a3993..f54fc215f743 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -19,6 +19,10 @@
@@ -396,9 +392,9 @@ index ba7cc68a3993..5e8671d8901e 100644
 -const_debug unsigned int sysctl_sched_migration_cost	= 500000UL;
 +#ifdef CONFIG_CACULE_RDB
 +#ifdef CONFIG_SCHED_DEBUG
-+const_debug unsigned int sysctl_sched_migration_cost   = 100000UL;
++const_debug unsigned int sysctl_sched_migration_cost   = 750000UL;
 +#else
-+unsigned int sysctl_sched_migration_cost	       = 100000UL;
++unsigned int sysctl_sched_migration_cost	       = 750000UL;
 +#endif
 +#else
 +const_debug unsigned int sysctl_sched_migration_cost   = 500000UL;
@@ -1531,7 +1527,7 @@ index ba7cc68a3993..5e8671d8901e 100644
 +	if (sysctl_sched_migration_cost == 0)
 +		return 0;
 +
-+	delta = rq_clock_task(src_rq) - p->se.exec_start;
++	delta = sched_clock() - p->se.exec_start;
 +
 +	return delta < (s64)sysctl_sched_migration_cost;
 +}
