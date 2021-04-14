@@ -13,15 +13,6 @@ index 83acf5025488..753dc4f39320 100644
  
  sched_schedstats
  ================
-diff --git a/debian.hwe-5.8/changelog b/debian.hwe-5.8/changelog
-index 94fb15215ff3..71e2424afd4b 100644
---- a/debian.hwe-5.8/changelog
-+++ b/debian.hwe-5.8/changelog
-@@ -1,4 +1,4 @@
--linux-hwe-5.8 (5.8.0-49.55~20.04.1) focal; urgency=medium
-+linux-hwe-5.8 (5.8.0-49.55~20.04.1-cacule) focal; urgency=medium
- 
-   * focal/linux-hwe-5.8: 5.8.0-49.55~20.04.1 -proposed tracker (LP: #1921052)
  
 diff --git a/include/linux/sched.h b/include/linux/sched.h
 index 5a91c39f0fce..d5b1de66273a 100644
