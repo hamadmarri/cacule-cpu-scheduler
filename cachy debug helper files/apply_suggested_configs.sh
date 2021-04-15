@@ -12,14 +12,6 @@ echo ./scripts/config --disable CONFIG_HARDENED_USERCOPY
 # General Setup
 echo ./scripts/config --disable CONFIG_EXPERT
 ./scripts/config --disable CONFIG_EXPERT
-echo ./scripts/config --disable CONFIG_SCHED_AUTOGROUP
-./scripts/config --disable CONFIG_SCHED_AUTOGROUP
-echo ./scripts/config --disable CONFIG_CGROUP_SCHED
-./scripts/config --disable CONFIG_CGROUP_SCHED
-echo ./scripts/config --disable CONFIG_FAIR_GROUP_SCHED
-./scripts/config --disable CONFIG_FAIR_GROUP_SCHED
-echo ./scripts/config --disable CONFIG_CFS_BANDWIDTH
-./scripts/config --disable CONFIG_CFS_BANDWIDTH
 echo ./scripts/config --disable CONFIG_BSD_PROCESS_ACCT
 ./scripts/config --disable CONFIG_BSD_PROCESS_ACCT
 echo ./scripts/config --disable CONFIG_TASK_XACCT

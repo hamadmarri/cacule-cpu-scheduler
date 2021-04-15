@@ -163,10 +163,6 @@ dmesg | grep -i "cacule cpu"
 ## Suggested Configs
 For a helper script to auto config use this https://github.com/hamadmarri/cacule-cpu-scheduler/blob/master/cachy%20debug%20helper%20files/apply_suggested_configs.sh
 
-* SCHED_AUTOGROUP=n
-* CGROUP_SCHED=n
-* FAIR_GROUP_SCHED=n
-* CFS_BANDWIDTH=n
 * CONFIG_BSD_PROCESS_ACCT=n
 * CONFIG_TASK_XACCT=n
 * CONFIG_PSI=n
