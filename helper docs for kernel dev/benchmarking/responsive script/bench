@@ -113,3 +113,78 @@ kernel.sched_interactivity_factor = 10
 3 prime time:  114.64383349500008
 0 total response time:  0.7460935049997488  runs:  57  average:  0.013089359736837699
 
+
+
+
+#####################################
+# On Ubuntu 20.04 lowlatency kernel #
+#####################################
+
+5.8.0-49-lowlatency
+-------------------------------------
+0 prime time:  97.318456081s
+1 prime time:  96.52260932499999s
+2 prime time:  97.107314954s
+3 prime time:  96.84200904699999s
+0 total response time:  1.9692533469998779s  runs:  47  average:  0.041899007382976125s
+
+0 prime time:  95.12770708799997s
+1 prime time:  95.22488175999996s
+2 prime time:  95.15969780399996s
+3 prime time:  95.37463463099999s
+0 total response time:  2.131095385000208s  runs:  47  average:  0.045342455000004424s
+
+0 prime time:  95.27800279400003s
+1 prime time:  95.2067828019999s
+2 prime time:  95.0911175629999s
+3 prime time:  95.09115128600001s
+0 total response time:  2.1726872749998165s  runs:  47  average:  0.04622738882978333s
+
+
+5.8.185.8.0-cacule (on lowlatency) (no RDB), (+autogroup), (+fair_group)
+------------------------------------------------------------------------
+0 prime time:  94.22062477300005s
+1 prime time:  94.72838554500004s
+2 prime time:  94.08690742499994s
+3 prime time:  94.60173518900001s
+0 total response time:  0.577339838998796s  runs:  47  average:  0.012283826361676511s
+
+0 prime time:  94.6668877029997s
+1 prime time:  94.71546516399985s
+2 prime time:  95.09487563599987s
+3 prime time:  94.75632618300006s
+0 total response time:  0.5686018049991617s  runs:  47  average:  0.012097910744663015s
+
+0 prime time:  95.19169828999975s
+1 prime time:  95.25660417500012s
+2 prime time:  95.15527625599998s
+3 prime time:  95.24673552200011s
+0 total response time:  1.0461935039993477s  runs:  47  average:  0.02225943625530527s
+
+
+
+5.8.185.8.0-cacule (on lowlatency) (no RDB), (-autogroup), (-fair_group)
+------------------------------------------------------------------------
+0 prime time:  93.91258341899993s
+1 prime time:  94.28592448300014s
+2 prime time:  94.22058791199993s
+3 prime time:  93.97805633200005s
+0 total response time:  0.6713228130006428s  runs:  47  average:  0.014283464106396655s
+
+0 prime time:  93.87797363000004s
+1 prime time:  94.02465906500015s
+2 prime time:  93.84490538599994s
+3 prime time:  93.91654703599988s
+0 total response time:  0.5772062459998324s  runs:  47  average:  0.012280983957443242s
+
+0 prime time:  94.45068468999989s
+1 prime time:  95.23557384399965s
+2 prime time:  94.88314174800007s
+3 prime time:  95.40198732800036s
+0 total response time:  1.0632059829977152s  runs:  47  average:  0.02262140389356841s
+
+0 prime time:  94.20493109500012s
+1 prime time:  94.2954405280002s
+2 prime time:  94.17639992799968s
+3 prime time:  94.36706137300007s
+0 total response time:  1.0057162370035257s  runs:  47  average:  0.021398217808585654s
