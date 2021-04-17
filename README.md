@@ -228,19 +228,18 @@ CONFIG_NR_CPUS = 4 #as I have 4 cpus
 * CONFIG_RCU_CPU_STALL_TIMEOUT=4
 
 ## benchmarks
-[Benchmarks Data](./helper\ docs\ for\ kernel\ dev/benchmarking)
-https://github.com/hamadmarri/cacule-cpu-scheduler/tree/master/helper%20docs%20for%20kernel%20dev/benchmarking
+[Benchmarks Data](https://github.com/hamadmarri/cacule-cpu-scheduler/tree/master/helper%20docs%20for%20kernel%20dev/benchmarking)
 
 ### Stress-ng test
-![Benchmarks Data](./helper docs for kernel dev/benchmarking/stress-ng/cacule-vs-lowlatency-bogo-ops.png)
-![Benchmarks Data](./helper docs for kernel dev/benchmarking/stress-ng/cacule-vs-lowlatency-bogo-ops-per-sec.png)
+![Benchmarks Data](./helper&#32;docs&#32;for&#32;kernel&#32;dev/benchmarking/stress-ng/cacule-vs-lowlatency-bogo-ops.png)
+![Benchmarks Data](./helper&#32;docs&#32;for&#32;kernel&#32;dev/benchmarking/stress-ng/cacule-vs-lowlatency-bogo-ops-per-sec.png)
 
 ### Latency test
 Please see the scripts I did for responsiveness/latency tests:
 [os-scheduler-responsiveness-test](https://github.com/hamadmarri/os-scheduler-responsiveness-test)
 
-![Benchmarks Data](./helper docs for kernel dev/benchmarking/responsive script/cacule-vs-lowlatency-python.png)
-![Benchmarks Data](./helper docs for kernel dev/benchmarking/responsive script/cacule-vs-lowlatency-go.png)
+![Benchmarks Data](./helper&#32;docs&#32;for&#32;kernel&#32;dev/benchmarking/responsive script/cacule-vs-lowlatency-python.png)
+![Benchmarks Data](./helper&#32;docs&#32;for&#32;kernel&#32;dev/benchmarking/responsive script/cacule-vs-lowlatency-go.png)
 
 
 
