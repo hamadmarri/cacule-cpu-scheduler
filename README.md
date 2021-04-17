@@ -238,8 +238,8 @@ CONFIG_NR_CPUS = 4 #as I have 4 cpus
 Please see the scripts I did for responsiveness/latency tests:
 [os-scheduler-responsiveness-test](https://github.com/hamadmarri/os-scheduler-responsiveness-test)
 
-![Benchmarks Data](./helper&#32;docs&#32;for&#32;kernel&#32;dev/benchmarking/responsive script/cacule-vs-lowlatency-python.png)
-![Benchmarks Data](./helper&#32;docs&#32;for&#32;kernel&#32;dev/benchmarking/responsive script/cacule-vs-lowlatency-go.png)
+![Benchmarks Data](./helper&#32;docs&#32;for&#32;kernel&#32;dev/benchmarking/responsive&#32;script/cacule-vs-lowlatency-python.png)
+![Benchmarks Data](./helper&#32;docs&#32;for&#32;kernel&#32;dev/benchmarking/responsive&#32;script/cacule-vs-lowlatency-go.png)
 
 
 
