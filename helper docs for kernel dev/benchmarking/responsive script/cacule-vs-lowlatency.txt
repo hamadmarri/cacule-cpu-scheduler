@@ -1,0 +1,337 @@
+=============================================================
+python3 responsiveness.py -i1 -p4 --np 4
+
+5.8.0-50-lowlatency
+-------------------------------------
+0 prime time:  94.61242332299935s
+1 prime time:  94.24100566799916s
+2 prime time:  94.50250399099968s
+3 prime time:  94.71087304200046s
+0 total response time:  1.5699269309961892s  runs:  47  average:  0.033402700659493384s
+
+0 prime time:  95.01000762300009s
+1 prime time:  94.74970255099925s
+2 prime time:  94.932897744s
+3 prime time:  95.2343841209995s
+0 total response time:  1.5968946580032934s  runs:  47  average:  0.03397648208517646s
+
+0 prime time:  94.98468393599978s
+1 prime time:  94.46635110900024s
+2 prime time:  94.24138110400054s
+3 prime time:  94.82931083699987s
+0 total response time:  1.673427616000481s  runs:  47  average:  0.03560484289362726s
+
+0 prime time:  94.91138425700046s
+1 prime time:  95.07082190399979s
+2 prime time:  94.93330685900037s
+3 prime time:  94.9741677130005s
+0 total response time:  1.651824844996554s  runs:  47  average:  0.035145209468011786s
+
+0 prime time:  94.33217929199964s
+1 prime time:  95.00438862099963s
+2 prime time:  94.80443899500006s
+3 prime time:  94.87853483299932s
+0 total response time:  1.7780569329961509s  runs:  47  average:  0.03783099857438619s
+
+0 prime time:  94.01190361699992s
+1 prime time:  94.39088451799944s
+2 prime time:  94.16450967299988s
+3 prime time:  94.54954688599992s
+0 total response time:  1.4942585080034405s  runs:  47  average:  0.03179273421283916s
+
+0 prime time:  94.88333457699991s
+1 prime time:  94.5987391030003s
+2 prime time:  94.75394238600074s
+3 prime time:  94.17471101899991s
+0 total response time:  1.6696909669963134s  runs:  47  average:  0.03552533972332582s
+
+0 prime time:  94.40970489899973s
+1 prime time:  94.0217525070002s
+2 prime time:  94.3878661230001s
+3 prime time:  94.52814976300033s
+0 total response time:  1.404366263999691s  runs:  47  average:  0.02988013327658917s
+
+0 prime time:  93.99847349699985s
+1 prime time:  94.51250533199982s
+2 prime time:  94.52645447099985s
+3 prime time:  94.3716762289996s
+0 total response time:  1.7769788569989942s  runs:  46  average:  0.038629975152152045s
+
+0 prime time:  94.65566566500001s
+1 prime time:  94.55191952599989s
+2 prime time:  94.51255625699969s
+3 prime time:  94.476708702s
+0 total response time:  1.5722692979989006s  runs:  47  average:  0.033452538255295754s
+
+
+
+
+5.8.185.8.0-cacule (on lowlatency) (no RDB), (+autogroup), (+fair_group)
+------------------------------------------------------------------------
+0 prime time:  93.95317578699996s
+1 prime time:  94.0459886209992s
+2 prime time:  94.18570325600012s
+3 prime time:  93.96537997399992s
+0 total response time:  0.5305418910029402s  runs:  47  average:  0.01128812534048809s
+
+0 prime time:  93.70259351599998s
+1 prime time:  94.39134817899958s
+2 prime time:  93.61757988200043s
+3 prime time:  94.2019224149999s
+0 total response time:  0.8348804300003394s  runs:  47  average:  0.01776341340426254s
+
+0 prime time:  94.18964178500028s
+1 prime time:  94.38806886900056s
+2 prime time:  94.35840915800054s
+3 prime time:  94.1876492399997s
+0 total response time:  0.7915376280016062s  runs:  47  average:  0.01684122612769375s
+
+0 prime time:  93.81342737399973s
+1 prime time:  94.15627017500083s
+2 prime time:  94.17520384699947s
+3 prime time:  92.99379105499975s
+0 total response time:  1.034241027002281s  runs:  47  average:  0.022005128234091086s
+
+0 prime time:  95.12356681100027s
+1 prime time:  95.17842081100025s
+2 prime time:  94.75981928600049s
+3 prime time:  95.29262808000021s
+0 total response time:  0.8263192630001868s  runs:  47  average:  0.01758126091489759s
+
+0 prime time:  93.73307990800004s
+1 prime time:  94.50655213600021s
+2 prime time:  94.20790500400017s
+3 prime time:  94.74602459299967s
+0 total response time:  1.0499456059960721s  runs:  47  average:  0.022339268212682385s
+
+0 prime time:  95.41756043300029s
+1 prime time:  94.14613826500045s
+2 prime time:  94.79767110000012s
+3 prime time:  95.40782224799932s
+0 total response time:  0.8303421750024427s  runs:  47  average:  0.017666854787286013s
+
+0 prime time:  94.50219562500024s
+1 prime time:  93.94432979099929s
+2 prime time:  93.99865753599988s
+3 prime time:  94.74333038199984s
+0 total response time:  0.8851928870017218s  runs:  47  average:  0.018833891212802593s
+
+0 prime time:  94.15496302600059s
+1 prime time:  93.8049536159997s
+2 prime time:  93.81730272100049s
+3 prime time:  94.36093476000042s
+0 total response time:  0.7047270080029193s  runs:  47  average:  0.014994191659636582s
+
+0 prime time:  93.03298784900016s
+1 prime time:  92.94715565099978s
+2 prime time:  92.76769340800001s
+3 prime time:  92.51899470399985s
+0 total response time:  0.6541012499974386s  runs:  46  average:  0.014219592391248665s
+
+
+
+
+
+5.8.185.8.0-cacule (on lowlatency) (no RDB), (-autogroup), (-fair_group)
+------------------------------------------------------------------------
+0 prime time:  93.75829651599997s
+1 prime time:  94.2237907460003s
+2 prime time:  94.15119034599957s
+3 prime time:  93.64317382599984s
+0 total response time:  0.9542502949898335s  runs:  47  average:  0.02030319776574114s
+
+0 prime time:  92.48220432000016s
+1 prime time:  92.54952897700059s
+2 prime time:  93.258544282s
+3 prime time:  93.07698351399995s
+0 total response time:  0.9502483309879608s  runs:  46  average:  0.020657572412781756s
+
+0 prime time:  94.11371032999978s
+1 prime time:  93.07741352599987s
+2 prime time:  94.09221570299997s
+3 prime time:  93.443723589s
+0 total response time:  0.5717377780001698s  runs:  47  average:  0.012164633574471697s
+
+0 prime time:  94.18054881200078s
+1 prime time:  94.11868665700058s
+2 prime time:  94.23620607699922s
+3 prime time:  94.20668465699964s
+0 total response time:  0.6903137829967818s  runs:  47  average:  0.014687527297803869s
+
+0 prime time:  94.13045284700002s
+1 prime time:  94.44881352799985s
+2 prime time:  93.86273425899981s
+3 prime time:  94.39355302399963s
+0 total response time:  0.9652301319993057s  runs:  47  average:  0.020536811319134166s
+
+0 prime time:  93.23460031900049s
+1 prime time:  93.7587348650004s
+2 prime time:  93.15252451200013s
+3 prime time:  94.06012173499948s
+0 total response time:  0.5633876700012479s  runs:  47  average:  0.01198697170215421s
+
+0 prime time:  94.11249580300046s
+1 prime time:  94.22350707700025s
+2 prime time:  94.08252727799936s
+3 prime time:  93.99655104000067s
+0 total response time:  0.5612816089969783s  runs:  47  average:  0.01194216189355273s
+
+0 prime time:  94.33155133800028s
+1 prime time:  94.21706701600033s
+2 prime time:  94.54361660099948s
+3 prime time:  94.28762537999955s
+0 total response time:  1.0484673790024317s  runs:  47  average:  0.022307816574519822s
+
+0 prime time:  94.29092422300073s
+1 prime time:  93.93253967100009s
+2 prime time:  94.00323290300003s
+3 prime time:  93.90290790399922s
+0 total response time:  0.5779870089982069s  runs:  47  average:  0.01229759593613206s
+
+0 prime time:  93.85096768600033s
+1 prime time:  94.08406159399965s
+2 prime time:  94.0167577760003s
+3 prime time:  94.11891794500025s
+0 total response time:  0.878121980998003s  runs:  47  average:  0.01868344640421283s
+
+
+
+=============================================================================
+python3 responsiveness.py -p4 --np 4 & go run interactive.go -t 93
+=============================================================================
+
+5.8.0-50-lowlatency
+-------------------------------------
+reading/writing to almarri2
+total response time:  9.722303519 s
+runs:  42
+average:  0.231483417 s
+
+reading/writing to almarri2
+total response time:  11.880111744 s
+runs:  42
+average:  0.282859803 s
+
+reading/writing to almarri2
+total response time:  10.060844469 s
+runs:  42
+average:  0.239543915 s
+
+total response time:  12.747596438 s
+runs:  41
+average:  0.310916986 s
+
+total response time:  10.015485965 s
+runs:  42
+average:  0.238463951 s
+
+total response time:  12.006474702 s
+runs:  41
+average:  0.292840846 s
+
+total response time:  10.95381839 s
+runs:  42
+average:  0.260805199 s
+
+total response time:  12.285306193 s
+runs:  41
+average:  0.299641614 s
+
+total response time:  12.601920263 s
+runs:  41
+average:  0.307363908 s
+
+total response time:  11.917826967 s
+runs:  42
+average:  0.283757784 s
+
+
+
+5.8.185.8.0-cacule (on lowlatency) (no RDB), (+autogroup), (+fair_group)
+------------------------------------------------------------------------
+total response time:  8.154080244 s
+runs:  44
+average:  0.185320005 s
+
+total response time:  7.611006922 s
+runs:  44
+average:  0.17297743 s
+
+total response time:  8.276176116 s
+runs:  44
+average:  0.188094911 s
+
+total response time:  7.698948105 s
+runs:  44
+average:  0.174976093 s
+
+total response time:  7.389356417 s
+runs:  44
+average:  0.167939918 s
+
+total response time:  6.575530078 s
+runs:  44
+average:  0.149443865 s
+
+total response time:  7.206663339 s
+runs:  44
+average:  0.163787803 s
+
+total response time:  6.80171918 s
+runs:  44
+average:  0.154584526 s
+
+total response time:  7.810054369 s
+runs:  44
+average:  0.177501235 s
+
+total response time:  7.7281691089999995 s
+runs:  44
+average:  0.175640207 s
+
+
+
+
+5.8.185.8.0-cacule (on lowlatency) (no RDB), (-autogroup), (-fair_group)
+------------------------------------------------------------------------
+total response time:  7.453327712 s
+runs:  44
+average:  0.169393811 s
+
+total response time:  8.023388763 s
+runs:  43
+average:  0.186590436 s
+
+total response time:  8.671143382 s
+runs:  43
+average:  0.201654497 s
+
+total response time:  7.397064936 s
+runs:  44
+average:  0.168115112 s
+
+total response time:  7.958192893 s
+runs:  44
+average:  0.18086802 s
+
+total response time:  7.141576252 s
+runs:  44
+average:  0.162308551 s
+
+total response time:  8.218620362 s
+runs:  43
+average:  0.191130706 s
+
+total response time:  8.341566342 s
+runs:  44
+average:  0.189581053 s
+
+total response time:  7.337748644 s
+runs:  44
+average:  0.166767014 s
+
+total response time:  6.147975267 s
+runs:  44
+average:  0.13972671 s
+
+
