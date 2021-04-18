@@ -235,7 +235,7 @@ Between each test, a sleep for 2 minutes such the following script:
  for i in (seq 1 11); sleep 2m; <test command>; end
 ```
 
-For the following tests, CacULE is patch on Ubuntu linux-lowlatency kernel source.
+For the following tests, CacULE is patched on Ubuntu linux-lowlatency kernel source.
 
 [Benchmarks Data](https://github.com/hamadmarri/cacule-cpu-scheduler/tree/master/helper%20docs%20for%20kernel%20dev/benchmarking)
 
