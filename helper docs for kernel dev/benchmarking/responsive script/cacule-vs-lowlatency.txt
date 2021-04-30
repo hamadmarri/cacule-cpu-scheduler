@@ -195,6 +195,68 @@ python3 responsiveness.py -i1 -p4 --np 4
 0 total response time:  0.878121980998003s  runs:  47  average:  0.01868344640421283s
 
 
+5.8.0-50-cacule-RWU (on lowlatency) (no RDB), (-autogroup), (-fair_group)
+------------------------------------------------------------------------
+0 prime time:  93.212533506s
+1 prime time:  93.23654861700015s
+2 prime time:  93.0752486639999s
+3 prime time:  93.02807168599975s
+0 total response time:  0.5981111219998638s  runs:  46  average:  0.013002415695649213s
+
+0 prime time:  94.35043212999972s
+1 prime time:  94.374366388s
+2 prime time:  94.15573583500009s
+3 prime time:  94.2059873850003s
+0 total response time:  0.6142258379995837s  runs:  47  average:  0.013068634851054974s
+
+0 prime time:  92.69562011599965s
+1 prime time:  92.86721472599993s
+2 prime time:  92.85309728599987s
+3 prime time:  92.71522223200009s
+0 total response time:  0.602793985999142s  runs:  46  average:  0.01310421708693787s
+
+0 prime time:  93.93649193300007s
+1 prime time:  94.23240506399998s
+2 prime time:  94.24171504900005s
+3 prime time:  94.11297597199973s
+0 total response time:  0.6201796389996161s  runs:  47  average:  0.01319531146807694s
+
+0 prime time:  94.40515035699991s
+1 prime time:  94.41014749999977s
+2 prime time:  94.25324443399995s
+3 prime time:  94.2196147059999s
+0 total response time:  0.6147042149996196s  runs:  47  average:  0.01307881308509829s
+
+0 prime time:  93.49983558999975s
+1 prime time:  93.73881087200016s
+2 prime time:  93.59479323100004s
+3 prime time:  93.69852756699993s
+0 total response time:  0.6076010249989849s  runs:  47  average:  0.012927681382957126s
+
+0 prime time:  92.95087544199987s
+1 prime time:  93.15052960699995s
+2 prime time:  92.92103937799993s
+3 prime time:  93.15615634799997s
+0 total response time:  0.5936031530000037s  runs:  46  average:  0.012904416369565297s
+
+0 prime time:  95.40450236000015s
+1 prime time:  95.63469066799962s
+2 prime time:  95.60384942999963s
+3 prime time:  95.4831522479999s
+0 total response time:  0.6164450239966754s  runs:  47  average:  0.01311585157439735s
+
+0 prime time:  94.30486894299997s
+1 prime time:  94.297882028s
+2 prime time:  94.13563865499987s
+3 prime time:  94.15176927700008s
+0 total response time:  0.6122732880010062s  runs:  47  average:  0.013027091234063962s
+
+0 prime time:  94.16436730600003s
+1 prime time:  94.36191200000007s
+2 prime time:  94.20778276600004s
+3 prime time:  94.34021401900009s
+0 total response time:  0.6129094120014997s  runs:  47  average:  0.013040625787265952s
+
 
 =============================================================================
 python3 responsiveness.py -p4 --np 4 & go run interactive.go -t 93
@@ -333,5 +395,48 @@ average:  0.166767014 s
 total response time:  6.147975267 s
 runs:  44
 average:  0.13972671 s
+
+
+5.8.0-50-cacule-RWU (on lowlatency) (no RDB), (-autogroup), (-fair_group)
+------------------------------------------------------------------------
+total response time:  6.34708068 s
+runs:  44
+average:  0.144251833 s
+
+total response time:  6.260379096 s
+runs:  44
+average:  0.142281343 s
+
+total response time:  6.451781609 s
+runs:  44
+average:  0.1466314 s
+
+total response time:  6.208118838 s
+runs:  44
+average:  0.141093609 s
+
+total response time:  6.483291589 s
+runs:  44
+average:  0.147347536 s
+
+total response time:  6.689993132 s
+runs:  44
+average:  0.152045298 s
+
+total response time:  6.2955145009999995 s
+runs:  44
+average:  0.143079875 s
+
+total response time:  6.392765444 s
+runs:  44
+average:  0.145290123 s
+
+total response time:  6.264450452 s
+runs:  44
+average:  0.142373873 s
+
+total response time:  6.416443121 s
+runs:  44
+average:  0.145828252 s
 
 
