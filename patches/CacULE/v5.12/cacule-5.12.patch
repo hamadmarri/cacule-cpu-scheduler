@@ -307,7 +307,7 @@ index 486f403a778b..b33bd763fdbb 100644
  
  	nr_switches = p->nvcsw + p->nivcsw;
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 794c2cb945f8..59c177eb26f9 100644
+index 794c2cb945f8..7c2750976275 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -19,6 +19,10 @@
@@ -327,7 +327,7 @@ index 794c2cb945f8..59c177eb26f9 100644
  
 +#endif
 +#ifdef CONFIG_CACULE_SCHED
-+int __read_mostly cacule_max_lifetime			= 1600; // in ms
++int __read_mostly cacule_max_lifetime			= 22000; // in ms
 +int __read_mostly interactivity_factor			= 32768;
 +unsigned int __read_mostly interactivity_threshold	= 20480;
  #endif
