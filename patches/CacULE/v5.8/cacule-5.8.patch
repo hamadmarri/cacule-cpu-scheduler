@@ -148,7 +148,7 @@ index 660ac49f2b53..64f8c122c292 100644
  	SCHED_TUNABLESCALING_NONE,
  	SCHED_TUNABLESCALING_LOG,
 diff --git a/init/Kconfig b/init/Kconfig
-index 0498af567f70..f8a4e6adbc60 100644
+index 0498af567f70..444ad69f2e40 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
 @@ -793,6 +793,17 @@ config UCLAMP_BUCKETS_COUNT
@@ -169,6 +169,14 @@ index 0498af567f70..f8a4e6adbc60 100644
  #
  # For architectures that want to enable the support for NUMA-affine scheduler
  # balancing logic:
+@@ -1175,6 +1186,7 @@ config SCHED_AUTOGROUP
+ 	select CGROUPS
+ 	select CGROUP_SCHED
+ 	select FAIR_GROUP_SCHED
++	default y
+ 	help
+ 	  This option optimizes the scheduler for common desktop workloads by
+ 	  automatically creating and populating task groups.  This separation
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
 index 1c68621743ac..cd0448d05900 100644
 --- a/kernel/sched/core.c
