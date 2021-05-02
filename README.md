@@ -163,7 +163,7 @@ dmesg | grep -i "cacule cpu"
 ## Suggested Configs
 For a helper script to auto config use this https://github.com/hamadmarri/cacule-cpu-scheduler/blob/master/cachy%20debug%20helper%20files/apply_suggested_configs.sh
 
-## benchmarks
+## Benchmarks
 The tests are ran 11 times and best 10 tests are picked.
 Between each test, a sleep for 2 minutes such the following script:
 
