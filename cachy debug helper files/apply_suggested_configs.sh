@@ -3,27 +3,19 @@
 # This script sets the recommended/suggested configs by Hamad Al Marri
 # run this inside the kernel directory
 
-# Security
-echo ./scripts/config --disable CONFIG_SECURITY
-./scripts/config --disable CONFIG_SECURITY
-echo ./scripts/config --disable CONFIG_HARDENED_USERCOPY
-./scripts/config --disable CONFIG_HARDENED_USERCOPY
-
 # General Setup
 echo ./scripts/config --disable CONFIG_EXPERT
 ./scripts/config --disable CONFIG_EXPERT
+echo ./scripts/config --enable CONFIG_NO_HZ_FULL
+./scripts/config --enable CONFIG_NO_HZ_FULL
+echo ./scripts/config --enable CONFIG_PREEMPT
+./scripts/config --enable CONFIG_PREEMPT
 echo ./scripts/config --disable CONFIG_BSD_PROCESS_ACCT
 ./scripts/config --disable CONFIG_BSD_PROCESS_ACCT
 echo ./scripts/config --disable CONFIG_TASK_XACCT
 ./scripts/config --disable CONFIG_TASK_XACCT
 echo ./scripts/config --disable CONFIG_PSI
 ./scripts/config --disable CONFIG_PSI
-echo ./scripts/config --disable CONFIG_AUDIT
-./scripts/config --disable CONFIG_AUDIT
-echo ./scripts/config --disable CONFIG_VIRT_CPU_ACCOUNTING_GEN
-./scripts/config --disable CONFIG_VIRT_CPU_ACCOUNTING_GEN
-echo ./scripts/config --enable CONFIG_TICK_CPU_ACCOUNTING
-./scripts/config --enable CONFIG_TICK_CPU_ACCOUNTING
 echo ./scripts/config --disable CONFIG_MEMCG
 ./scripts/config --disable CONFIG_MEMCG
 echo ./scripts/config --disable CONFIG_CGROUP_CPUACCT
@@ -52,6 +44,9 @@ echo ./scripts/config --disable CONFIG_KEXEC_FILE
 ./scripts/config --disable CONFIG_KEXEC_FILE
 echo ./scripts/config --disable CONFIG_CRASH_DUMP
 ./scripts/config --disable CONFIG_CRASH_DUMP
+echo ./scripts/config --enable HZ_2000
+./scripts/config --enable HZ_2000
+
 # ./scripts/config --set_val CONFIG_NR_CPUS (# number of cpus)
 
 # if you are not using this kernel as guest in a virtual machine,
@@ -69,10 +64,6 @@ echo ./scripts/config --disable CONFIG_CPU_FREQ_GOV_ONDEMAND
 # General architecture-dependent options
 echo ./scripts/config --disable CONFIG_KPROBES
 ./scripts/config --disable CONFIG_KPROBES
-echo ./scripts/config --disable CONFIG_STACKPROTECTOR
-./scripts/config --disable CONFIG_STACKPROTECTOR
-echo ./scripts/config --disable CONFIG_VMAP_STACK
-./scripts/config --disable CONFIG_VMAP_STACK
 
 # Kernel hacking
 echo ./scripts/config --disable CONFIG_FTRACE
