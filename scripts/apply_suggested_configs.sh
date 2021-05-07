@@ -10,6 +10,8 @@ echo ./scripts/config --enable CONFIG_NO_HZ_FULL
 ./scripts/config --enable CONFIG_NO_HZ_FULL
 echo ./scripts/config --enable CONFIG_PREEMPT
 ./scripts/config --enable CONFIG_PREEMPT
+echo ./scripts/config --enable CONFIG_SCHED_AUTOGROUP
+./scripts/config --enable CONFIG_SCHED_AUTOGROUP
 echo ./scripts/config --disable CONFIG_BSD_PROCESS_ACCT
 ./scripts/config --disable CONFIG_BSD_PROCESS_ACCT
 echo ./scripts/config --disable CONFIG_TASK_XACCT
