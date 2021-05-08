@@ -315,7 +315,7 @@ index 486f403a778b..b916ed0687cd 100644
  			cfs_rq->nr_spread_over);
  	SEQ_printf(m, "  .%-30s: %d\n", "nr_running", cfs_rq->nr_running);
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 794c2cb945f8..b9d6e4580fdb 100644
+index 794c2cb945f8..e12cd44ad8a0 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -19,6 +19,10 @@
@@ -338,7 +338,7 @@ index 794c2cb945f8..b9d6e4580fdb 100644
 +unsigned int __read_mostly cacule_max_lifetime		= 22000; // in ms
 +unsigned int __read_mostly interactivity_factor		= 32768;
 +unsigned int __read_mostly interactivity_threshold	= 1000;
-+unsigned int __read_mostly nr_fork_threshold		= 3;
++unsigned int __read_mostly nr_fork_threshold		= 0;
  #endif
  
  #ifdef CONFIG_CFS_BANDWIDTH
@@ -1255,7 +1255,7 @@ index 794c2cb945f8..b9d6e4580fdb 100644
  }
  
  static void switched_from_fair(struct rq *rq, struct task_struct *p)
-@@ -10971,13 +11428,22 @@ static void set_next_task_fair(struct rq *rq, struct task_struct *p, bool first)
+@@ -10971,13 +11428,23 @@ static void set_next_task_fair(struct rq *rq, struct task_struct *p, bool first)
  void init_cfs_rq(struct cfs_rq *cfs_rq)
  {
  	cfs_rq->tasks_timeline = RB_ROOT_CACHED;
@@ -1274,6 +1274,7 @@ index 794c2cb945f8..b9d6e4580fdb 100644
 +#ifdef CONFIG_CACULE_SCHED
 +	cfs_rq->head = NULL;
 +	cfs_rq->tail = NULL;
++	nr_fork_threshold = num_online_cpus() - 1;
 +#endif
  }
  
