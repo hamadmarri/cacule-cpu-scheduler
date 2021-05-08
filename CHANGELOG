@@ -1,0 +1,7 @@
+CacULE revision 2
+-----------------
+1- Added 2000HZ as an option
+2- Added Responsive wakup/new task to be placed in a CPU with least Interactive score (to balance out interactive tasks among cpus)
+3- Added Interactivity levels mechanism
+4- Increased the precision of lifetime normalize from x8 to x1024
+5- Decoupled se.vruntime from cn.vruntime
