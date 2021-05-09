@@ -1,9 +1,3 @@
-commit f434b814d6064d85dc5c7e3a557b95c3e3098846
-Author: Hamad Marri <hamad.s.almarri@gmail.com>
-Date:   Sun May 9 12:29:50 2021 +0300
-
-    CacULE CPU scheduler v5.11.12-rt
-
 diff --git a/Documentation/admin-guide/sysctl/kernel.rst b/Documentation/admin-guide/sysctl/kernel.rst
 index 1d56a6b..4d55ff0 100644
 --- a/Documentation/admin-guide/sysctl/kernel.rst
@@ -379,7 +373,7 @@ index 2357921..7e88685 100644
  			cfs_rq->nr_spread_over);
  	SEQ_printf(m, "  .%-30s: %d\n", "nr_running", cfs_rq->nr_running);
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index e06a71e..1fef911 100644
+index e06a71e..456ead9 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -19,6 +19,10 @@
@@ -455,7 +449,7 @@ index e06a71e..1fef911 100644
 +		p->nr_forks_per_time = 0;
 +}
 +
-+static inline unsigned intget_interactivity_level(struct cacule_node *cn)
++static inline unsigned int get_interactivity_level(struct cacule_node *cn)
 +{
 +	struct sched_entity *se = se_of(cn);
 +	struct task_struct *parent = NULL;
