@@ -6,8 +6,22 @@
 # General Setup
 echo ./scripts/config --disable CONFIG_EXPERT
 ./scripts/config --disable CONFIG_EXPERT
+
+
+# Note:
+# CONFIG_NO_HZ_FULL requires you to add
+# the boot parameter "nohz_full=" in your
+# grup. For example, in case your machine
+# has 8 CPUS, "nohz_full=1-7" makes
+# all CPUs (except CPU0) adaptive ticks.
+# Without "nohz_full=1-7", no benfit of
+# selecting CONFIG_NO_HZ_FULL
+#
+# Please see the discussion here:
+# https://github.com/hamadmarri/cacule-cpu-scheduler/discussions/23#discussioncomment-711456
 echo ./scripts/config --enable CONFIG_NO_HZ_FULL
 ./scripts/config --enable CONFIG_NO_HZ_FULL
+
 echo ./scripts/config --enable CONFIG_PREEMPT
 ./scripts/config --enable CONFIG_PREEMPT
 echo ./scripts/config --enable CONFIG_SCHED_AUTOGROUP
@@ -150,3 +164,15 @@ echo ./scripts/config --disable CONFIG_EARLY_PRINTK
 ./scripts/config --disable CONFIG_EARLY_PRINTK
 echo ./scripts/config --disable CONFIG_DOUBLEFAULT
 ./scripts/config --disable CONFIG_DOUBLEFAULT
+
+
+echo "
+Note:
+ CONFIG_NO_HZ_FULL requires you to add the boot
+ parameter \"nohz_full=\" in your grup. For example,
+ in case your machine has 8 CPUS, \"nohz_full=1-7\"
+ makes all CPUs (except CPU0) adaptive ticks.  Without
+ \"nohz_full=1-7\", no benfit of selecting CONFIG_NO_HZ_FULL
+
+ Please see the discussion here:
+ https://github.com/hamadmarri/cacule-cpu-scheduler/discussions/23#discussioncomment-711456"
