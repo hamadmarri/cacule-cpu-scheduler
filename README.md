@@ -161,7 +161,8 @@ dmesg | grep -i "cacule cpu"
 ```
 
 ## Suggested Configs
-For a helper script to auto config use this https://github.com/hamadmarri/cacule-cpu-scheduler/blob/master/cachy%20debug%20helper%20files/apply_suggested_configs.sh
+For a helper script to auto config use this 
+https://github.com/hamadmarri/cacule-cpu-scheduler/blob/master/scripts/apply_suggested_configs.sh
 
 ## Benchmarks
 The tests are ran 11 times and best 10 tests are picked.
