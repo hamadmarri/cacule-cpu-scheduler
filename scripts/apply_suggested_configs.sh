@@ -8,17 +8,34 @@ echo ./scripts/config --disable CONFIG_EXPERT
 ./scripts/config --disable CONFIG_EXPERT
 
 
-# Note:
-# CONFIG_NO_HZ_FULL requires you to add
-# the boot parameter "nohz_full=" in your
-# grup. For example, in case your machine
-# has 8 CPUS, "nohz_full=1-7" makes
-# all CPUs (except CPU0) adaptive ticks.
-# Without "nohz_full=1-7", no benfit of
-# selecting CONFIG_NO_HZ_FULL
+#Note 1:
+# CONFIG_NO_HZ_FULL requires you to add the boot
+# parameter "nohz_full=" in your grup. For example,
+# in case your machine has 4 CPUS, "nohz_full=1-3"
+# makes all CPUs (except CPU0) adaptive ticks.  Without
+# "nohz_full=1-3", no benfit of selecting 
 #
-# Please see the discussion here:
+# Hamad Al Marri
+#
+#Notes 2:
+# The adaptive tickless mode must be manually enabled in
+# nohz_full= kernel parameter, and CPU0 should be excluded
+# from the list. For example, if you have a 4-core CPU
+# (w/o hyperthreading), you may use nohz_full=1-3 to enable
+# adaptive tickless mode on all cores except CPU0. In addition,
+# as mentioned https://linux.enea.com/4.0/documentation/html/book-enea-linux-realtime-guide/,
+# if your CPU supports hyperthreading, both threads from the
+# same physical core must enable/disable adaptive tickless mode
+# at the same time. For example, if you have a 4-core CPU with
+# 8 threads, you may use nohz_full=1-3,5-7 to enable adaptive
+# tickess mode on all physical cores and their sibling threads
+# except CPU0.
+#
+# Raymond K. Zhao
+#
+# Please see the discussions here:
 # https://github.com/hamadmarri/cacule-cpu-scheduler/discussions/23#discussioncomment-711456
+# https://github.com/hamadmarri/cacule-cpu-scheduler/discussions/32
 echo ./scripts/config --enable CONFIG_NO_HZ_FULL
 ./scripts/config --enable CONFIG_NO_HZ_FULL
 
@@ -167,12 +184,32 @@ echo ./scripts/config --disable CONFIG_DOUBLEFAULT
 
 
 echo "
-Note:
+Note 1:
  CONFIG_NO_HZ_FULL requires you to add the boot
  parameter \"nohz_full=\" in your grup. For example,
- in case your machine has 8 CPUS, \"nohz_full=1-7\"
+ in case your machine has 4 CPUS, \"nohz_full=1-3\"
  makes all CPUs (except CPU0) adaptive ticks.  Without
- \"nohz_full=1-7\", no benfit of selecting CONFIG_NO_HZ_FULL
+ \"nohz_full=1-3\", no benfit of selecting CONFIG_NO_HZ_FULL
+ 
+ Hamad Al Marri
 
- Please see the discussion here:
- https://github.com/hamadmarri/cacule-cpu-scheduler/discussions/23#discussioncomment-711456"
+Notes 2:
+ The adaptive tickless mode must be manually enabled in
+ nohz_full= kernel parameter, and CPU0 should be excluded
+ from the list. For example, if you have a 4-core CPU
+ (w/o hyperthreading), you may use nohz_full=1-3 to enable
+ adaptive tickless mode on all cores except CPU0. In addition,
+ as mentioned https://linux.enea.com/4.0/documentation/html/book-enea-linux-realtime-guide/,
+ if your CPU supports hyperthreading, both threads from the
+ same physical core must enable/disable adaptive tickless mode
+ at the same time. For example, if you have a 4-core CPU with
+ 8 threads, you may use nohz_full=1-3,5-7 to enable adaptive
+ tickess mode on all physical cores and their sibling threads
+ except CPU0.
+ 
+ Raymond K. Zhao
+
+ Please see the discussions here:
+ https://github.com/hamadmarri/cacule-cpu-scheduler/discussions/23#discussioncomment-711456
+ https://github.com/hamadmarri/cacule-cpu-scheduler/discussions/32
+ "
