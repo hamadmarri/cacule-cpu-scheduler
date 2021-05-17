@@ -82,6 +82,7 @@ rdb_balance_guard_ms.
 
 kernel.scale_down_hz_value
 --------------------------
+Note: if CONFIG_NO_HZ_FULL=y, this sysctl has not effects at all.
 Purpose:
 	To reduce the calling of the following functions to the
 	specified HZ if the runqueue (rq) has only 1 runnable task.
