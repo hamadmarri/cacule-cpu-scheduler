@@ -186,7 +186,7 @@ systemd (10)
 
 These tasks could be distributed on multiple cpus. Let’s assume
 the two tasks cat, and make3 on the same rq. The cat has
-IS=4 while make3’s IS=0. With average_vruntime_enable=0,
+IS=3 while make3’s IS=0. With average_vruntime_enable=0,
 make3 will run since its IS is less than cat’s IS. However
 make3 is a task in one group doing when task which is compiling.
 4 makes are doing compiling while cat is only when interactive
