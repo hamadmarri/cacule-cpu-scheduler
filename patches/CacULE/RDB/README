@@ -127,7 +127,7 @@ Notice that this is an integer division! So the following
 values when HZ=500 are the same:
 scale_down_hz_value=300 → 500/300=1.6  =1
 scale_down_hz_value=400 → 500/400=1.25 =1
-scale_down_hz_value=250 → 500/500=1    =1
+scale_down_hz_value=500 → 500/500=1    =1
 
 However
 scale_down_hz_value=250 → 500/250      =2
