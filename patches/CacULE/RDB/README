@@ -104,7 +104,7 @@ performance. There is another reason to consider this feature
 in case of `try_push_any_enable` is enabled.
 
 For example, if we have cpu0 and cpu1. cpu0 has 3 tasks and
-cpu1 has only 1 task. Assuming scale_down_hz_value=2, cpu0
+cpu1 has only 1 task. Assuming scale_down_hz_value=1, cpu0
 will not skip any tick since it has more than 1 task (cpu0
 wont be effected by scale_down_hz_value), however, cpu1 is
 effected because it has only 1 task in its rq. Cpu0 will
