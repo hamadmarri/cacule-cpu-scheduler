@@ -188,8 +188,8 @@ These tasks could be distributed on multiple cpus. Let’s assume
 the two tasks cat, and make3 on the same rq. The cat has
 IS=3 while make3’s IS=0. With average_vruntime_enable=0,
 make3 will run since its IS is less than cat’s IS. However
-make3 is a task in one group doing when task which is compiling.
-4 makes are doing compiling while cat is only when interactive
+make3 is a task in one group doing compiling.
+4 makes are doing compiling while cat is only one interactive
 task that is competing with other 4 tasks. With average_vruntime_enable=1,
 The average IS is for cat and make3 is calculated as following:
 
