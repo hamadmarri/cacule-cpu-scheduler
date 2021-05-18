@@ -155,7 +155,7 @@ index 204923e9a5eb..3fde8a479df9 100644
  		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);
  		rq->tmp_alone_branch = &rq->leaf_cfs_rq_list;
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 464114d6ea54..e5a5f881a336 100644
+index 464114d6ea54..998e2c1b3b13 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -122,6 +122,11 @@ int __weak arch_asym_cpu_priority(int cpu)
@@ -1158,7 +1158,7 @@ index 464114d6ea54..e5a5f881a336 100644
  {
  	unsigned long next_balance = jiffies + HZ;
  	int this_cpu = this_rq->cpu;
-@@ -11166,6 +11573,210 @@ void trigger_load_balance(struct rq *rq)
+@@ -11166,6 +11573,220 @@ void trigger_load_balance(struct rq *rq)
  
  	nohz_balancer_kick(rq);
  }
@@ -1341,10 +1341,20 @@ index 464114d6ea54..e5a5f881a336 100644
 +
 +	if (!cfs_rq->head || cfs_rq->nr_running < 2)
 +		try_pull_higher_IS(&rq->cfs);
-+	else if (try_push_any_enable)
-+		try_push_any(rq);
-+	else
++	else if (try_push_any_enable == 0)
 +		try_pull_any(rq);
++	else if (try_push_any_enable == 1)
++		try_push_any(rq);
++	else  if (try_push_any_enable == 2)
++	{
++		try_push_any(rq);
++		try_pull_any(rq);
++	}
++	else  if (try_push_any_enable == 3)
++	{
++		try_pull_any(rq);
++		try_push_any(rq);
++	}
 +}
 +
 +void trigger_load_balance(struct rq *rq)
@@ -1369,7 +1379,7 @@ index 464114d6ea54..e5a5f881a336 100644
  
  static void rq_online_fair(struct rq *rq)
  {
-@@ -11340,9 +11951,12 @@ static void propagate_entity_cfs_rq(struct sched_entity *se)
+@@ -11340,9 +11961,12 @@ static void propagate_entity_cfs_rq(struct sched_entity *se)
  	}
  }
  #else
@@ -1382,7 +1392,7 @@ index 464114d6ea54..e5a5f881a336 100644
  static void detach_entity_cfs_rq(struct sched_entity *se)
  {
  	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-@@ -11353,9 +11967,11 @@ static void detach_entity_cfs_rq(struct sched_entity *se)
+@@ -11353,9 +11977,11 @@ static void detach_entity_cfs_rq(struct sched_entity *se)
  	update_tg_load_avg(cfs_rq);
  	propagate_entity_cfs_rq(se);
  }
@@ -1394,7 +1404,7 @@ index 464114d6ea54..e5a5f881a336 100644
  	struct cfs_rq *cfs_rq = cfs_rq_of(se);
  
  #ifdef CONFIG_FAIR_GROUP_SCHED
-@@ -11371,10 +11987,12 @@ static void attach_entity_cfs_rq(struct sched_entity *se)
+@@ -11371,10 +11997,12 @@ static void attach_entity_cfs_rq(struct sched_entity *se)
  	attach_entity_load_avg(cfs_rq, se);
  	update_tg_load_avg(cfs_rq);
  	propagate_entity_cfs_rq(se);
@@ -1407,7 +1417,7 @@ index 464114d6ea54..e5a5f881a336 100644
  	struct sched_entity *se = &p->se;
  
  #if !defined(CONFIG_CACULE_SCHED)
-@@ -11391,10 +12009,12 @@ static void detach_task_cfs_rq(struct task_struct *p)
+@@ -11391,10 +12019,12 @@ static void detach_task_cfs_rq(struct task_struct *p)
  #endif
  
  	detach_entity_cfs_rq(se);
@@ -1420,7 +1430,7 @@ index 464114d6ea54..e5a5f881a336 100644
  	struct sched_entity *se = &p->se;
  
  #if !defined(CONFIG_CACULE_SCHED)
-@@ -11407,6 +12027,7 @@ static void attach_task_cfs_rq(struct task_struct *p)
+@@ -11407,6 +12037,7 @@ static void attach_task_cfs_rq(struct task_struct *p)
  	if (!vruntime_normalized(p))
  		se->vruntime += cfs_rq->min_vruntime;
  #endif
@@ -1428,7 +1438,7 @@ index 464114d6ea54..e5a5f881a336 100644
  }
  
  static void switched_from_fair(struct rq *rq, struct task_struct *p)
-@@ -11802,7 +12423,9 @@ void show_numa_stats(struct task_struct *p, struct seq_file *m)
+@@ -11802,7 +12433,9 @@ void show_numa_stats(struct task_struct *p, struct seq_file *m)
  __init void init_sched_fair_class(void)
  {
  #ifdef CONFIG_SMP

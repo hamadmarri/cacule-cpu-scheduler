@@ -40,11 +40,13 @@ is an explanation of each sysctl.
 kernel.rdb_try_push_any_enable
 ------------------------------
 Purpose:
-	To choose between `try_pull_any` and `try_push_any`
+	To choose between `try_pull_any` and `try_push_any`, or both.
 
 Possible values (default 0):
-	0: means RDB uses `try_pull_any` as same as old version
-	1: to run `try_push_any` instead of `try_pull_any`
+	0: try_pull_any
+	1: try_push_any
+	2: both: try_push_any then try_pull_any
+	3: both: try_pull_any then try_push_any
 
 I recommend testing this first.
 
