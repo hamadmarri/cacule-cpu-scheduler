@@ -155,7 +155,7 @@ index 204923e9a5eb..3fde8a479df9 100644
  		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);
  		rq->tmp_alone_branch = &rq->leaf_cfs_rq_list;
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 464114d6ea54..998e2c1b3b13 100644
+index 464114d6ea54..3b63868e243a 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -122,6 +122,11 @@ int __weak arch_asym_cpu_priority(int cpu)
@@ -215,7 +215,7 @@ index 464114d6ea54..998e2c1b3b13 100644
  		cfs_rq->tail = NULL;
  
 +#ifdef CONFIG_CACULE_RDB
-+	WRITE_ONCE(cfs_rq->IS_head, 0);
++	WRITE_ONCE(cfs_rq->IS_head, ~0);
 +#endif
 +
  	} else if (se == cfs_rq->head) {
@@ -732,7 +732,7 @@ index 464114d6ea54..998e2c1b3b13 100644
 +		unsigned int IS_head = calc_interactivity(sched_clock(), cfs_rq->head);
 +		WRITE_ONCE(cfs_rq->IS_head, IS_head);
 +	} else {
-+		WRITE_ONCE(cfs_rq->IS_head, 0);
++		WRITE_ONCE(cfs_rq->IS_head, ~0);
 +	}
 +#else
  	do {
@@ -749,7 +749,7 @@ index 464114d6ea54..998e2c1b3b13 100644
  
  idle:
 +#ifdef CONFIG_CACULE_RDB
-+	WRITE_ONCE(cfs_rq->IS_head, 0);
++	WRITE_ONCE(cfs_rq->IS_head, ~0);
 +#endif
 +
  	if (!rf)
@@ -1016,7 +1016,7 @@ index 464114d6ea54..998e2c1b3b13 100644
 +
 +		local_IS = READ_ONCE(tmp_rq->cfs.IS_head);
 +
-+		if (local_IS > max_IS) {
++		if (local_IS < max_IS) {
 +			max_IS = local_IS;
 +			max_rq = tmp_rq;
 +		}
