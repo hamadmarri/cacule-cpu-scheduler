@@ -74,7 +74,7 @@ index 92330b5d8897..2ff8717740ab 100644
  	  This option optimizes the scheduler for common desktop workloads by
  	  automatically creating and populating task groups.  This separation
 diff --git a/kernel/exit.c b/kernel/exit.c
-index 04029e35e69a..33f1d6bdd14d 100644
+index 04029e35e69a..0142fc98b969 100644
 --- a/kernel/exit.c
 +++ b/kernel/exit.c
 @@ -69,6 +69,10 @@
@@ -97,8 +97,8 @@ index 04029e35e69a..33f1d6bdd14d 100644
 +
 +	if (average_vruntime_enable) {
 +		while (parent->parent && parent->parent->pid > 2) {
-+			if (parent->se.cacule_node.vruntime >= tsk->se.vruntime)
-+				parent->se.cacule_node.vruntime -= tsk->se.vruntime;
++			if (parent->se.cacule_node.vruntime >= tsk->se.cacule_node.vruntime)
++				parent->se.cacule_node.vruntime -= tsk->se.cacule_node.vruntime;
 +			else
 +				parent->se.cacule_node.vruntime = 0;
 +
