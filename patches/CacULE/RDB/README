@@ -84,6 +84,7 @@ rdb_balance_guard_ms.
 
 kernel.scale_down_hz_value
 --------------------------
+Note: if CONFIG_NO_HZ_FULL=y, this sysctl has not effects at all.
 Purpose:
 	To reduce the calling of the following functions to the
 	specified HZ if the runqueue (rq) has only 1 runnable task.
@@ -106,10 +107,10 @@ performance. There is another reason to consider this feature
 in case of `try_push_any_enable` is enabled.
 
 For example, if we have cpu0 and cpu1. cpu0 has 3 tasks and
-cpu1 has only 1 task. Assuming scale_down_hz_value=2, cpu0
+cpu1 has only 1 task. Assuming scale_down_hz_value=1, cpu0
 will not skip any tick since it has more than 1 task (cpu0
 wont be effected by scale_down_hz_value), however, cpu1 is
-effected because it has only 1 task in its rq. Cpu0 will
+effected because it has only 1 task in its rq. Cpu1 will
 call the above functions only 1 time per second since the
 scale_down_hz_value=1 means 1HZ = 1 call/s. Now cpu1 is not
 going to call trigger_load_balance during 1s to pull tasks
@@ -129,7 +130,7 @@ Notice that this is an integer division! So the following
 values when HZ=500 are the same:
 scale_down_hz_value=300 → 500/300=1.6  =1
 scale_down_hz_value=400 → 500/400=1.25 =1
-scale_down_hz_value=250 → 500/500=1    =1
+scale_down_hz_value=500 → 500/500=1    =1
 
 However
 scale_down_hz_value=250 → 500/250      =2
@@ -187,10 +188,10 @@ systemd (10)
 
 These tasks could be distributed on multiple cpus. Let’s assume
 the two tasks cat, and make3 on the same rq. The cat has
-IS=4 while make3’s IS=0. With average_vruntime_enable=0,
+IS=3 while make3’s IS=0. With average_vruntime_enable=0,
 make3 will run since its IS is less than cat’s IS. However
-make3 is a task in one group doing when task which is compiling.
-4 makes are doing compiling while cat is only when interactive
+make3 is a task in one group doing compiling.
+4 makes are doing compiling while cat is only one interactive
 task that is competing with other 4 tasks. With average_vruntime_enable=1,
 The average IS is for cat and make3 is calculated as following:
 
