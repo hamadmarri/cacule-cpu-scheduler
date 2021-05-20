@@ -106,46 +106,6 @@ index 92330b5d8897..2847973c9137 100644
  	help
  	  This option optimizes the scheduler for common desktop workloads by
  	  automatically creating and populating task groups.  This separation
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 04029e35e69a..ba15e2485391 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -69,6 +69,10 @@
- #include <asm/unistd.h>
- #include <asm/mmu_context.h>
- 
-+#ifdef CONFIG_RDB_TASKS_GROUP
-+#include <linux/sched/sysctl.h>
-+#endif
-+
- static void __unhash_process(struct task_struct *p, bool group_dead)
- {
- 	nr_threads--;
-@@ -664,6 +668,24 @@ static void exit_notify(struct task_struct *tsk, int group_dead)
- 	struct task_struct *p, *n;
- 	LIST_HEAD(dead);
- 
-+#ifdef CONFIG_RDB_TASKS_GROUP
-+	struct task_struct *parent = tsk->parent;
-+
-+	if (average_vruntime_enabled) {
-+		while (parent->parent && parent->parent->pid > 2) {
-+			if (parent->se.cacule_node.vruntime >= tsk->se.cacule_node.vruntime)
-+				parent->se.cacule_node.vruntime -= tsk->se.cacule_node.vruntime;
-+			else
-+				parent->se.cacule_node.vruntime = 0;
-+
-+			parent = parent->parent;
-+		}
-+	}
-+
-+	if (parent->nr_forks)
-+		parent->nr_forks--;
-+#endif
-+
- 	write_lock_irq(&tasklist_lock);
- 	forget_original_parent(tsk, &dead);
- 
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
 index 204923e9a5eb..4a5d414c328a 100644
 --- a/kernel/sched/core.c
