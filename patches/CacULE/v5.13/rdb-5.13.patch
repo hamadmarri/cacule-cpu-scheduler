@@ -1253,6 +1253,23 @@ index b7649507f511..0b663012a644 100644
  
  #ifdef CONFIG_NO_HZ_COMMON
  	nohz.next_balance = jiffies;
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index 7ca3d3d86c2a..a7422dea8a9f 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -262,10 +262,12 @@ static void do_idle(void)
+ {
+ 	int cpu = smp_processor_id();
+ 
++#if !defined(CONFIG_CACULE_RDB)
+ 	/*
+ 	 * Check if we need to update blocked load
+ 	 */
+ 	nohz_run_idle_balance(cpu);
++#endif
+ 
+ 	/*
+ 	 * If the arch has a polling bit, we maintain an invariant:
 diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
 index 0affe3be7c21..576909c92fb5 100644
 --- a/kernel/sched/sched.h
