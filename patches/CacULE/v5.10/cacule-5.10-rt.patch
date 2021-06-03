@@ -4741,10 +4741,10 @@ index 440eed558558..7cfc4e6b7c94 100644
  }
 +#endif
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 7f767d59b09d..7c33c913a446 100644
+index 109041630d30..1515b1f3b87e 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -7936,6 +7936,14 @@ int kvm_arch_init(void *opaque)
+@@ -7938,6 +7938,14 @@ int kvm_arch_init(void *opaque)
  		goto out;
  	}
  
@@ -7209,10 +7209,10 @@ index a50f1eef0e0c..0b2acad7c354 100644
  	/* peek cache of free slot */
  	if (pool->left != FC_XID_UNKNOWN) {
 diff --git a/drivers/tty/serial/8250/8250.h b/drivers/tty/serial/8250/8250.h
-index 52bb21205bb6..5cbcaafbb4aa 100644
+index 34aa2714f3c9..42cd2baa7663 100644
 --- a/drivers/tty/serial/8250/8250.h
 +++ b/drivers/tty/serial/8250/8250.h
-@@ -130,12 +130,55 @@ static inline void serial_dl_write(struct uart_8250_port *up, int value)
+@@ -131,12 +131,55 @@ static inline void serial_dl_write(struct uart_8250_port *up, int value)
  	up->dl_write(up, value);
  }
  
@@ -7269,7 +7269,7 @@ index 52bb21205bb6..5cbcaafbb4aa 100644
  	return true;
  }
  
-@@ -144,7 +187,7 @@ static inline bool serial8250_clear_THRI(struct uart_8250_port *up)
+@@ -145,7 +188,7 @@ static inline bool serial8250_clear_THRI(struct uart_8250_port *up)
  	if (!(up->ier & UART_IER_THRI))
  		return false;
  	up->ier &= ~UART_IER_THRI;
@@ -7421,7 +7421,7 @@ index f7d3023f860f..8133713dcf5e 100644
  
  static void mtk8250_set_flow_ctrl(struct uart_8250_port *up, int mode)
 diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
-index b0af13074cd3..b05f8c34b291 100644
+index 6e141429c980..d1a7b6158a1d 100644
 --- a/drivers/tty/serial/8250/8250_port.c
 +++ b/drivers/tty/serial/8250/8250_port.c
 @@ -757,7 +757,7 @@ static void serial8250_set_sleep(struct uart_8250_port *p, int sleep)
@@ -7469,7 +7469,7 @@ index b0af13074cd3..b05f8c34b291 100644
  	serial8250_rpm_put(up);
  }
  
-@@ -2118,14 +2118,7 @@ static void serial8250_put_poll_char(struct uart_port *port,
+@@ -2130,14 +2130,7 @@ static void serial8250_put_poll_char(struct uart_port *port,
  	struct uart_8250_port *up = up_to_u8250p(port);
  
  	serial8250_rpm_get(up);
@@ -7485,7 +7485,7 @@ index b0af13074cd3..b05f8c34b291 100644
  
  	wait_for_xmitr(up, BOTH_EMPTY);
  	/*
-@@ -2138,7 +2131,7 @@ static void serial8250_put_poll_char(struct uart_port *port,
+@@ -2150,7 +2143,7 @@ static void serial8250_put_poll_char(struct uart_port *port,
  	 *	and restore the IER
  	 */
  	wait_for_xmitr(up, BOTH_EMPTY);
@@ -7494,7 +7494,7 @@ index b0af13074cd3..b05f8c34b291 100644
  	serial8250_rpm_put(up);
  }
  
-@@ -2441,7 +2434,7 @@ void serial8250_do_shutdown(struct uart_port *port)
+@@ -2453,7 +2446,7 @@ void serial8250_do_shutdown(struct uart_port *port)
  	 */
  	spin_lock_irqsave(&port->lock, flags);
  	up->ier = 0;
@@ -7503,7 +7503,7 @@ index b0af13074cd3..b05f8c34b291 100644
  	spin_unlock_irqrestore(&port->lock, flags);
  
  	synchronize_irq(port->irq);
-@@ -2771,7 +2764,7 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
+@@ -2783,7 +2776,7 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
  	if (up->capabilities & UART_CAP_RTOIE)
  		up->ier |= UART_IER_RTOIE;
  
@@ -7512,7 +7512,7 @@ index b0af13074cd3..b05f8c34b291 100644
  
  	if (up->capabilities & UART_CAP_EFR) {
  		unsigned char efr = 0;
-@@ -3237,7 +3230,7 @@ EXPORT_SYMBOL_GPL(serial8250_set_defaults);
+@@ -3249,7 +3242,7 @@ EXPORT_SYMBOL_GPL(serial8250_set_defaults);
  
  #ifdef CONFIG_SERIAL_8250_CONSOLE
  
@@ -7521,7 +7521,7 @@ index b0af13074cd3..b05f8c34b291 100644
  {
  	struct uart_8250_port *up = up_to_u8250p(port);
  
-@@ -3245,6 +3238,18 @@ static void serial8250_console_putchar(struct uart_port *port, int ch)
+@@ -3257,6 +3250,18 @@ static void serial8250_console_putchar(struct uart_port *port, int ch)
  	serial_port_out(port, UART_TX, ch);
  }
  
@@ -7540,7 +7540,7 @@ index b0af13074cd3..b05f8c34b291 100644
  /*
   *	Restore serial console when h/w power-off detected
   */
-@@ -3266,6 +3271,32 @@ static void serial8250_console_restore(struct uart_8250_port *up)
+@@ -3278,6 +3283,32 @@ static void serial8250_console_restore(struct uart_8250_port *up)
  	serial8250_out_MCR(up, UART_MCR_DTR | UART_MCR_RTS);
  }
  
@@ -7573,7 +7573,7 @@ index b0af13074cd3..b05f8c34b291 100644
  /*
   *	Print a string to the serial port trying not to disturb
   *	any possible real use of the port...
-@@ -3282,24 +3313,12 @@ void serial8250_console_write(struct uart_8250_port *up, const char *s,
+@@ -3294,24 +3325,12 @@ void serial8250_console_write(struct uart_8250_port *up, const char *s,
  	struct uart_port *port = &up->port;
  	unsigned long flags;
  	unsigned int ier;
@@ -7600,7 +7600,7 @@ index b0af13074cd3..b05f8c34b291 100644
  
  	/* check scratch reg to see if port powered off during system sleep */
  	if (up->canary && (up->canary != serial_port_in(port, UART_SCR))) {
-@@ -3313,7 +3332,9 @@ void serial8250_console_write(struct uart_8250_port *up, const char *s,
+@@ -3325,7 +3344,9 @@ void serial8250_console_write(struct uart_8250_port *up, const char *s,
  		mdelay(port->rs485.delay_rts_before_send);
  	}
  
@@ -7610,7 +7610,7 @@ index b0af13074cd3..b05f8c34b291 100644
  
  	/*
  	 *	Finally, wait for transmitter to become empty
-@@ -3326,8 +3347,7 @@ void serial8250_console_write(struct uart_8250_port *up, const char *s,
+@@ -3338,8 +3359,7 @@ void serial8250_console_write(struct uart_8250_port *up, const char *s,
  		if (em485->tx_stopped)
  			up->rs485_stop_tx(up);
  	}
@@ -7620,7 +7620,7 @@ index b0af13074cd3..b05f8c34b291 100644
  
  	/*
  	 *	The receive handling will happen properly because the
-@@ -3339,8 +3359,7 @@ void serial8250_console_write(struct uart_8250_port *up, const char *s,
+@@ -3351,8 +3371,7 @@ void serial8250_console_write(struct uart_8250_port *up, const char *s,
  	if (up->msr_saved_flags)
  		serial8250_modem_status(up);
  
@@ -7630,7 +7630,7 @@ index b0af13074cd3..b05f8c34b291 100644
  }
  
  static unsigned int probe_baud(struct uart_port *port)
-@@ -3360,6 +3379,7 @@ static unsigned int probe_baud(struct uart_port *port)
+@@ -3372,6 +3391,7 @@ static unsigned int probe_baud(struct uart_port *port)
  
  int serial8250_console_setup(struct uart_port *port, char *options, bool probe)
  {
@@ -7638,7 +7638,7 @@ index b0af13074cd3..b05f8c34b291 100644
  	int baud = 9600;
  	int bits = 8;
  	int parity = 'n';
-@@ -3369,6 +3389,8 @@ int serial8250_console_setup(struct uart_port *port, char *options, bool probe)
+@@ -3381,6 +3401,8 @@ int serial8250_console_setup(struct uart_port *port, char *options, bool probe)
  	if (!port->iobase && !port->membase)
  		return -ENODEV;
  
@@ -7993,7 +7993,7 @@ index 18a4588c35be..decaa7768044 100644
  
  static inline void task_core_dumping(struct seq_file *m, struct mm_struct *mm)
 diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 55ce0ee9c5c7..a66f399476fc 100644
+index 297ea12b3cfd..bc9e4b528900 100644
 --- a/fs/proc/base.c
 +++ b/fs/proc/base.c
 @@ -96,6 +96,7 @@
@@ -12108,7 +12108,7 @@ index b59d73d529ba..e816b6a3ef2b 100644
  	spinlock_t xfrm_policy_lock;
  	struct mutex xfrm_cfg_mutex;
 diff --git a/include/net/sch_generic.h b/include/net/sch_generic.h
-index 3648164faa06..6a0434d2c279 100644
+index 4dd2c9e34976..a08157a16671 100644
 --- a/include/net/sch_generic.h
 +++ b/include/net/sch_generic.h
 @@ -10,6 +10,7 @@
@@ -12119,7 +12119,7 @@ index 3648164faa06..6a0434d2c279 100644
  #include <linux/refcount.h>
  #include <linux/workqueue.h>
  #include <linux/mutex.h>
-@@ -100,7 +101,7 @@ struct Qdisc {
+@@ -101,7 +102,7 @@ struct Qdisc {
  	struct sk_buff_head	gso_skb ____cacheline_aligned_in_smp;
  	struct qdisc_skb_head	q;
  	struct gnet_stats_basic_packed bstats;
@@ -12128,7 +12128,7 @@ index 3648164faa06..6a0434d2c279 100644
  	struct gnet_stats_queue	qstats;
  	unsigned long		state;
  	struct Qdisc            *next_sched;
-@@ -141,7 +142,11 @@ static inline bool qdisc_is_running(struct Qdisc *qdisc)
+@@ -142,7 +143,11 @@ static inline bool qdisc_is_running(struct Qdisc *qdisc)
  {
  	if (qdisc->flags & TCQ_F_NOLOCK)
  		return spin_is_locked(&qdisc->seqlock);
@@ -12140,7 +12140,7 @@ index 3648164faa06..6a0434d2c279 100644
  }
  
  static inline bool qdisc_is_percpu_stats(const struct Qdisc *q)
-@@ -165,17 +170,35 @@ static inline bool qdisc_run_begin(struct Qdisc *qdisc)
+@@ -191,17 +196,35 @@ static inline bool qdisc_run_begin(struct Qdisc *qdisc)
  	} else if (qdisc_is_running(qdisc)) {
  		return false;
  	}
@@ -12173,10 +12173,10 @@ index 3648164faa06..6a0434d2c279 100644
 +#else
  	write_seqcount_end(&qdisc->running);
 +#endif
- 	if (qdisc->flags & TCQ_F_NOLOCK)
+ 	if (qdisc->flags & TCQ_F_NOLOCK) {
  		spin_unlock(&qdisc->seqlock);
- }
-@@ -550,7 +573,7 @@ static inline spinlock_t *qdisc_root_sleeping_lock(const struct Qdisc *qdisc)
+ 
+@@ -583,7 +606,7 @@ static inline spinlock_t *qdisc_root_sleeping_lock(const struct Qdisc *qdisc)
  	return qdisc_lock(root);
  }
  
@@ -28596,7 +28596,7 @@ index d6567162c1cf..05b0f041f039 100644
  config BQL
  	bool
 diff --git a/net/core/dev.c b/net/core/dev.c
-index 2f17a4ac82f0..e35d73112732 100644
+index 0c9ce36afc8c..4ff2d479f99c 100644
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
 @@ -221,14 +221,14 @@ static inline struct hlist_head *dev_index_hash(struct net *net, int ifindex)
@@ -28632,7 +28632,7 @@ index 2f17a4ac82f0..e35d73112732 100644
  }
  EXPORT_SYMBOL(__dev_kfree_skb_irq);
  
-@@ -3777,7 +3779,11 @@ static inline int __dev_xmit_skb(struct sk_buff *skb, struct Qdisc *q,
+@@ -3778,7 +3780,11 @@ static inline int __dev_xmit_skb(struct sk_buff *skb, struct Qdisc *q,
  	 * This permits qdisc->running owner to get the lock more
  	 * often and dequeue packets faster.
  	 */
@@ -28644,7 +28644,7 @@ index 2f17a4ac82f0..e35d73112732 100644
  	if (unlikely(contended))
  		spin_lock(&q->busylock);
  
-@@ -4572,6 +4578,7 @@ static int enqueue_to_backlog(struct sk_buff *skb, int cpu,
+@@ -4573,6 +4579,7 @@ static int enqueue_to_backlog(struct sk_buff *skb, int cpu,
  	rps_unlock(sd);
  
  	local_irq_restore(flags);
@@ -28652,7 +28652,7 @@ index 2f17a4ac82f0..e35d73112732 100644
  
  	atomic_long_inc(&skb->dev->rx_dropped);
  	kfree_skb(skb);
-@@ -4787,7 +4794,7 @@ static int netif_rx_internal(struct sk_buff *skb)
+@@ -4788,7 +4795,7 @@ static int netif_rx_internal(struct sk_buff *skb)
  		struct rps_dev_flow voidflow, *rflow = &voidflow;
  		int cpu;
  
@@ -28661,7 +28661,7 @@ index 2f17a4ac82f0..e35d73112732 100644
  		rcu_read_lock();
  
  		cpu = get_rps_cpu(skb->dev, skb, &rflow);
-@@ -4797,14 +4804,14 @@ static int netif_rx_internal(struct sk_buff *skb)
+@@ -4798,14 +4805,14 @@ static int netif_rx_internal(struct sk_buff *skb)
  		ret = enqueue_to_backlog(skb, cpu, &rflow->last_qtail);
  
  		rcu_read_unlock();
@@ -28679,7 +28679,7 @@ index 2f17a4ac82f0..e35d73112732 100644
  	}
  	return ret;
  }
-@@ -4843,11 +4850,9 @@ int netif_rx_ni(struct sk_buff *skb)
+@@ -4844,11 +4851,9 @@ int netif_rx_ni(struct sk_buff *skb)
  
  	trace_netif_rx_ni_entry(skb);
  
@@ -28693,7 +28693,7 @@ index 2f17a4ac82f0..e35d73112732 100644
  	trace_netif_rx_ni_exit(err);
  
  	return err;
-@@ -6291,12 +6296,14 @@ static void net_rps_action_and_irq_enable(struct softnet_data *sd)
+@@ -6310,12 +6315,14 @@ static void net_rps_action_and_irq_enable(struct softnet_data *sd)
  		sd->rps_ipi_list = NULL;
  
  		local_irq_enable();
@@ -28708,7 +28708,7 @@ index 2f17a4ac82f0..e35d73112732 100644
  }
  
  static bool sd_has_rps_ipi_waiting(struct softnet_data *sd)
-@@ -6374,6 +6381,7 @@ void __napi_schedule(struct napi_struct *n)
+@@ -6393,6 +6400,7 @@ void __napi_schedule(struct napi_struct *n)
  	local_irq_save(flags);
  	____napi_schedule(this_cpu_ptr(&softnet_data), n);
  	local_irq_restore(flags);
@@ -28716,7 +28716,7 @@ index 2f17a4ac82f0..e35d73112732 100644
  }
  EXPORT_SYMBOL(__napi_schedule);
  
-@@ -10905,6 +10913,7 @@ static int dev_cpu_dead(unsigned int oldcpu)
+@@ -10924,6 +10932,7 @@ static int dev_cpu_dead(unsigned int oldcpu)
  
  	raise_softirq_irqoff(NET_TX_SOFTIRQ);
  	local_irq_enable();
@@ -28724,7 +28724,7 @@ index 2f17a4ac82f0..e35d73112732 100644
  
  #ifdef CONFIG_RPS
  	remsd = oldsd->rps_ipi_list;
-@@ -10918,7 +10927,7 @@ static int dev_cpu_dead(unsigned int oldcpu)
+@@ -10937,7 +10946,7 @@ static int dev_cpu_dead(unsigned int oldcpu)
  		netif_rx_ni(skb);
  		input_queue_head_incr(oldsd);
  	}
@@ -28733,7 +28733,7 @@ index 2f17a4ac82f0..e35d73112732 100644
  		netif_rx_ni(skb);
  		input_queue_head_incr(oldsd);
  	}
-@@ -11234,7 +11243,7 @@ static int __init net_dev_init(void)
+@@ -11253,7 +11262,7 @@ static int __init net_dev_init(void)
  
  		INIT_WORK(flush, flush_backlog);
  
@@ -28824,7 +28824,7 @@ index e491b083b348..ef432cea2e10 100644
  			 struct gnet_stats_basic_cpu __percpu *cpu,
  			 struct gnet_stats_basic_packed *b)
 diff --git a/net/core/sock.c b/net/core/sock.c
-index c75c1e723a84..5dcdc71839e6 100644
+index dee29f41beaf..0eb231a30c80 100644
 --- a/net/core/sock.c
 +++ b/net/core/sock.c
 @@ -3031,12 +3031,11 @@ void lock_sock_nested(struct sock *sk, int subclass)
@@ -28948,10 +28948,10 @@ index 54a8c363bcdd..e6e00f8a7f8f 100644
  		err = -EOPNOTSUPP;
  		if (sch->flags & TCQ_F_MQROOT) {
 diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
-index 49eae93d1489..512a39d6edec 100644
+index 854d2b38db85..336132ae35b5 100644
 --- a/net/sched/sch_generic.c
 +++ b/net/sched/sch_generic.c
-@@ -553,7 +553,11 @@ struct Qdisc noop_qdisc = {
+@@ -578,7 +578,11 @@ struct Qdisc noop_qdisc = {
  	.ops		=	&noop_qdisc_ops,
  	.q.lock		=	__SPIN_LOCK_UNLOCKED(noop_qdisc.q.lock),
  	.dev_queue	=	&noop_netdev_queue,
@@ -28963,7 +28963,7 @@ index 49eae93d1489..512a39d6edec 100644
  	.busylock	=	__SPIN_LOCK_UNLOCKED(noop_qdisc.busylock),
  	.gso_skb = {
  		.next = (struct sk_buff *)&noop_qdisc.gso_skb,
-@@ -845,9 +849,15 @@ struct Qdisc *qdisc_alloc(struct netdev_queue *dev_queue,
+@@ -889,9 +893,15 @@ struct Qdisc *qdisc_alloc(struct netdev_queue *dev_queue,
  	lockdep_set_class(&sch->busylock,
  			  dev->qdisc_tx_busylock ?: &qdisc_tx_busylock);
  
