@@ -31,7 +31,7 @@ This command changes the sched_interactivity_factor from 32768 to 50.
 
 ### sched_max_lifetime_ms
 Instead of calculating a task IS value for infinite life time, we use
-`sched_max_lifetime_ms` which is 30s by default. Task's `cacule_lifetime` and
+`sched_max_lifetime_ms` which is 22s by default. Task's `cacule_lifetime` and
 `vruntime` shrink whenever a task life time exceeds 30s. Therefore, the rate of change of IS
 for old and new tasks is normalized. The value `sched_max_lifetime` can be
 changed at run time by the following sysctl command:
@@ -39,49 +39,23 @@ changed at run time by the following sysctl command:
 sysctl kernel.sched_max_lifetime_ms=60000
 ```
 The value is in milliseconds, the above command changes `sched_max_lifetime`
-from 30s to 60s.
+from 22s to 60s.
 
-In the first round, when the task's life time became > 30s, the `cacule_start_time`
-get reset to be (`current_time - 15s`), then, the task will keep resetting
-every 15s. The reset method of the vruntime preserves the same IS ratio (roughly)
-by the following:
-```
-// multiply old life time by 8 for more precision
-old_IS_x8 = old_life_time / ((vruntime / 8) + 1)
+In the first round, when the task's life time became > 22s, the `cacule_start_time`
+get reset to be (`current_time - 11s`), then, the task will keep resetting
+every 15s.
 
-// reset vruntime based on old IS ratio
-vruntime = (new_life_time * 8) / old_IS_x8;
-```
-
-### sched_harsh_mode_enabled
-Another sysctl command is `sched_harsh_mode_enabled`
-
-The default value of `sched_harsh_mode_enabled` is 0 means disabled.
-You can set it to 1 to enable harsh mode.
-
-Note: harsh mode is good when in normal use of the system
-(i.e. no background heavy work) if you compile while harsh mode enabled,
-you might have mini freezes.
-Sometimes it is usefule to enable harsh mode when you have a single task for
-example gaming or just browsing. The only time you don't want harsh mode
-is when you have a background heavy load.
-
-Also note that some 3rd parties enables harsh mode by default. To check:
-
-```
-$ sudo sysctl kernel.sched_harsh_mode_enabled
-kernel.sched_harsh_mode_enabled = 1
-```
-
-To disable harsh mode
-
-```
-# temporarily
-sudo sysctl kernel.sched_harsh_mode_enabled=0
-
-# permanently
-sudo sysctl -w kernel.sched_harsh_mode_enabled=0 | sudo tee -a /etc/sysctl.conf
-```
+### sched_interactivity_threshold
+In CacULE the least interactive CPU is selected for a new/wakeup interactive task.
+This enahnce responsiveness since an interactive task doesn't compete
+with another interactive tasks in same cpu. The task is decided to be
+interactive task when its IS is < sched_interactivity_threshold. You
+can set threshold to 0 which disables the effects of this feature and
+select the CPU for new/wakeup tasks as original CFS does. Maximum
+threshold is 2 x sched_interactivity_factor. Note: threshold is used
+only in select_task_rq_faire to determine if a task is interactive or
+not. If it is interactive then select a CPU with the least interactive
+score. If not, then just use the normal CFS way.
 
 ## Complexity
 * The complexity of Enqueue a task is O(n).
