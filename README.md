@@ -115,6 +115,12 @@ Here is how frequent the `trigger_load_balance` would run balancer with given HZ
 2. Select a tag version that starts with `cachy / cacule` (i.e `cachy-5.8-r6`)
 3. Download and compile
 
+## How to install
+### Debian/Ubuntu
+[XanMod](https://xanmod.org/)
+
+### Arch
+[AUR - ptr1337](https://aur.archlinux.org/packages/?K=ptr1337&SeB=m)
 
 ## How to apply the patch
 1. Download the linux kernel (https://www.kernel.org/) that is same version as the patch
