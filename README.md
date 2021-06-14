@@ -111,7 +111,7 @@ Here is how frequent the `trigger_load_balance` would run balancer with given HZ
 
 ## How to install
 The following installation links are not only for easier installation,
-but they also are right configured for best CacULE experience.
+but they are also right configured for best CacULE experience.
 
 ### Debian/Ubuntu
 [XanMod](https://xanmod.org/)
