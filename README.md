@@ -110,7 +110,7 @@ Here is how frequent the `trigger_load_balance` would run balancer with given HZ
 * HZ=1000 runs every ~3ms
 
 ## How to install
-The following installation links are not only for easier to install,
+The following installation links are not only for easier installation,
 but they also are right configured for best CacULE expereince.
 
 ### Debian/Ubuntu
