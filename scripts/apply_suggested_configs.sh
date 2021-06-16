@@ -77,8 +77,8 @@ echo ./scripts/config --disable CONFIG_KEXEC_FILE
 ./scripts/config --disable CONFIG_KEXEC_FILE
 echo ./scripts/config --disable CONFIG_CRASH_DUMP
 ./scripts/config --disable CONFIG_CRASH_DUMP
-echo ./scripts/config --enable HZ_2000
-./scripts/config --enable HZ_2000
+#echo ./scripts/config --enable HZ_2000
+#./scripts/config --enable HZ_2000
 
 # ./scripts/config --set_val CONFIG_NR_CPUS (# number of cpus)
 
