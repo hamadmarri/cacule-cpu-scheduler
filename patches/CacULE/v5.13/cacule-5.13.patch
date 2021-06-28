@@ -192,7 +192,7 @@ index 38ef6d06888e..865f8dbddca8 100644
  config SCHED_HRTICK
  	def_bool HIGH_RES_TIMERS
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 4ca80df205ce..6d75473d05f0 100644
+index 4ca80df205ce..520fb9991e04 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
 @@ -3574,6 +3574,11 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
@@ -218,7 +218,24 @@ index 4ca80df205ce..6d75473d05f0 100644
  	activate_task(rq, p, ENQUEUE_NOCLOCK);
  	trace_sched_wakeup_new(p);
  	check_preempt_curr(rq, p, WF_FORK);
-@@ -8102,6 +8111,10 @@ void __init sched_init(void)
+@@ -4690,6 +4699,7 @@ static void sched_tick_remote(struct work_struct *work)
+ 
+ 	update_rq_clock(rq);
+ 
++#if !defined(CONFIG_CACULE_SCHED)
+ 	if (!is_idle_task(curr)) {
+ 		/*
+ 		 * Make sure the next tick runs within a reasonable
+@@ -4698,6 +4708,8 @@ static void sched_tick_remote(struct work_struct *work)
+ 		delta = rq_clock_task(rq) - curr->se.exec_start;
+ 		WARN_ON_ONCE(delta > (u64)NSEC_PER_SEC * 3);
+ 	}
++#endif
++
+ 	curr->sched_class->task_tick(rq, curr, 0);
+ 
+ 	calc_load_nohz_remote(rq);
+@@ -8102,6 +8114,10 @@ void __init sched_init(void)
  	BUG_ON(&dl_sched_class + 1 != &stop_sched_class);
  #endif
  
