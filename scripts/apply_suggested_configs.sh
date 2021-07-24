@@ -13,7 +13,7 @@ echo ./scripts/config --disable CONFIG_EXPERT
 # parameter "nohz_full=" in your grup. For example,
 # in case your machine has 4 CPUS, "nohz_full=1-3"
 # makes all CPUs (except CPU0) adaptive ticks.  Without
-# "nohz_full=1-3", no benfit of selecting 
+# "nohz_full=1-3", no benfit of selecting
 #
 # Hamad Al Marri
 #
@@ -107,16 +107,6 @@ echo ./scripts/config --set-val CONFIG_NR_CPUS $(nproc)
 # if you are not using this kernel as guest in a virtual machine,
 # then disable CONFIG_HYPERVISOR_GUEST
 #./scripts/config --disable CONFIG_HYPERVISOR_GUEST
-
-# Power
-echo ./scripts/config --enable CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-./scripts/config --enable CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-
-echo ./scripts/config --enable CONFIG_CPU_FREQ_GOV_PERFORMANCE
-./scripts/config --enable CONFIG_CPU_FREQ_GOV_PERFORMANCE
-
-echo ./scripts/config --disable CONFIG_CPU_FREQ_GOV_ONDEMAND
-./scripts/config --disable CONFIG_CPU_FREQ_GOV_ONDEMAND
 
 # General architecture-dependent options
 echo ./scripts/config --disable CONFIG_KPROBES
@@ -254,7 +244,7 @@ Note 1:
  in case your machine has 4 CPUS, \"nohz_full=1-3\"
  makes all CPUs (except CPU0) adaptive ticks.  Without
  \"nohz_full=1-3\", no benfit of selecting CONFIG_NO_HZ_FULL
- 
+
  Hamad Al Marri
 
 Notes 2:
@@ -270,7 +260,7 @@ Notes 2:
  8 threads, you may use nohz_full=1-3,5-7 to enable adaptive
  tickess mode on all physical cores and their sibling threads
  except CPU0.
- 
+
  Raymond K. Zhao
 
  Please see the discussions here:
