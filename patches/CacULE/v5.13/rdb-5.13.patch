@@ -157,17 +157,6 @@ index 8ce5e5a2a5ce..c1302c5124a3 100644
  }
  #else
  /*
-@@ -4914,10 +4936,6 @@ static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
- 		update_load_avg(cfs_rq, prev, 0);
- 	}
- 
--#ifdef CONFIG_CACULE_SCHED
--	prev->cacule_node.vruntime &= YIELD_UNMARK;
--#endif
--
- 	cfs_rq->curr = NULL;
- }
- 
 @@ -5153,6 +5171,9 @@ static int tg_throttle_down(struct task_group *tg, void *data)
  
  static bool throttle_cfs_rq(struct cfs_rq *cfs_rq)
