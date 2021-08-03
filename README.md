@@ -45,22 +45,16 @@ In the first round, when the task's life time became > 22s, the `cacule_start_ti
 get reset to be (`current_time - 11s`), then, the task will keep resetting
 every 15s.
 
-### sched_interactivity_threshold
-In CacULE the least interactive CPU is selected for a new/wakeup interactive task.
-This enahnce responsiveness since an interactive task doesn't compete
-with another interactive tasks in same cpu. The task is decided to be
-interactive task when its IS is < sched_interactivity_threshold. You
-can set threshold to 0 which disables the effects of this feature and
-select the CPU for new/wakeup tasks as original CFS does. Maximum
-threshold is 2 x sched_interactivity_factor. Note: threshold is used
-only in select_task_rq_faire to determine if a task is interactive or
-not. If it is interactive then select a CPU with the least interactive
-score. If not, then just use the normal CFS way.
+### Starve and Cache Scores
+See [here](https://github.com/hamadmarri/cacule-cpu-scheduler/discussions/43).
+
+### sched_cacule_yield
+See [here](https://github.com/hamadmarri/cacule-cpu-scheduler/issues/35).
 
 ## Complexity
-* The complexity of Enqueue a task is O(n).
+* The complexity of Enqueue a task is O(1).
 * The complexity of Dequeue a task is O(1).
-* The complexity of pick the next task is in O(1).
+* The complexity of pick the next task is in O(n).
 
 n is the number of tasks in a runqueue (each CPU has its own runqueue).
 
@@ -99,16 +93,6 @@ cache (`cpus_share_cache`). If can't pull any then it tries to pull from any CPU
 Only when pulling the highest of the highest HRRN/IS (i.e. `active_balance` when CPU has one task), there is no check for
 shared cache.
 
-Since `trigger_load_balance` is called for every tick, there is a guard time to prevent frequent tasks migration to reduce
-runqueues locking and to reduce unnecessary tasks migrations. The time is `3ms` after each `active_balance`. This time
-guard is specifically for HZ=500,1000. We don't want to run balancing every 2ms or 1ms to prevent regression in performance.
-Here is how frequent the `trigger_load_balance` would run balancer with given HZ values:
-* HZ=100 runs every ~10ms
-* HZ=250 runs every ~4ms
-* HZ=300 runs every ~3ms
-* HZ=500 runs every ~4ms
-* HZ=1000 runs every ~3ms
-
 ## How to install
 The following installation links are not only for easier installation,
 but they are also right configured for best CacULE experience.
@@ -143,8 +127,7 @@ dmesg | grep -i "cacule cpu"
 ```
 
 ## Suggested Configs
-For a helper script to auto config use this 
-https://github.com/hamadmarri/cacule-cpu-scheduler/blob/master/scripts/apply_suggested_configs.sh
+For a helper script to auto config use [this](https://github.com/hamadmarri/cacule-cpu-scheduler/blob/master/scripts/apply_suggested_configs.sh)
 
 ## Benchmarks
 The tests are ran 11 times and best 10 tests are picked.
@@ -185,9 +168,9 @@ Note: In one of the tests, the recorder seems to be freezes and lagging, I repea
 
 ## Special Thanks to
 1. Alexandre Frade (the maintainer of [xanmod](https://github.com/xanmod))
-2. Raymond K. Zhao (https://github.com/raykzhao)
+2. Raymond K. Zhao ([github](https://github.com/raykzhao))
 3. Peter Jung ([github](https://github.com/ptr1337))
-
+4. JohnyPeaN ([github](https://github.com/JohnyPeaN))
 
 ## Contacts
 Telegram: https://t.me/cacule_sched
