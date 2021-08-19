@@ -145,7 +145,7 @@ index d4f6215ee03f..26f446364db4 100644
  	SCHED_TUNABLESCALING_NONE,
  	SCHED_TUNABLESCALING_LOG,
 diff --git a/init/Kconfig b/init/Kconfig
-index f23e90d9935f..7d011d4e290d 100644
+index f23e90d9935f..6d4068a0c2f9 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
 @@ -736,6 +736,51 @@ config UCLAMP_BUCKETS_COUNT
@@ -164,14 +164,14 @@ index f23e90d9935f..7d011d4e290d 100644
 +
 +config CACULE_RDB
 +	bool "RDB (Response Driven Balancer)"
-+	default y
++	default n
 +	depends on CACULE_SCHED
 +	help
 +	  This is an experimental load balancer for CacULE. It is a lightweight
 +	  load balancer which is a replacement of CFS load balancer. It migrates
 +	  tasks based on their interactivity scores.
 +
-+	  If unsure, say Y here.
++	  If unsure, say N.
 +
 +config RDB_INTERVAL
 +	int "RDB load balancer interval"
