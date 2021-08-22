@@ -371,7 +371,7 @@ index faada713cfae..b06c87fda972 100644
  			cfs_rq->nr_spread_over);
  	SEQ_printf(m, "  .%-30s: %d\n", "nr_running", cfs_rq->nr_running);
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 74cb20f32f72..7cf158432b2f 100644
+index 74cb20f32f72..2978207f3fed 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -19,11 +19,26 @@
@@ -1738,7 +1738,7 @@ index 74cb20f32f72..7cf158432b2f 100644
 +	return pulled_task;
 +}
 +#else
-+static int newidle_balance(struct rq *this_rq, struct rq_flags *rf)
++int newidle_balance(struct rq *this_rq, struct rq_flags *rf)
  {
  	unsigned long next_balance = jiffies + HZ;
  	int this_cpu = this_rq->cpu;
