@@ -371,7 +371,7 @@ index faada713cfae..b06c87fda972 100644
  			cfs_rq->nr_spread_over);
  	SEQ_printf(m, "  .%-30s: %d\n", "nr_running", cfs_rq->nr_running);
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 74cb20f32f72..2978207f3fed 100644
+index 74cb20f32f72..58f1cad37385 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -19,11 +19,26 @@
@@ -1488,7 +1488,7 @@ index 74cb20f32f72..2978207f3fed 100644
  
  	/* Don't need to update blocked load of idle CPUs*/
  	if (!READ_ONCE(nohz.has_blocked) ||
-@@ -9838,8 +10299,10 @@ static void nohz_newidle_balance(struct rq *this_rq)
+@@ -9838,23 +10299,254 @@ static void nohz_newidle_balance(struct rq *this_rq)
  		kick_ilb(NOHZ_STATS_KICK);
  	raw_spin_lock(&this_rq->lock);
  }
@@ -1499,11 +1499,12 @@ index 74cb20f32f72..2978207f3fed 100644
  static inline void nohz_balancer_kick(struct rq *rq) { }
  
  static inline bool nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle)
-@@ -9848,13 +10311,242 @@ static inline bool nohz_idle_balance(struct rq *this_rq, enum cpu_idle_type idle
+ {
+ 	return false;
  }
++#endif
  
  static inline void nohz_newidle_balance(struct rq *this_rq) { }
-+#endif
 +
  #endif /* CONFIG_NO_HZ_COMMON */
  
